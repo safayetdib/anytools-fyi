@@ -16,7 +16,7 @@ When you open a tool, your browser downloads the page and the code for that tool
 You don't have to take our word for it. Try either of these:
 
 1. **Watch the network.** Open your browser's developer tools, go to the Network tab, then use a tool. You'll see no upload of your file.
-2. **Go offline.** Load a tool page, turn off your internet connection, then use the tool. It still works, because nothing needs to leave your device.
+2. **Go offline.** Open a tool and choose your files, then turn off your internet connection and finish the job. It still works, because nothing needs to leave your device.
 
 ## What we do collect
 

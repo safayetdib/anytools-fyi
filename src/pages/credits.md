@@ -8,3 +8,4 @@ updated: "2026-11-06"
 AnyTools.fyi is built with open source software. We list each library here with its license, and we add to this list as each tool is built.
 
 - **Astro**, MIT License: builds the site's pages.
+- **pdf-lib** 1.17.1, MIT License, by Andrew Dillon: reads and joins PDF files in Merge PDF.

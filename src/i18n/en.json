@@ -250,7 +250,10 @@
     "trustText": "What you type stays on your device. Nothing is sent to our servers.",
     "related": "Related tools",
     "sizes": "Choose a target size",
-    "skip": "Skip to tool"
+    "skip": "Skip to tool",
+    "limits": "Limits",
+    "questions": "Questions",
+    "updated": "Last updated"
   },
   "notFound": {
     "title": "Page not found | AnyTools.fyi",
@@ -274,5 +277,14 @@
     "seeAll": "See all tools",
     "headerLandmark": "Site search",
     "heroLandmark": "Find a tool"
+  },
+  "mergePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Merge PDF",
+    "acceptLabel": "PDF files",
+    "outputName": "merged.pdf",
+    "summary": "Done. {count} PDFs merged into merged.pdf, with {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again."
   }
 }

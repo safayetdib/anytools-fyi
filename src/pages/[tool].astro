@@ -6,8 +6,12 @@ import ToolIcon from "../components/ToolIcon.astro";
 import en from "../i18n/en.json";
 import { fill } from "../i18n/format";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { breadcrumbSchema, webApplicationSchema } from "../lib/schema";
+import { getEntry, render } from "astro:content";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import { breadcrumbSchema, faqSchema, webApplicationSchema } from "../lib/schema";
 import { TOOLS, hubFor, isHubLive, toolBySlug, variantsOf, type Tool } from "../lib/tools";
+
+const toolModules = import.meta.glob<AstroComponentFactory>("../tools/*/Tool.astro", { eager: true, import: "default" });
 
 export function getStaticPaths() {
   return TOOLS.map((tool) => ({ params: { tool: tool.slug }, props: { tool } }));
@@ -36,11 +40,18 @@ const sizes = variantsOf(parent ?? tool);
 const related = tool.related.map((slug) => toolBySlug(slug) as Tool);
 const title = fill(isText ? p.titleText : p.titleFiles, { name: strings.name });
 const description = `${strings.description} ${p.metaSuffix}`;
+const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`];
+const help = await getEntry("tools", tool.slug);
+const Explainer = help ? (await render(help)).Content : undefined;
+const updatedLabel = help
+  ? new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(new Date(help.data.updated))
+  : undefined;
 ---
 
 <BaseLayout title={title} description={description} skipLabel={p.skip}>
   <JsonLd slot="head" data={webApplicationSchema({ name: strings.name, description, path }, site)} />
   <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
+  {help && <JsonLd slot="head" data={faqSchema(help.data.faq)} />}
   <div class="container">
     <Breadcrumb items={crumbs} />
     <div class="intro">
@@ -70,24 +81,81 @@ const description = `${strings.description} ${p.metaSuffix}`;
       )
     }
 
-    <section class="tool-area" data-testid="tool-area" aria-labelledby="tool-status">
-      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="8" y="8" width="48" height="48" rx="12" fill="none" stroke="var(--color-border)" stroke-width="2" stroke-dasharray="6 6"></rect>
-        <path d="M24 34l6 6 12-14" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-      </svg>
-      <h2 id="tool-status">{p.comingSoonTitle}</h2>
-      <p>{p.comingSoonBody}</p>
-    </section>
+    {
+      ToolUi ? (
+        <ToolUi />
+      ) : (
+        <section class="tool-area" data-testid="tool-area" aria-labelledby="tool-status">
+          <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="8" width="48" height="48" rx="12" fill="none" stroke="var(--color-border)" stroke-width="2" stroke-dasharray="6 6" />
+            <path d="M24 34l6 6 12-14" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <h2 id="tool-status">{p.comingSoonTitle}</h2>
+          <p>{p.comingSoonBody}</p>
+        </section>
+      )
+    }
 
     <p class="trust">
       {isText ? p.trustText : p.trustFiles}
       <a href="/how-we-protect-your-privacy/">{en.footer.howWeProtect}</a>
     </p>
 
+    {
+      help && Explainer && (
+        <div class="help">
+          <section aria-labelledby="limits-heading">
+            <h2 id="limits-heading">{p.limits}</h2>
+            <dl class="limits">
+              {help.data.limits.map((limit) => (
+                <div>
+                  <dt>{limit.label}</dt>
+                  <dd>{limit.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <section aria-labelledby="steps-heading">
+            <h2 id="steps-heading">{help.data.howToTitle}</h2>
+            <ol class="steps">
+              {help.data.steps.map((step) => (
+                <li>{step}</li>
+              ))}
+            </ol>
+          </section>
+
+          <div class="prose explainer">
+            <Explainer />
+          </div>
+
+          <section aria-labelledby="faq-heading">
+            <h2 id="faq-heading">{p.questions}</h2>
+            <div class="faq">
+              {help.data.faq.map((item) => (
+                <div>
+                  <h3>{item.question}</h3>
+                  <p>{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )
+    }
+
     <section class="related" aria-labelledby="related-heading">
       <h2 id="related-heading">{p.related}</h2>
       <ToolGrid tools={related} />
     </section>
+
+    {
+      updatedLabel && help && (
+        <p class="updated">
+          {p.updated} <time datetime={help.data.updated}>{updatedLabel}</time>
+        </p>
+      )
+    }
   </div>
 </BaseLayout>
 
@@ -188,6 +256,107 @@ const description = `${strings.description} ${p.metaSuffix}`;
   .related h2 {
     margin: 0 0 var(--space-md);
     font-size: 1.375rem;
+  }
+
+  .help {
+    display: grid;
+    gap: var(--space-xl);
+    max-width: 48rem;
+    margin-top: var(--space-xl);
+  }
+
+  .help h2 {
+    margin: 0 0 var(--space-md);
+    font-size: 1.375rem;
+  }
+
+  .limits {
+    display: grid;
+    margin: 0;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .limits div {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .limits div + div {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .limits dt {
+    font-weight: 700;
+  }
+
+  .limits dd {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .steps {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: var(--space-sm);
+    align-items: start;
+    counter-increment: step;
+  }
+
+  .steps li::before {
+    content: counter(step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
+  }
+
+  .explainer :global(h2) {
+    margin-top: 0;
+  }
+
+  .faq {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .faq h3 {
+    margin: 0 0 var(--space-xs);
+    font-size: 1.0625rem;
+  }
+
+  .faq p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .updated {
+    margin-top: var(--space-xl);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 600px) {
+    .limits div {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      gap: var(--space-md);
+    }
   }
 
   @media (min-width: 900px) {

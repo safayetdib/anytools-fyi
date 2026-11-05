@@ -160,7 +160,12 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   controller.subscribe(render);
   render();
 
+  const warm = () => tool.warm?.();
+  pickInput?.addEventListener("focus", warm, { once: true });
+  zone?.addEventListener("pointerenter", warm, { once: true });
+
   pickInput?.addEventListener("change", () => {
+    warm();
     controller.addFiles(pickInput.files ?? []);
     pickInput.value = "";
     afterFiles("select");
@@ -235,6 +240,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     event.preventDefault();
     zone?.classList.remove("is-dragging");
     const from = state.screen === "select" ? "select" : "working";
+    warm();
     controller.addFiles(event.dataTransfer?.files ?? []);
     afterFiles(from);
   });

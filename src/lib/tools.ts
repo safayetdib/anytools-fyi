@@ -39,7 +39,7 @@ export const TOOLS: Tool[] = [
     input: "files",
     related: ["split-pdf", "jpg-to-pdf", "pdf-to-jpg", "compress-image"],
     aliases: ["combine pdf", "join pdf", "pdf merger", "পিডিএফ যুক্ত করুন", "pdf jukto"],
-    built: false,
+    built: true,
   },
   {
     slug: "compress-image",

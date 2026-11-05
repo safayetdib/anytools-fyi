@@ -78,3 +78,15 @@ export function webApplicationSchema(tool: { name: string; description: string; 
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 }
+
+export function faqSchema(faq: { question: string; answer: string }[]) {
+  return {
+    "@context": CONTEXT,
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  };
+}

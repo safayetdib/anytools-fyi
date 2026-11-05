@@ -37,6 +37,8 @@ export interface ToolOutput {
 // The shell only knows this contract, so a tool can run in a worker, or later on a server, without shell changes.
 export interface ToolDefinition {
   config: ToolConfig;
+  // Starts loading heavy code early, when the visitor shows intent, so it's ready (and works offline) by run time.
+  warm?(): void;
   run(input: ToolInput, options: ToolOptions, context: RunContext): Promise<ToolOutput>;
 }
 

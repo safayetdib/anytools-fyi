@@ -1,0 +1,15 @@
+---
+import ToolShell from "../../components/ToolShell.astro";
+import en from "../../i18n/en.json";
+import { tool } from "./tool";
+---
+
+<ToolShell config={tool.config} selectLabel={en.mergePdf.selectLabel} runLabel={en.mergePdf.runLabel} />
+
+<script>
+  import { mountToolShell } from "../../lib/shell/mount";
+  import { tool } from "./tool";
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  if (root) mountToolShell(root, tool);
+</script>
