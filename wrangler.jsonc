@@ -3,6 +3,9 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "anytools-fyi",
   "compatibility_date": "2026-11-01",
+  // The site lives at anytools.fyi only. Branch previews keep their own test links.
+  "workers_dev": false,
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     // Missing pages get the site's own 404 page.
