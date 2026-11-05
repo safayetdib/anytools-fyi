@@ -13,7 +13,13 @@ interface Props {
 const { config, selectLabel = "", runLabel } = Astro.props;
 const t = en.shell;
 const isFiles = config.mode === "files";
-const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: formatSize(config.maxFileSize) }) : "";
+const limits = isFiles
+  ? fill(config.minFiles > 1 ? t.limitsMin : t.limits, {
+      accept: config.acceptLabel,
+      size: formatSize(config.maxFileSize),
+      min: config.minFiles,
+    })
+  : "";
 ---
 
 <div class="shell" data-tool-shell>
@@ -44,17 +50,13 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
 
   <section data-screen="working" hidden={isFiles}>
     {isFiles && <h2 class="shell-heading" tabindex="-1" data-el="working-heading">{t.arrangeHeading}</h2>}
+    {isFiles && config.arrangeHint && <p class="shell-hint shell-arrange-hint">{config.arrangeHint}</p>}
     <form data-el="form" novalidate>
       {
         isFiles ? (
           <>
             <ol class="shell-files" data-el="list" />
-            {config.multiple && (
-              <label class="shell-secondary shell-add">
-                <input class="sr-only" type="file" data-el="add-input" accept={config.accept} multiple />
-                {t.addMore}
-              </label>
-            )}
+            <p class="shell-total" data-el="total" data-testid="shell-total" />
           </>
         ) : (
           <div class="shell-field">
@@ -66,7 +68,17 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
       <slot name="options" />
       <p class="shell-notice shell-warning" data-el="warning" data-testid="shell-warning" hidden></p>
       <p class="shell-notice shell-error" id="shell-error" data-el="error" data-testid="shell-error" hidden></p>
-      <button class="shell-primary shell-run" type="submit" data-el="run">{runLabel}</button>
+      <div class="shell-run-row">
+        {
+          isFiles && config.multiple && (
+            <label class="shell-secondary shell-add">
+              <input class="sr-only" type="file" data-el="add-input" accept={config.accept} multiple />
+              {t.addMore}
+            </label>
+          )
+        }
+        <button class="shell-primary shell-run" type="submit" data-el="run">{runLabel}</button>
+      </div>
     </form>
   </section>
 
@@ -85,18 +97,42 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
       </svg>
       <h2 class="shell-heading" tabindex="-1" data-el="result-heading">{t.resultOne}</h2>
     </div>
+    <p class="shell-summary" data-el="summary"></p>
     <ul class="shell-downloads" data-el="downloads"></ul>
     <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
     <div class="shell-actions">
       <button class="shell-secondary" type="button" data-el="copy" hidden>{t.copy}</button>
       <button class="shell-secondary" type="button" data-el="reset">{isFiles ? t.startOver : t.editInput}</button>
     </div>
+    <section class="shell-preview" data-el="preview" aria-labelledby="shell-preview-heading" hidden>
+      <h3 id="shell-preview-heading">{t.previewHeading}</h3>
+      <p class="shell-hint">{t.previewNote}</p>
+      <ol class="shell-pages" data-el="pages"></ol>
+      <p class="shell-hint" data-el="preview-count" aria-live="polite"></p>
+      <button class="shell-secondary" type="button" data-el="more" hidden>{t.showMore}</button>
+    </section>
   </section>
+
+  <dialog class="shell-viewer" data-el="viewer" aria-labelledby="shell-viewer-title">
+    <div class="shell-viewer-bar">
+      <p class="shell-viewer-title" id="shell-viewer-title" data-el="viewer-title"></p>
+      <button class="shell-icon-button" type="button" data-el="viewer-close" aria-label={t.close}>
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <div class="shell-viewer-page">
+      <img data-el="viewer-image" alt="" />
+    </div>
+    <div class="shell-viewer-bar">
+      <button class="shell-secondary" type="button" data-el="viewer-prev">{t.previous}</button>
+      <button class="shell-secondary" type="button" data-el="viewer-next">{t.next}</button>
+    </div>
+  </dialog>
 </div>
 
 <style is:global>
   .shell {
-    margin-block: var(--space-lg);
+    margin-block: var(--space-xl);
   }
 
   .shell [hidden] {
@@ -107,8 +143,8 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xl) var(--space-md);
+    gap: var(--space-md);
+    padding: var(--space-2xl) var(--space-lg);
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-card);
     background: var(--color-surface);
@@ -207,7 +243,7 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
   }
 
   .shell-heading {
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--space-sm);
     font-size: 1.375rem;
   }
 
@@ -217,7 +253,7 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
 
   .shell-files {
     display: grid;
-    gap: var(--space-sm);
+    gap: 0.75rem;
     margin: 0 0 var(--space-md);
     padding: 0;
     list-style: none;
@@ -226,10 +262,10 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
 
   .shell-file {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: var(--space-xs) var(--space-sm);
-    padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+    gap: var(--space-md);
+    padding: 0.75rem var(--space-md);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-button);
     background: var(--color-surface);
@@ -240,18 +276,11 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
     overflow-wrap: anywhere;
   }
 
-  .shell-file-size {
-    grid-row: 2;
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-  }
-
   .shell-file-actions {
     display: flex;
-    grid-row: 1 / span 2;
-    grid-column: 2;
     gap: var(--space-xs);
   }
+
 
   .shell-field {
     display: grid;
@@ -285,8 +314,169 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
     border-width: 2px;
   }
 
-  .shell-add {
-    margin-bottom: var(--space-md);
+  .shell-arrange-hint {
+    margin: 0 0 var(--space-lg);
+  }
+
+  .shell-run-row {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+  }
+
+  .shell-total {
+    margin: 0 0 var(--space-md);
+    font-weight: 600;
+  }
+
+  .shell-total:empty {
+    display: none;
+  }
+
+  .shell-file-order {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--color-bg);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .shell-thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 0.375rem;
+    background: var(--color-bg);
+  }
+
+  .shell-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #ffffff;
+  }
+
+  .shell-thumb.is-loading {
+    animation: shell-pulse 1.2s ease-in-out infinite alternate;
+  }
+
+  .shell-file-info {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .shell-file-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .shell-file-meta.is-problem {
+    color: var(--color-warning);
+    font-weight: 600;
+  }
+
+  .shell-summary {
+    margin: 0 0 var(--space-md);
+    color: var(--color-text-muted);
+  }
+
+  .shell-preview {
+    margin-top: var(--space-2xl);
+  }
+
+  .shell-preview h3 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .shell-pages {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: var(--space-md);
+    margin: var(--space-md) 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .shell-page {
+    display: grid;
+    gap: var(--space-xs);
+    width: 100%;
+    padding: var(--space-xs);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: zoom-in;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .shell-page:hover {
+      border-color: var(--color-accent);
+    }
+  }
+
+  .shell-page img,
+  .shell-page .shell-page-blank {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: contain;
+    border-radius: 0.25rem;
+    background: #ffffff;
+  }
+
+  .shell-viewer {
+    width: min(56rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .shell-viewer::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+
+  .shell-viewer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+
+  .shell-viewer-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .shell-viewer-page {
+    display: flex;
+    justify-content: center;
+    margin-block: var(--space-sm);
+  }
+
+  .shell-viewer-page img {
+    max-width: 100%;
+    max-height: calc(100dvh - 12rem);
+    height: auto;
+    background: #ffffff;
+    border: 1px solid var(--color-border-subtle);
   }
 
   .shell-notice {
@@ -324,8 +514,8 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
   .shell-done {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-md);
+    gap: 0.75rem;
+    margin-bottom: var(--space-sm);
   }
 
   .shell-done .shell-heading {
@@ -377,6 +567,32 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
     .shell-downloads a {
       width: auto;
     }
+
+    .shell-run-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .shell-pages {
+      grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    }
+  }
+
+  /* Last, so it overrides the base row layout above. */
+  @media (max-width: 479px) {
+    .shell-file {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .shell-file-order {
+      display: none;
+    }
+
+    .shell-file-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -388,6 +604,12 @@ const limits = isFiles ? fill(t.limits, { accept: config.acceptLabel, size: form
       stroke-dasharray: 30;
       stroke-dashoffset: 30;
       animation: shell-draw var(--dur-slow) var(--ease-out) 120ms forwards;
+    }
+
+    @keyframes shell-pulse {
+      to {
+        opacity: 0.55;
+      }
     }
 
     @keyframes shell-nudge {

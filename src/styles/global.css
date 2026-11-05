@@ -54,7 +54,7 @@ svg {
   width: 100%;
   max-width: 80rem;
   margin-inline: auto;
-  padding-inline: var(--space-md);
+  padding-inline: 1.25rem;
 }
 
 @media (min-width: 900px) {
@@ -63,13 +63,28 @@ svg {
   }
 }
 
+/* Space between the header and the first thing on inner pages. */
+.page-top {
+  padding-top: var(--space-lg);
+}
+
 .prose {
   max-width: 42rem;
 }
 
 .prose h2 {
-  margin: var(--space-xl) 0 var(--space-sm);
+  margin: var(--space-2xl) 0 var(--space-md);
   font-size: 1.375rem;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 var(--space-md);
+}
+
+.prose li + li {
+  margin-top: var(--space-sm);
 }
 
 .prose p,

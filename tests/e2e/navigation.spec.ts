@@ -158,3 +158,38 @@ for (const path of ["/about/", "/privacy/", "/no-such-page/", "/word-counter/"])
     });
   }
 }
+
+// --- Theme ---
+
+test("theme - the switch changes the theme and remembers it", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  const toggle = page.getByRole("button", { name: "Dark theme" }).first();
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  const lightBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe(lightBg);
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("button", { name: "Dark theme" }).first()).toHaveAttribute("aria-pressed", "true");
+  const { violations } = await new AxeBuilder({ page }).analyze();
+  expect(violations.map((v) => v.id)).toEqual([]);
+});
+
+test("theme - phones find the switch in the menu", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await menuButton(page).click();
+  await panel(page).getByRole("button", { name: "Dark theme" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", /light|dark/);
+});
+
+test("search - placeholders are in English only", async ({ page }) => {
+  await page.goto("/");
+  for (const placeholder of await page.locator("input[placeholder]").evaluateAll((inputs) => inputs.map((i) => (i as HTMLInputElement).placeholder))) {
+    expect(placeholder).not.toMatch(/[ঀ-৿]/);
+  }
+});

@@ -1,5 +1,7 @@
 export interface FileToolConfig {
   mode: "files";
+  // Shown under the file list heading, to say what the order or options mean for this tool.
+  arrangeHint?: string;
   accept?: string;
   acceptLabel: string;
   multiple: boolean;
@@ -34,11 +36,32 @@ export interface ToolOutput {
   summary: string;
 }
 
+export interface FilePreview {
+  status: "ready" | "locked" | "unreadable";
+  image?: Blob;
+  pageCount?: number;
+}
+
+export interface RenderedPage {
+  blob: Blob;
+  width: number;
+  height: number;
+}
+
+export interface OutputPreview {
+  pageCount: number;
+  renderPage(pageNumber: number, width: number): Promise<RenderedPage>;
+  close(): void;
+}
+
 // The shell only knows this contract, so a tool can run in a worker, or later on a server, without shell changes.
 export interface ToolDefinition {
   config: ToolConfig;
   // Starts loading heavy code early, when the visitor shows intent, so it's ready (and works offline) by run time.
   warm?(): void;
+  // Optional previews: a thumbnail for each chosen file, and the pages of the result before download.
+  previewFile?(file: File): Promise<FilePreview>;
+  previewOutput?(blob: Blob): Promise<OutputPreview>;
   run(input: ToolInput, options: ToolOptions, context: RunContext): Promise<ToolOutput>;
 }
 

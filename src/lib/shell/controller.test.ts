@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createToolController } from "./controller";
+import { createToolController, totalPages } from "./controller";
 import { ToolError, type FileToolConfig, type RunContext, type ToolDefinition, type ToolOutput } from "./types";
 
 const output: ToolOutput = { files: [{ name: "out.txt", blob: new Blob(["ok"]) }], summary: "Done. out.txt" };
@@ -230,4 +230,35 @@ it("notifies subscribers on change", () => {
   c.subscribe(listener);
   c.addFiles([txt("a.txt")]);
   expect(listener).toHaveBeenCalled();
+});
+
+describe("previews", () => {
+  it("stores a preview on its file and announces a password-protected file", () => {
+    const c = createToolController(fileTool());
+    c.addFiles([txt("a.txt"), txt("b.txt")]);
+    const [a, b] = c.state.files;
+    c.setPreview(a.id, { status: "ready", pageCount: 3 });
+    c.setPreview(b.id, { status: "locked" });
+    expect(c.state.files[0].preview).toEqual({ status: "ready", pageCount: 3 });
+    expect(c.state.announcement).toContain("b.txt");
+  });
+
+  it("ignores a preview for a file that was removed", () => {
+    const c = createToolController(fileTool());
+    c.addFiles([txt("a.txt")]);
+    const [a] = c.state.files;
+    c.removeFile(a.id);
+    expect(() => c.setPreview(a.id, { status: "ready", pageCount: 1 })).not.toThrow();
+    expect(c.state.files).toEqual([]);
+  });
+
+  it("totals pages only once every file has a count", () => {
+    const c = createToolController(fileTool());
+    c.addFiles([txt("a.txt"), txt("b.txt")]);
+    const [a, b] = c.state.files;
+    c.setPreview(a.id, { status: "ready", pageCount: 3 });
+    expect(totalPages(c.state.files)).toBeNull();
+    c.setPreview(b.id, { status: "ready", pageCount: 2 });
+    expect(totalPages(c.state.files)).toBe(5);
+  });
 });

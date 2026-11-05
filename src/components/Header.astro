@@ -34,6 +34,15 @@ const groups = HUBS.map((hub) => ({
           <path d="m20 20-3.5-3.5"></path>
         </svg>
       </button>
+      <button class="icon-button theme-toggle" type="button" aria-label={en.theme.label} aria-pressed="false" data-theme-toggle hidden>
+        <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path>
+        </svg>
+        <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+      </button>
       <ul class="quick">
         {
           quick.map((tool) => (
@@ -77,6 +86,16 @@ const groups = HUBS.map((hub) => ({
           </div>
           <div class="container see-all">
             <a href="/tools/">{en.nav.seeAll}</a>
+            <button class="panel-theme" type="button" aria-pressed="false" data-theme-toggle hidden>
+              <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path>
+        </svg>
+        <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+              {en.theme.label}
+            </button>
           </div>
         </div>
       </details>
@@ -85,6 +104,30 @@ const groups = HUBS.map((hub) => ({
 </header>
 
 <script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const query = matchMedia("(prefers-color-scheme: dark)");
+    const isDark = () => (root.dataset.theme ? root.dataset.theme === "dark" : query.matches);
+    const toggles = document.querySelectorAll("[data-theme-toggle]");
+    const sync = () =>
+      toggles.forEach((toggle) => {
+        toggle.hidden = false;
+        toggle.setAttribute("aria-pressed", String(isDark()));
+      });
+    toggles.forEach((toggle) =>
+      toggle.addEventListener("click", () => {
+        const theme = isDark() ? "light" : "dark";
+        root.dataset.theme = theme;
+        try {
+          localStorage.setItem("theme", theme);
+        } catch {}
+        sync();
+      }),
+    );
+    query.addEventListener("change", sync);
+    sync();
+  })();
+
   (() => {
     const menu = document.querySelector("[data-menu]");
     if (!menu) return;
@@ -114,8 +157,8 @@ const groups = HUBS.map((hub) => ({
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0 var(--space-md);
-    min-height: 4rem;
+    gap: 0 var(--space-lg);
+    min-height: 4.5rem;
   }
 
   .search-slot {
@@ -129,6 +172,7 @@ const groups = HUBS.map((hub) => ({
     display: block;
   }
 
+  .icon-button,
   .search-toggle {
     display: inline-flex;
     align-items: center;
@@ -142,8 +186,59 @@ const groups = HUBS.map((hub) => ({
     cursor: pointer;
   }
 
-  .search-toggle[hidden] {
+  .search-toggle[hidden],
+  .theme-toggle[hidden],
+  .panel-theme[hidden] {
     display: none;
+  }
+
+  /* The header switch needs room, so phones get it at the bottom of the menu instead. */
+  .theme-toggle {
+    display: none;
+  }
+
+  .sun,
+  :root[data-theme="dark"] .moon {
+    display: none;
+  }
+
+  :root[data-theme="dark"] .sun {
+    display: block;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .moon {
+      display: none;
+    }
+
+    :root:not([data-theme="light"]) .sun {
+      display: block;
+    }
+  }
+
+  .panel-theme {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (min-width: 480px) {
+    .theme-toggle {
+      display: inline-flex;
+    }
+
+    .panel-theme {
+      display: none;
+    }
   }
 
   .search-toggle[aria-expanded="true"] {
@@ -169,7 +264,7 @@ const groups = HUBS.map((hub) => ({
   .nav {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
   }
 
   .quick {
@@ -241,9 +336,9 @@ const groups = HUBS.map((hub) => ({
     top: 100%;
     right: 0;
     left: 0;
-    max-height: calc(100dvh - 4rem);
+    max-height: calc(100dvh - 4.5rem);
     overflow-y: auto;
-    padding-block: var(--space-lg);
+    padding-block: var(--space-xl);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border-subtle);
   }
@@ -251,7 +346,7 @@ const groups = HUBS.map((hub) => ({
   .groups {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-    gap: var(--space-lg) var(--space-xl);
+    gap: var(--space-xl) var(--space-2xl);
   }
 
   .group ul {
@@ -261,7 +356,7 @@ const groups = HUBS.map((hub) => ({
   }
 
   .group-title {
-    margin: 0 0 var(--space-xs);
+    margin: 0 0 var(--space-sm);
     color: var(--color-text-muted);
     font-size: 0.8125rem;
     font-weight: 700;
@@ -297,7 +392,12 @@ const groups = HUBS.map((hub) => ({
   }
 
   .see-all {
-    margin-top: var(--space-md);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
   }
 
   .see-all a {

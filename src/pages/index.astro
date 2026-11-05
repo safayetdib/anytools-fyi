@@ -45,7 +45,9 @@ const whyIcons = [
         {
           why.items.map((item, index) => (
             <li>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={whyIcons[index]} />
+              <span class="why-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={whyIcons[index]} />
+              </span>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </li>
@@ -62,13 +64,13 @@ const whyIcons = [
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-xl);
-    padding-block: var(--space-lg);
+    gap: var(--space-2xl);
+    padding-block: var(--space-2xl) var(--space-xl);
   }
 
   .lead {
     max-width: 38rem;
-    margin: var(--space-sm) 0 0;
+    margin: var(--space-md) 0 0;
     color: var(--color-text-muted);
     font-size: clamp(1rem, 0.95rem + 0.3vw, 1.1875rem);
   }
@@ -80,38 +82,45 @@ const whyIcons = [
 
   .hero-search {
     max-width: 36rem;
-    margin-top: var(--space-md);
+    margin-top: var(--space-xl);
   }
 
   .tools {
-    margin-top: var(--space-md);
+    margin-top: var(--space-lg);
   }
 
   .why {
-    margin-top: var(--space-2xl);
+    margin-top: var(--space-4xl);
   }
 
   .why h2 {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--space-xl);
     font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
   }
 
   .why ul {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-    gap: var(--space-lg);
+    gap: var(--space-xl) var(--space-2xl);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .why svg {
+  .why-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
     color: var(--color-accent);
   }
 
   .why h3 {
-    margin: var(--space-sm) 0 var(--space-xs);
-    font-size: 1.0625rem;
+    margin: var(--space-md) 0 var(--space-sm);
+    font-size: 1.125rem;
   }
 
   .why p {
@@ -123,13 +132,13 @@ const whyIcons = [
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    margin-top: var(--space-md);
+    margin-top: var(--space-xl);
     font-weight: 700;
   }
 
   @media (min-width: 900px) {
     .hero {
-      padding-block: var(--space-xl);
+      padding-block: var(--space-4xl) var(--space-3xl);
     }
   }
 </style>

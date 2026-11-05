@@ -37,7 +37,7 @@ const listed = tools.map((tool) => ({
     data={collectionSchema({ name: strings.name, description: strings.description, path }, listed, site)}
   />
   <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
-  <div class="container">
+  <div class="container page-top">
     <Breadcrumb items={crumbs} />
     <h1>{strings.name}</h1>
     <p class="lead">{strings.description}</p>
@@ -49,13 +49,17 @@ const listed = tools.map((tool) => ({
 </BaseLayout>
 
 <style>
+  h1 {
+    margin-top: var(--space-md);
+  }
+
   .lead {
-    max-width: 38rem;
-    margin: var(--space-sm) 0 var(--space-lg);
+    max-width: 40rem;
+    margin: var(--space-md) 0 var(--space-xl);
     color: var(--color-text-muted);
   }
 
   .tools {
-    margin-top: var(--space-md);
+    margin-top: var(--space-lg);
   }
 </style>

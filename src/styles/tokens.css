@@ -28,6 +28,8 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
   --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 5rem;
 
   --radius-button: 0.75rem;
   --radius-card: 1rem;
@@ -40,7 +42,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-bg: #0e1714;
     --color-surface: #16211d;
     --color-text: #eaf1ee;
@@ -52,6 +54,25 @@
     --color-danger: #ff9b8f;
     --color-warning: #f2b654;
   }
+}
+
+/* A theme chosen with the switch wins over the device setting. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0e1714;
+  --color-surface: #16211d;
+  --color-text: #eaf1ee;
+  --color-text-muted: #a3b2ac;
+  --color-border: #66756f;
+  --color-border-subtle: #33423c;
+  --color-accent: #4fd1a5;
+  --color-on-accent: #07241b;
+  --color-danger: #ff9b8f;
+  --color-warning: #f2b654;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 @media (prefers-reduced-motion: reduce) {

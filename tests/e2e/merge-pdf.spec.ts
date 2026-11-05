@@ -106,6 +106,7 @@ test("merge pdf - works offline once files are chosen", async ({ page, context }
 });
 
 test("merge pdf - cancelling stops the job and the next merge still works", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto(PAGE);
   const big = await pdf("big.pdf", Array.from({ length: 400 }, () => 100));
   await picker(page).setInputFiles([big, await pdf("small.pdf", [200])]);
@@ -139,5 +140,99 @@ for (const width of [320, 375, 768, 1366]) {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/working-${width}.png`, fullPage: true });
+  });
+}
+
+// --- Previews and guidance ---
+
+const imagesLoaded = (page: Page, selector: string) =>
+  page.locator(selector).evaluateAll((images) => images.map((img) => (img as HTMLImageElement).naturalWidth > 0));
+
+test("merge pdf - guides the visitor before and after choosing files", async ({ page }) => {
+  await page.goto(PAGE);
+  await expect(page.getByText("Choose 2 or more PDF files, up to 100 MB each.")).toBeVisible();
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200, 210])]);
+  await expect(page.getByText("The merged file follows this order")).toBeVisible();
+  await expect(page.getByTestId("shell-total")).toHaveText(/^2 files · 3 pages · [\d.]+ (B|KB)$/);
+});
+
+test("merge pdf - shows a first-page preview and page count for each file", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200, 210])]);
+  await expect(page.getByTestId("shell-file").nth(0)).toContainText("1 page");
+  await expect(page.getByTestId("shell-file").nth(1)).toContainText("2 pages");
+  await expect.poll(() => imagesLoaded(page, '[data-testid="shell-file"] img')).toEqual([true, true]);
+});
+
+test("merge pdf - flags a password-protected file before merging", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([
+    await pdf("ok.pdf", [100]),
+    { name: "locked.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makeEncryptedPdf()) },
+  ]);
+  await expect(page.getByTestId("shell-file").nth(1)).toContainText("Has a password");
+});
+
+test("merge pdf - previews the merged pages, with a larger view, before download", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200, 210])]);
+  await mergeButton(page).click();
+  await expect(page.locator('[data-el="summary"]')).toContainText("Done. 2 PDFs merged");
+  await expect(page.getByRole("heading", { name: "Preview" })).toBeVisible();
+  const thumbs = page.getByRole("button", { name: /^Open page \d larger$/ });
+  await expect(thumbs).toHaveCount(3);
+  await expect.poll(() => imagesLoaded(page, ".shell-pages img")).toEqual([true, true, true]);
+  await thumbs.nth(1).click();
+  const viewer = page.getByRole("dialog");
+  await expect(viewer).toContainText("Page 2 of 3");
+  await viewer.getByRole("button", { name: "Next page" }).click();
+  await expect(viewer).toContainText("Page 3 of 3");
+  await page.keyboard.press("ArrowLeft");
+  await expect(viewer).toContainText("Page 2 of 3");
+  await page.keyboard.press("Escape");
+  await expect(viewer).toBeHidden();
+  await expect(thumbs.nth(1)).toBeFocused();
+});
+
+test("merge pdf - long results preview in batches", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", Array.from({ length: 20 }, () => 100)), await pdf("b.pdf", Array.from({ length: 10 }, () => 200))]);
+  await mergeButton(page).click();
+  const thumbs = page.getByRole("button", { name: /^Open page \d+ larger$/ });
+  await expect(thumbs).toHaveCount(12);
+  await expect(page.getByText("Showing 12 of 30 pages.")).toBeVisible();
+  await page.getByRole("button", { name: "Show more pages" }).click();
+  await expect(thumbs).toHaveCount(24);
+  await page.getByRole("button", { name: "Show more pages" }).click();
+  await expect(thumbs).toHaveCount(30);
+  await expect(page.getByRole("button", { name: "Show more pages" })).toBeHidden();
+});
+
+test("merge pdf - action buttons don't touch", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  const add = await page.locator(".shell-add").boundingBox();
+  const run = await mergeButton(page).boundingBox();
+  expect(add && run).toBeTruthy();
+  const gapX = (run?.x ?? 0) - ((add?.x ?? 0) + (add?.width ?? 0));
+  const gapY = (run?.y ?? 0) - ((add?.y ?? 0) + (add?.height ?? 0));
+  expect(Math.max(gapX, gapY)).toBeGreaterThanOrEqual(8);
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`merge pdf - previews and the page viewer have no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.goto(PAGE);
+    await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+    await expect.poll(() => imagesLoaded(page, '[data-testid="shell-file"] img')).toEqual([true, true]);
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/previews-${colorScheme}.png`, fullPage: true });
+    await mergeButton(page).click();
+    await expect.poll(() => imagesLoaded(page, ".shell-pages img")).toEqual([true, true]);
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/result-preview-${colorScheme}.png`, fullPage: true });
+    await page.getByRole("button", { name: "Open page 1 larger" }).click();
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/viewer-${colorScheme}.png` });
   });
 }

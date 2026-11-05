@@ -236,7 +236,27 @@
     "cancelled": "Cancelled.",
     "copied": "Copied.",
     "copyFailed": "Couldn't copy. Select the text and copy it yourself.",
-    "noscript": "This tool runs in your browser and needs JavaScript. Turn it on and reload the page."
+    "noscript": "This tool runs in your browser and needs JavaScript. Turn it on and reload the page.",
+    "limitsMin": "Choose {min} or more {accept}, up to {size} each.",
+    "fileOne": "1 file",
+    "fileMany": "{count} files",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "locked": "Has a password",
+    "unreadablePreview": "Couldn't preview this file",
+    "lockedAnnounce": "{name} has a password, so it can't be used until the password is removed.",
+    "previewHeading": "Preview",
+    "previewNote": "Check the pages before you download. Select a page to see it larger.",
+    "showMore": "Show more pages",
+    "showing": "Showing {shown} of {total} pages.",
+    "openPage": "Open page {page} larger",
+    "pageLabel": "Page {page}",
+    "pageOf": "Page {page} of {total}",
+    "previous": "Previous page",
+    "next": "Next page",
+    "close": "Close",
+    "viewerLabel": "Page preview",
+    "previewFailed": "The preview couldn't be shown, but your file is ready to download."
   },
   "toolPage": {
     "leadFiles": "Free, with no signup. Your files stay on your device.",
@@ -268,7 +288,7 @@
   },
   "search": {
     "label": "Search tools",
-    "placeholder": "Search tools, like merge PDF or ছবি",
+    "placeholder": "Search tools, like merge PDF",
     "open": "Search",
     "listLabel": "Matching tools",
     "one": "1 tool found.",
@@ -285,6 +305,10 @@
     "outputName": "merged.pdf",
     "summary": "Done. {count} PDFs merged into merged.pdf, with {pages} pages ({size}).",
     "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
-    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again."
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "arrangeHint": "The merged file follows this order, from top to bottom. Use the arrows to change it, or add more files."
+  },
+  "theme": {
+    "label": "Dark theme"
   }
 }

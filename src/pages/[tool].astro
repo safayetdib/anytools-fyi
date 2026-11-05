@@ -52,15 +52,13 @@ const updatedLabel = help
   <JsonLd slot="head" data={webApplicationSchema({ name: strings.name, description, path }, site)} />
   <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
   {help && <JsonLd slot="head" data={faqSchema(help.data.faq)} />}
-  <div class="container">
+  <div class="container page-top">
     <Breadcrumb items={crumbs} />
-    <div class="intro">
+    <div class="title-row">
       <ToolIcon tool={tool} />
-      <div>
-        <h1>{strings.name}</h1>
-        <p class="lead">{strings.description} {isText ? p.leadText : p.leadFiles}</p>
-      </div>
+      <h1>{strings.name}</h1>
     </div>
+    <p class="lead">{strings.description} {isText ? p.leadText : p.leadFiles}</p>
 
     {
       sizes.length > 0 && (
@@ -160,16 +158,16 @@ const updatedLabel = help
 </BaseLayout>
 
 <style>
-  .intro {
+  .title-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--space-md);
-    margin-top: var(--space-sm);
+    margin-top: var(--space-md);
   }
 
   .lead {
-    max-width: 40rem;
-    margin: var(--space-sm) 0 0;
+    max-width: 42rem;
+    margin: var(--space-md) 0 0;
     color: var(--color-text-muted);
     font-size: clamp(1rem, 0.95rem + 0.3vw, 1.1875rem);
   }
@@ -178,8 +176,8 @@ const updatedLabel = help
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-md);
+    gap: var(--space-sm) var(--space-md);
+    margin-top: var(--space-lg);
   }
 
   .sizes-title {
@@ -218,8 +216,8 @@ const updatedLabel = help
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: var(--space-lg);
-    padding: var(--space-xl) var(--space-md);
+    margin-top: var(--space-xl);
+    padding: var(--space-2xl) var(--space-lg);
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-card);
     background: var(--color-surface);
@@ -237,7 +235,7 @@ const updatedLabel = help
   }
 
   .trust {
-    margin: var(--space-md) 0 0;
+    margin: var(--space-lg) 0 0;
     font-weight: 600;
   }
 
@@ -250,23 +248,23 @@ const updatedLabel = help
   }
 
   .related {
-    margin-top: var(--space-2xl);
+    margin-top: var(--space-4xl);
   }
 
   .related h2 {
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--space-lg);
     font-size: 1.375rem;
   }
 
   .help {
     display: grid;
-    gap: var(--space-xl);
+    gap: var(--space-3xl);
     max-width: 48rem;
-    margin-top: var(--space-xl);
+    margin-top: var(--space-3xl);
   }
 
   .help h2 {
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--space-lg);
     font-size: 1.375rem;
   }
 
@@ -281,7 +279,7 @@ const updatedLabel = help
   .limits div {
     display: grid;
     gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-md) var(--space-lg);
   }
 
   .limits div + div {
@@ -299,7 +297,7 @@ const updatedLabel = help
 
   .steps {
     display: grid;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -309,8 +307,8 @@ const updatedLabel = help
   .steps li {
     display: grid;
     grid-template-columns: 2rem minmax(0, 1fr);
-    gap: var(--space-sm);
-    align-items: start;
+    gap: var(--space-md);
+    align-items: center;
     counter-increment: step;
   }
 
@@ -333,11 +331,11 @@ const updatedLabel = help
 
   .faq {
     display: grid;
-    gap: var(--space-md);
+    gap: var(--space-lg);
   }
 
   .faq h3 {
-    margin: 0 0 var(--space-xs);
+    margin: 0 0 var(--space-sm);
     font-size: 1.0625rem;
   }
 
@@ -347,7 +345,7 @@ const updatedLabel = help
   }
 
   .updated {
-    margin-top: var(--space-xl);
+    margin-top: var(--space-2xl);
     color: var(--color-text-muted);
     font-size: 0.875rem;
   }

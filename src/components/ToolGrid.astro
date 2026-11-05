@@ -24,7 +24,7 @@ const { tools, cardHeading } = Astro.props;
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
-    gap: var(--space-sm);
+    gap: 0.75rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -33,13 +33,14 @@ const { tools, cardHeading } = Astro.props;
   @media (min-width: 600px) {
     .grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--space-md);
+      gap: 1.25rem;
     }
   }
 
   @media (min-width: 900px) {
     .grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-lg);
     }
   }
 

@@ -29,8 +29,14 @@ const n = en.notFound;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-block: var(--space-xl);
+    gap: var(--space-md);
+    padding-block: var(--space-3xl) var(--space-2xl);
     text-align: center;
+  }
+
+  .intro h1,
+  .intro p {
+    margin: 0;
   }
 
   .intro p {
@@ -46,7 +52,7 @@ const n = en.notFound;
   }
 
   h2 {
-    margin: var(--space-lg) 0 var(--space-md);
+    margin: var(--space-2xl) 0 var(--space-lg);
     font-size: 1.375rem;
   }
 </style>

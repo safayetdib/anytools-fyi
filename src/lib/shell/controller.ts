@@ -1,13 +1,20 @@
 import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
 import { formatSize, matchesAccept } from "../files";
-import { ToolError, type ToolDefinition, type ToolOptions, type ToolOutput } from "./types";
+import { ToolError, type FilePreview, type ToolDefinition, type ToolOptions, type ToolOutput } from "./types";
 
 export type Screen = "select" | "working" | "running" | "result";
 
 export interface QueuedFile {
   id: string;
   file: File;
+  preview?: FilePreview;
+}
+
+// The total page count, once every file has been counted.
+export function totalPages(files: QueuedFile[]): number | null {
+  if (files.length === 0 || files.some((f) => f.preview?.pageCount === undefined)) return null;
+  return files.reduce((sum, f) => sum + (f.preview?.pageCount ?? 0), 0);
 }
 
 export interface ShellState {
@@ -115,6 +122,14 @@ export function createToolController(tool: ToolDefinition) {
       const files = [...state.files];
       [files[from], files[to]] = [files[to], files[from]];
       update({ files, announcement: fill(t.moved, { name: files[to].file.name, position: to + 1 }) });
+    },
+
+    setPreview(id: string, preview: FilePreview) {
+      const files = state.files.map((f) => (f.id === id ? { ...f, preview } : f));
+      const file = files.find((f) => f.id === id);
+      if (!file) return;
+      const announcement = preview.status === "locked" ? fill(t.lockedAnnounce, { name: file.file.name }) : "";
+      update({ files, announcement });
     },
 
     setText(text: string) {
