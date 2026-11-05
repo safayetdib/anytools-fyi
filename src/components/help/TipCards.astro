@@ -1,0 +1,64 @@
+---
+import type { HelpIconName } from "../../lib/help-icons";
+import HelpIcon from "./HelpIcon.astro";
+
+interface Props {
+  tips: { icon: HelpIconName; title: string; text: string }[];
+}
+
+const { tips } = Astro.props;
+---
+
+<ul class="tips">
+  {
+    tips.map((tip) => (
+      <li class="tip" data-testid="tip-card">
+        <span class="badge">
+          <HelpIcon name={tip.icon} size={22} />
+        </span>
+        <h3>{tip.title}</h3>
+        <p>{tip.text}</p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .tips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tip {
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-warning) 16%, var(--color-surface));
+    color: var(--color-warning);
+  }
+
+  h3 {
+    margin: var(--space-md) 0 var(--space-xs);
+    font-size: 1.0625rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+</style>

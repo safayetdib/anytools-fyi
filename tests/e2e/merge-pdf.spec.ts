@@ -28,10 +28,10 @@ test("merge pdf - page shows the working tool and its help text", async ({ page 
   await expect(page.getByRole("heading", { level: 1, name: "Merge PDF" })).toBeVisible();
   await expect(picker(page)).toBeAttached();
   await expect(page.getByText("This tool is being built")).toHaveCount(0);
-  for (const heading of ["How to merge PDF files", "Limits", "Questions"]) {
+  for (const heading of ["How to merge PDF files", "Limits", "How merging works", "Before you merge", "Why your files stay private", "Questions"]) {
     await expect(page.getByRole("heading", { level: 2, name: heading })).toBeVisible();
   }
-  await expect(page.getByRole("heading", { name: "Does this upload my files?" })).toBeVisible();
+  await expect(page.locator("summary", { hasText: "Does this upload my files?" })).toBeVisible();
   const types = await page.locator('script[type="application/ld+json"]').allTextContents();
   expect(types.map((text) => JSON.parse(text)["@type"])).toContain("FAQPage");
 });
@@ -187,6 +187,7 @@ test("merge pdf - previews the merged pages, with a larger view, before download
   await expect(viewer).toContainText("Page 2 of 3");
   await viewer.getByRole("button", { name: "Next page" }).click();
   await expect(viewer).toContainText("Page 3 of 3");
+  await expect(viewer.getByRole("button", { name: "Previous page" })).toBeFocused();
   await page.keyboard.press("ArrowLeft");
   await expect(viewer).toContainText("Page 2 of 3");
   await page.keyboard.press("Escape");
@@ -234,5 +235,71 @@ for (const colorScheme of ["light", "dark"] as const) {
     await page.getByRole("button", { name: "Open page 1 larger" }).click();
     expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
     await page.screenshot({ path: `${SCREENSHOT_DIR}/viewer-${colorScheme}.png` });
+  });
+}
+
+// --- Visual guidance ---
+
+test("merge pdf - guidance shows limits as cards and steps in order", async ({ page }) => {
+  await page.goto(PAGE);
+  await expect(page.getByTestId("limit-card")).toHaveCount(5);
+  await expect(page.getByTestId("limit-card").first()).toContainText("PDF files only");
+  const steps = page.getByTestId("step");
+  await expect(steps).toHaveCount(4);
+  await expect(steps.first()).toContainText("Select your PDFs");
+  await expect(page.getByTestId("tip-card")).toHaveCount(3);
+});
+
+test("merge pdf - the diagram shows how order changes the merged file", async ({ page }) => {
+  await page.goto(PAGE);
+  const diagram = page.getByRole("figure", { name: /merged/i }).first();
+  const result = diagram.getByTestId("result-page");
+  await expect(result).toHaveText(["1", "2", "1", "2", "3"]);
+  await expect(result.first()).toHaveAttribute("data-file", "a");
+  await diagram.getByRole("button", { name: "Swap the file order" }).click();
+  await expect(result.first()).toHaveAttribute("data-file", "b");
+  await expect(diagram.locator("figcaption")).toContainText("transcript.pdf comes first");
+  await diagram.getByRole("button", { name: "Swap the file order" }).click();
+  await expect(result.first()).toHaveAttribute("data-file", "a");
+});
+
+test("merge pdf - the privacy diagram compares uploading with staying on the device", async ({ page }) => {
+  await page.goto(PAGE);
+  const privacy = page.getByRole("figure", { name: /upload/i });
+  await expect(privacy).toContainText("Most online tools");
+  await expect(privacy).toContainText("AnyTools");
+  await expect(privacy).toContainText("Nothing is sent");
+});
+
+test("merge pdf - questions open and close, and answers stay in the page", async ({ page }) => {
+  await page.goto(PAGE);
+  const question = page.locator("summary", { hasText: "Does it work offline?" });
+  const answer = page.getByText("Yes, once your files are chosen.");
+  await expect(answer).toBeAttached();
+  await expect(answer).toBeHidden();
+  await question.click();
+  await expect(answer).toBeVisible();
+  await question.focus();
+  await page.keyboard.press("Enter");
+  await expect(answer).toBeHidden();
+});
+
+for (const width of [375, 768, 1366]) {
+  test(`merge pdf - guidance fits ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(PAGE);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.locator(".help").screenshot({ path: `${SCREENSHOT_DIR}/guidance-${width}.png` });
+  });
+}
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`merge pdf - guidance with an open answer has no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.goto(PAGE);
+    await page.locator("summary").first().click();
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+    await page.locator(".help").screenshot({ path: `${SCREENSHOT_DIR}/guidance-${colorScheme}.png` });
   });
 }

@@ -3,6 +3,11 @@ import Breadcrumb from "../components/Breadcrumb.astro";
 import JsonLd from "../components/JsonLd.astro";
 import ToolGrid from "../components/ToolGrid.astro";
 import ToolIcon from "../components/ToolIcon.astro";
+import Faq from "../components/help/Faq.astro";
+import LimitCards from "../components/help/LimitCards.astro";
+import PrivacyDiagram from "../components/help/PrivacyDiagram.astro";
+import Steps from "../components/help/Steps.astro";
+import TipCards from "../components/help/TipCards.astro";
 import en from "../i18n/en.json";
 import { fill } from "../i18n/format";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -12,6 +17,7 @@ import { breadcrumbSchema, faqSchema, webApplicationSchema } from "../lib/schema
 import { TOOLS, hubFor, isHubLive, toolBySlug, variantsOf, type Tool } from "../lib/tools";
 
 const toolModules = import.meta.glob<AstroComponentFactory>("../tools/*/Tool.astro", { eager: true, import: "default" });
+const diagrams = import.meta.glob<AstroComponentFactory>("../tools/*/Diagram.astro", { eager: true, import: "default" });
 
 export function getStaticPaths() {
   return TOOLS.map((tool) => ({ params: { tool: tool.slug }, props: { tool } }));
@@ -41,6 +47,7 @@ const related = tool.related.map((slug) => toolBySlug(slug) as Tool);
 const title = fill(isText ? p.titleText : p.titleFiles, { name: strings.name });
 const description = `${strings.description} ${p.metaSuffix}`;
 const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`];
+const Diagram = diagrams[`../tools/${tool.slug}/Diagram.astro`];
 const help = await getEntry("tools", tool.slug);
 const Explainer = help ? (await render(help)).Content : undefined;
 const updatedLabel = help
@@ -104,39 +111,39 @@ const updatedLabel = help
         <div class="help">
           <section aria-labelledby="limits-heading">
             <h2 id="limits-heading">{p.limits}</h2>
-            <dl class="limits">
-              {help.data.limits.map((limit) => (
-                <div>
-                  <dt>{limit.label}</dt>
-                  <dd>{limit.value}</dd>
-                </div>
-              ))}
-            </dl>
+            <LimitCards limits={help.data.limits} />
           </section>
 
           <section aria-labelledby="steps-heading">
             <h2 id="steps-heading">{help.data.howToTitle}</h2>
-            <ol class="steps">
-              {help.data.steps.map((step) => (
-                <li>{step}</li>
-              ))}
-            </ol>
+            <Steps steps={help.data.steps} />
           </section>
 
-          <div class="prose explainer">
-            <Explainer />
-          </div>
+          <section aria-labelledby="explainer-heading" class="explainer">
+            <h2 id="explainer-heading">{help.data.diagramTitle ?? strings.name}</h2>
+            <div class="prose">
+              <Explainer />
+            </div>
+            {Diagram && <Diagram />}
+          </section>
+
+          {help.data.tips.length > 0 && (
+            <section aria-labelledby="tips-heading">
+              <h2 id="tips-heading">{help.data.tipsTitle}</h2>
+              <TipCards tips={help.data.tips} />
+            </section>
+          )}
+
+          {!isText && (
+            <section aria-labelledby="privacy-heading">
+              <h2 id="privacy-heading">{en.help.privacyTitle}</h2>
+              <PrivacyDiagram />
+            </section>
+          )}
 
           <section aria-labelledby="faq-heading">
             <h2 id="faq-heading">{p.questions}</h2>
-            <div class="faq">
-              {help.data.faq.map((item) => (
-                <div>
-                  <h3>{item.question}</h3>
-                  <p>{item.answer}</p>
-                </div>
-              ))}
-            </div>
+            <Faq faq={help.data.faq} />
           </section>
         </div>
       )
@@ -258,103 +265,24 @@ const updatedLabel = help
 
   .help {
     display: grid;
-    gap: var(--space-3xl);
-    max-width: 48rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4xl);
     margin-top: var(--space-3xl);
   }
 
   .help h2 {
     margin: 0 0 var(--space-lg);
-    font-size: 1.375rem;
+    font-size: clamp(1.375rem, 1.25rem + 0.5vw, 1.625rem);
   }
 
-  .limits {
-    display: grid;
-    margin: 0;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-card);
-    background: var(--color-surface);
-  }
-
-  .limits div {
-    display: grid;
-    gap: var(--space-xs);
-    padding: var(--space-md) var(--space-lg);
-  }
-
-  .limits div + div {
-    border-top: 1px solid var(--color-border-subtle);
-  }
-
-  .limits dt {
-    font-weight: 700;
-  }
-
-  .limits dd {
-    margin: 0;
-    color: var(--color-text-muted);
-  }
-
-  .steps {
-    display: grid;
-    gap: var(--space-md);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: step;
-  }
-
-  .steps li {
-    display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr);
-    gap: var(--space-md);
-    align-items: center;
-    counter-increment: step;
-  }
-
-  .steps li::before {
-    content: counter(step);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: var(--color-accent);
-    color: var(--color-on-accent);
-    font-weight: 700;
-  }
-
-  .explainer :global(h2) {
-    margin-top: 0;
-  }
-
-  .faq {
-    display: grid;
-    gap: var(--space-lg);
-  }
-
-  .faq h3 {
-    margin: 0 0 var(--space-sm);
-    font-size: 1.0625rem;
-  }
-
-  .faq p {
-    margin: 0;
-    color: var(--color-text-muted);
+  .explainer .prose {
+    margin-bottom: var(--space-lg);
   }
 
   .updated {
     margin-top: var(--space-2xl);
     color: var(--color-text-muted);
     font-size: 0.875rem;
-  }
-
-  @media (min-width: 600px) {
-    .limits div {
-      grid-template-columns: 12rem minmax(0, 1fr);
-      gap: var(--space-md);
-    }
   }
 
   @media (min-width: 900px) {

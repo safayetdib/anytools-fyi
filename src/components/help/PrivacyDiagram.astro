@@ -1,0 +1,219 @@
+---
+import en from "../../i18n/en.json";
+import HelpIcon from "./HelpIcon.astro";
+
+const h = en.help;
+---
+
+<figure class="privacy" aria-labelledby="privacy-caption">
+  <div class="panels">
+    <div class="panel">
+      <p class="panel-title">{h.privacyOthers}</p>
+      <div class="flow">
+        <div class="node">
+          <span class="node-icon"><HelpIcon name="device" /></span>
+          <span>{h.yourDevice}</span>
+        </div>
+        <div class="arrow warn">
+          <span>{h.upload}</span>
+          <svg width="48" height="12" viewBox="0 0 48 12" aria-hidden="true"><path d="M0 6h44m-6-5 6 5-6 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div class="node">
+          <span class="node-icon warn"><HelpIcon name="cloud" /></span>
+          <span>{h.theirServer}</span>
+        </div>
+      </div>
+      <p class="note">{h.othersNote}</p>
+    </div>
+
+    <div class="panel ours">
+      <p class="panel-title">{h.privacyOurs}</p>
+      <div class="device-box">
+        <span class="box-label"><HelpIcon name="device" size={16} /> {h.yourDevice}</span>
+        <div class="flow">
+          <div class="node">
+            <span class="node-icon"><HelpIcon name="file" /></span>
+            <span>{h.yourFile}</span>
+          </div>
+          <div class="arrow">
+            <svg width="32" height="12" viewBox="0 0 32 12" aria-hidden="true"><path d="M0 6h28m-6-5 6 5-6 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div class="node">
+            <span class="node-icon spin"><HelpIcon name="gear" /></span>
+            <span>{h.yourBrowser}</span>
+          </div>
+          <div class="arrow">
+            <svg width="32" height="12" viewBox="0 0 32 12" aria-hidden="true"><path d="M0 6h28m-6-5 6 5-6 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <div class="node">
+            <span class="node-icon"><HelpIcon name="download" /></span>
+            <span>{h.result}</span>
+          </div>
+        </div>
+      </div>
+      <p class="note ok"><HelpIcon name="shield" size={18} /> {h.oursNote}</p>
+    </div>
+  </div>
+  <figcaption id="privacy-caption">
+    {h.privacyCaption}
+    <a href="/how-we-protect-your-privacy/">{h.privacyLink}</a>
+  </figcaption>
+</figure>
+
+<style>
+  .privacy {
+    margin: 0;
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-md);
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .panel.ours {
+    border-color: var(--color-accent);
+  }
+
+  .panel-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .flow {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    min-width: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .node-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+  }
+
+  .node-icon.warn,
+  .arrow.warn {
+    color: var(--color-danger);
+  }
+
+  .node-icon.warn {
+    background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
+  }
+
+  .arrow svg {
+    width: 1.5rem;
+  }
+
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .device-box {
+    position: relative;
+    padding: var(--space-xl) var(--space-sm) var(--space-md);
+    border: 2px dashed var(--color-accent);
+    border-radius: var(--radius-card);
+  }
+
+  .box-label {
+    position: absolute;
+    top: var(--space-sm);
+    left: var(--space-md);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+  }
+
+  .note.ok {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  @media (min-width: 480px) {
+    .panel {
+      padding: var(--space-lg);
+    }
+
+    .node-icon {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .arrow svg {
+      width: auto;
+    }
+  }
+
+  figcaption {
+    max-width: 44rem;
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  figcaption a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-left: var(--space-xs);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .spin :global(svg) {
+      animation: turn 6s linear 1;
+    }
+
+    @keyframes turn {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  }
+</style>

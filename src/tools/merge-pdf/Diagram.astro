@@ -1,0 +1,240 @@
+---
+import en from "../../i18n/en.json";
+import { fill } from "../../i18n/format";
+
+const d = en.mergePdf.diagram;
+const files = [
+  { id: "a", name: d.fileA, pages: 2 },
+  { id: "b", name: d.fileB, pages: 3 },
+];
+---
+
+<figure class="merge-diagram" aria-labelledby="merge-diagram-caption" data-merge-diagram>
+  <div class="stage">
+    <div class="sources" data-sources>
+      {
+        files.map((file) => (
+          <div class="doc" data-file={file.id}>
+            <span class="doc-name">{file.name}</span>
+            <span class="doc-meta">{fill(d.pages, { count: file.pages })}</span>
+            <span class="pages">
+              {Array.from({ length: file.pages }, (_, i) => (
+                <span class="page" data-file={file.id}>
+                  {i + 1}
+                </span>
+              ))}
+            </span>
+          </div>
+        ))
+      }
+    </div>
+    <div class="joined">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 5h5l5 7-5 7H4"></path><path d="M14 12h6"></path><path d="m17 9 3 3-3 3"></path>
+      </svg>
+      <span>{d.joined}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.output}</span>
+      <span class="pages" data-result>
+        {
+          files.flatMap((file) =>
+            Array.from({ length: file.pages }, (_, i) => (
+              <span class="page" data-file={file.id} data-testid="result-page">
+                {i + 1}
+              </span>
+            )),
+          )
+        }
+      </span>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="swap" type="button" data-swap>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m7 4-3 3 3 3"></path><path d="M4 7h11"></path><path d="m17 14 3 3-3 3"></path><path d="M20 17H9"></path>
+      </svg>
+      {d.swap}
+    </button>
+  </div>
+  <figcaption id="merge-diagram-caption" aria-live="polite" data-caption-a={d.captionA} data-caption-b={d.captionB}>
+    {d.captionA}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-merge-diagram]");
+  const sources = figure?.querySelector<HTMLElement>("[data-sources]");
+  const result = figure?.querySelector<HTMLElement>("[data-result]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+  const swap = figure?.querySelector<HTMLButtonElement>("[data-swap]");
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // Moves each element from its old spot to its new one, so the order change is easy to follow.
+  function animateFrom(elements: HTMLElement[], before: Map<HTMLElement, DOMRect>) {
+    if (reduceMotion.matches) return;
+    for (const element of elements) {
+      const old = before.get(element);
+      if (!old) continue;
+      const now = element.getBoundingClientRect();
+      const dx = old.left - now.left;
+      const dy = old.top - now.top;
+      if (dx || dy) {
+        element.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], {
+          duration: 320,
+          easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        });
+      }
+    }
+  }
+
+  if (figure && sources && result && caption && swap) {
+    swap.addEventListener("click", () => {
+      const moving = [
+        ...Array.from(sources.children),
+        ...Array.from(result.children),
+      ] as HTMLElement[];
+      const before = new Map(moving.map((element) => [element, element.getBoundingClientRect()]));
+      const first = (result.firstElementChild as HTMLElement).dataset.file === "a" ? "b" : "a";
+      const byFirst = (a: Element, b: Element) =>
+        Number((b as HTMLElement).dataset.file === first) - Number((a as HTMLElement).dataset.file === first);
+      sources.append(...Array.from(sources.children).sort(byFirst));
+      result.append(...Array.from(result.children).sort(byFirst));
+      caption.textContent = (first === "a" ? caption.dataset.captionA : caption.dataset.captionB) ?? "";
+      animateFrom(moving, before);
+    });
+  }
+</script>
+
+<style>
+  .merge-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .sources {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--space-xs);
+  }
+
+  .page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2.6rem;
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .page[data-file="a"] {
+    background: var(--color-pdf);
+  }
+
+  .page[data-file="b"] {
+    background: var(--color-image);
+  }
+
+  .joined {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .joined svg {
+    transform: rotate(90deg);
+  }
+
+  .result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .swap {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .swap:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+
+    .joined {
+      max-width: 7rem;
+    }
+
+    .joined svg {
+      transform: none;
+    }
+  }
+</style>

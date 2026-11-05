@@ -2,21 +2,46 @@
 updated: "2026-11-06"
 howToTitle: "How to merge PDF files"
 steps:
-  - "Select your PDF files, or drop them onto the page."
-  - "Put them in order with the up and down buttons. Add more files if you need them."
-  - "Select Merge PDF."
-  - "Download merged.pdf. Your original files aren't changed."
+  - icon: select
+    title: "Select your PDFs"
+    text: "Choose the files, or drop them onto the page."
+  - icon: arrange
+    title: "Put them in order"
+    text: "Use the up and down arrows. Add more files if you need them."
+  - icon: merge
+    title: "Merge"
+    text: "Select Merge PDF. It runs in your browser."
+  - icon: download
+    title: "Check and download"
+    text: "Look over the pages, then download merged.pdf."
 limits:
-  - label: "Files"
+  - icon: file
+    label: "Files"
     value: "PDF files only"
-  - label: "Size"
+  - icon: size
+    label: "Size"
     value: "Up to 100 MB per file. Very large files may fail on phones with little memory."
-  - label: "Number of files"
+  - icon: stack
+    label: "Number of files"
     value: "2 or more, with no set maximum"
-  - label: "Password-protected PDFs"
+  - icon: lock
+    label: "Password-protected PDFs"
     value: "Not supported. Remove the password first."
-  - label: "Browsers"
-    value: "Recent versions of Chrome, Edge, Firefox and Safari, on phones and computers"
+  - icon: browser
+    label: "Browsers"
+    value: "Recent Chrome, Edge, Firefox and Safari, on phones and computers"
+diagramTitle: "How merging works"
+tipsTitle: "Before you merge"
+tips:
+  - icon: order
+    title: "Order matters"
+    text: "The merged file follows your list from top to bottom. Arrange it until it matches the order you want."
+  - icon: size
+    title: "Size adds up"
+    text: "The merged file is about as large as all your files together. If an upload limit is strict, compress scanned images first."
+  - icon: check
+    title: "Check the result"
+    text: "Look through the preview before you send it, especially if your originals had bookmarks or fillable fields."
 faq:
   - question: "Does this upload my files?"
     answer: "No. Your PDFs are read and joined inside your browser, and the result is saved straight to your device. You can check this in your browser's Network tab: no file is uploaded."
@@ -30,16 +55,4 @@ faq:
     answer: "The pages, text and images are kept exactly. Bookmarks, and some links and form fields, may not carry over into the merged file."
 ---
 
-## When to merge PDFs
-
-Merging is useful when a form or email asks for a single file: certificates for a job application, scanned pages of one document, or receipts for an expense claim. One file is also easier to share and print in the right order.
-
-## What to check before you merge
-
-- **Order matters.** The merged file follows the list from top to bottom. Use the up and down buttons until it matches the order you want.
-- **Size adds up.** The merged file is about as large as all your files together. If an upload limit is strict, compress scanned images before turning them into PDFs.
-- **Check the result.** Open merged.pdf before you send it, especially if your originals had bookmarks or fillable fields.
-
-## Why your files stay private
-
-Many merge sites upload your files to their servers to do the work. Here, the merging happens in your browser using your device's memory, so your documents never leave it. That matters for ID cards, bank statements and contracts.
+Merging joins the pages of several PDFs into one file, in the order you choose. It's useful when a form or email asks for a single file: certificates for a job application, scanned pages of one document, or receipts for an expense claim. One file is also easier to share and print in the right order.

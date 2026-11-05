@@ -300,6 +300,9 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     viewerTitle.textContent = fill(t.pageOf, { page: pageNumber, total: preview.pageCount });
     viewerPrev.disabled = pageNumber <= 1;
     viewerNext.disabled = pageNumber >= preview.pageCount;
+    // A disabled button drops keyboard focus, so hand it to the button that still works.
+    if (viewerPrev.disabled && document.activeElement === viewerPrev) focus(viewerNext);
+    if (viewerNext.disabled && document.activeElement === viewerNext) focus(viewerPrev);
     const width = Math.min(1400, Math.round(window.innerWidth * Math.min(window.devicePixelRatio || 1, 2)));
     try {
       const { blob } = await preview.renderPage(pageNumber, width);
@@ -464,7 +467,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   viewerPrev.addEventListener("click", () => void showViewerPage(viewerPage - 1));
   viewerNext.addEventListener("click", () => void showViewerPage(viewerPage + 1));
   el(root, "viewer-close").addEventListener("click", () => viewer.close());
-  viewer.addEventListener("keydown", (event) => {
+  document.addEventListener("keydown", (event) => {
+    if (!viewer.open) return;
     if (event.key === "ArrowLeft" && viewerPage > 1) void showViewerPage(viewerPage - 1);
     if (event.key === "ArrowRight" && viewerPage < (outputPreview?.pageCount ?? 0)) void showViewerPage(viewerPage + 1);
   });

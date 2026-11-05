@@ -1,0 +1,90 @@
+---
+interface Props {
+  faq: { question: string; answer: string }[];
+}
+
+const { faq } = Astro.props;
+---
+
+<div class="faq">
+  {
+    faq.map((item) => (
+      <details>
+        <summary>
+          <span>{item.question}</span>
+          <svg class="toggle" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M12 5v14" class="vertical" />
+            <path d="M5 12h14" />
+          </svg>
+        </summary>
+        <p>{item.answer}</p>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  details + details {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    min-height: 44px;
+    padding: var(--space-md) var(--space-lg);
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .toggle {
+    flex-shrink: 0;
+    color: var(--color-accent);
+  }
+
+  .vertical {
+    transition: transform var(--dur-base) var(--ease-out);
+    transform-origin: center;
+  }
+
+  details[open] .vertical {
+    transform: rotate(90deg);
+  }
+
+  details[open] summary {
+    color: var(--color-accent);
+  }
+
+  p {
+    margin: 0;
+    padding: 0 var(--space-lg) var(--space-lg);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    details[open] p {
+      animation: reveal var(--dur-base) var(--ease-out);
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+    }
+  }
+</style>

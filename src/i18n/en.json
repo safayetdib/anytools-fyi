@@ -306,9 +306,34 @@
     "summary": "Done. {count} PDFs merged into merged.pdf, with {pages} pages ({size}).",
     "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
     "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
-    "arrangeHint": "The merged file follows this order, from top to bottom. Use the arrows to change it, or add more files."
+    "arrangeHint": "The merged file follows this order, from top to bottom. Use the arrows to change it, or add more files.",
+    "diagram": {
+      "fileA": "certificate.pdf",
+      "fileB": "transcript.pdf",
+      "output": "merged.pdf",
+      "joined": "Joined in your browser",
+      "swap": "Swap the file order",
+      "captionA": "certificate.pdf comes first, so its pages start merged.pdf. Swap the order to see the result change.",
+      "captionB": "transcript.pdf comes first, so its pages start merged.pdf. Swap again to put certificate.pdf back on top.",
+      "pages": "{count} pages"
+    }
   },
   "theme": {
     "label": "Dark theme"
+  },
+  "help": {
+    "privacyTitle": "Why your files stay private",
+    "privacyOthers": "Most online tools",
+    "privacyOurs": "AnyTools",
+    "yourDevice": "Your device",
+    "theirServer": "Their server",
+    "upload": "Upload",
+    "yourBrowser": "Your browser",
+    "yourFile": "Your file",
+    "result": "Result",
+    "othersNote": "Your file is copied to a computer you don't control.",
+    "oursNote": "Nothing is sent to a server.",
+    "privacyCaption": "Most online tools upload your file to their server to do the work. AnyTools does the work inside your browser, so your file never leaves your device.",
+    "privacyLink": "How to check this yourself"
   }
 }

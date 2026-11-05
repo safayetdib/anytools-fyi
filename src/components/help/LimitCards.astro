@@ -1,0 +1,71 @@
+---
+import type { HelpIconName } from "../../lib/help-icons";
+import HelpIcon from "./HelpIcon.astro";
+
+interface Props {
+  limits: { icon: HelpIconName; label: string; value: string }[];
+}
+
+const { limits } = Astro.props;
+---
+
+<ul class="limits">
+  {
+    limits.map((limit) => (
+      <li class="limit" data-testid="limit-card">
+        <span class="badge">
+          <HelpIcon name={limit.icon} size={20} />
+        </span>
+        <div>
+          <p class="label">{limit.label}</p>
+          <p class="value">{limit.value}</p>
+        </div>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .limits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .limit {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .badge {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+  }
+
+  .label {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .value {
+    margin: var(--space-xs) 0 0;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+</style>

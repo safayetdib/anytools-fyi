@@ -1,0 +1,137 @@
+---
+import type { HelpIconName } from "../../lib/help-icons";
+import HelpIcon from "./HelpIcon.astro";
+
+interface Props {
+  steps: { icon: HelpIconName; title: string; text: string }[];
+}
+
+const { steps } = Astro.props;
+---
+
+<ol class="steps" style={`--count: ${steps.length}`}>
+  {
+    steps.map((step, index) => (
+      <li class="step" data-testid="step">
+        <div class="marker">
+          <span class="number" aria-hidden="true">
+            {index + 1}
+          </span>
+        </div>
+        <div class="card">
+          <span class="icon">
+            <HelpIcon name={step.icon} />
+          </span>
+          <h3>{step.title}</h3>
+          <p>{step.text}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .steps {
+    display: grid;
+    gap: var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: var(--space-md);
+  }
+
+  .marker {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* A line from each number down to the next, so the steps read as one path. */
+  .step:not(:last-child) .marker::after {
+    content: "";
+    position: absolute;
+    top: 2.5rem;
+    bottom: calc(var(--space-md) * -1);
+    left: 50%;
+    width: 2px;
+    background: var(--color-border-subtle);
+    transform: translateX(-50%);
+  }
+
+  .number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
+  }
+
+  .card {
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+
+  .icon {
+    display: flex;
+    color: var(--color-accent);
+  }
+
+  h3 {
+    margin: var(--space-md) 0 var(--space-xs);
+    font-size: 1.0625rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Wide screens: numbers along the top, joined by one line, with a card under each. */
+  @media (min-width: 900px) {
+    .steps {
+      grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .step {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+    }
+
+    .marker {
+      justify-content: flex-start;
+    }
+
+    .step:not(:last-child) .marker::after {
+      top: 50%;
+      right: calc(var(--space-lg) * -1);
+      bottom: auto;
+      left: 2.5rem;
+      width: auto;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+  }
+</style>
