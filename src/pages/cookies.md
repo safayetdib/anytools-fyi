@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/InfoLayout.astro
 title: "Cookies"
-description: "How AnyTools.fyi uses cookies."
+description: "How AnyTools uses cookies and browser storage, what each one is for, and how you can clear them at any time."
 draft: true
 updated: "2026-11-06"
 ---

@@ -22,12 +22,12 @@ test("navbar - desktop shows quick links and an All tools menu", async ({ page }
   await page.screenshot({ path: `${SCREENSHOT_DIR}/menu-1366.png` });
 });
 
-test("navbar - phones get a Menu button instead of quick links", async ({ page }) => {
+test("navbar - phones open the menu from the Menu tab instead of quick links", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
   await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Merge PDF" })).toBeHidden();
-  await expect(menuButton(page)).toHaveText(/Menu/);
-  await menuButton(page).click();
+  await expect(menuButton(page)).toBeHidden();
+  await page.getByRole("navigation", { name: "Quick links" }).getByRole("button", { name: "Menu" }).click();
   await expect(panel(page).getByRole("link", { name: "Word counter" })).toBeVisible();
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${SCREENSHOT_DIR}/menu-375.png` });
@@ -179,11 +179,13 @@ test("theme - the switch changes the theme and remembers it", async ({ page }) =
   expect(violations.map((v) => v.id)).toEqual([]);
 });
 
-test("theme - phones find the switch in the menu", async ({ page }) => {
+test("theme - phones find the switch at the top right", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
-  await menuButton(page).click();
-  await panel(page).getByRole("button", { name: "Dark theme" }).click();
+  const toggle = page.getByRole("banner").getByRole("button", { name: "Dark theme" });
+  const box = await toggle.boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeGreaterThan(375 - 40);
+  await toggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", /light|dark/);
 });
 

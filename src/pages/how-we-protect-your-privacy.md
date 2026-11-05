@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/InfoLayout.astro
 title: "How we protect your privacy"
-description: "How AnyTools.fyi tools work without uploading your files, and how you can check it yourself."
+description: "How our browser-based tools work without uploading your files, and how you can check it yourself."
 updated: "2026-11-06"
 ---
 

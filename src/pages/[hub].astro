@@ -6,6 +6,7 @@ import ToolGrid from "../components/ToolGrid.astro";
 import en from "../i18n/en.json";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { breadcrumbSchema, collectionSchema } from "../lib/schema";
+import { isHubIndexable } from "../lib/seo";
 import { liveHubs, toolsForHub, type Hub } from "../lib/tools";
 
 export function getStaticPaths() {
@@ -31,7 +32,7 @@ const listed = tools.map((tool) => ({
 }));
 ---
 
-<BaseLayout title={strings.title} description={strings.description}>
+<BaseLayout title={strings.title} description={strings.description} noindex={!isHubIndexable(hub)}>
   <JsonLd
     slot="head"
     data={collectionSchema({ name: strings.name, description: strings.description, path }, listed, site)}

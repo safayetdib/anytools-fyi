@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/InfoLayout.astro
 title: "Accessibility"
-description: "Our accessibility goals for AnyTools.fyi, and how to report a problem."
+description: "Our accessibility goals for AnyTools, how we test with keyboards and screen readers, and how to report a problem."
 updated: "2026-11-06"
 ---
 

@@ -102,3 +102,11 @@ for (const colorScheme of ["light", "dark"] as const) {
     await page.screenshot({ path: `${SCREENSHOT_DIR}/results-${colorScheme}.png` });
   });
 }
+
+test("search - the homepage has one search box, not a second in the header", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("banner").getByRole("combobox")).toHaveCount(0);
+  await expect(page.getByRole("banner").getByRole("button", { name: "Search" })).toHaveCount(0);
+  await page.keyboard.press("/");
+  await expect(heroSearch(page)).toBeFocused();
+});

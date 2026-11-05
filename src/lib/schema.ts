@@ -10,10 +10,12 @@ export function websiteSchema(site: URL, description: string) {
   return {
     "@context": CONTEXT,
     "@type": "WebSite",
-    name: en.site.name,
+    name: en.site.brand,
+    alternateName: en.site.name,
     url: absolute("/", site),
     description,
     inLanguage: "en",
+    publisher: { "@type": "Organization", name: en.site.brand, url: absolute("/", site) },
   };
 }
 
@@ -21,9 +23,10 @@ export function organizationSchema(site: URL) {
   return {
     "@context": CONTEXT,
     "@type": "Organization",
-    name: en.site.name,
+    name: en.site.brand,
+    alternateName: en.site.name,
     url: absolute("/", site),
-    logo: absolute("/favicon.svg", site),
+    logo: { "@type": "ImageObject", url: absolute("/icon-512.png", site), width: 512, height: 512 },
   };
 }
 
@@ -64,7 +67,10 @@ export function collectionSchema(
   };
 }
 
-export function webApplicationSchema(tool: { name: string; description: string; path: string }, site: URL) {
+export function webApplicationSchema(
+  tool: { name: string; description: string; path: string; image?: string; features?: string[]; updated?: string },
+  site: URL,
+) {
   return {
     "@context": CONTEXT,
     "@type": "WebApplication",
@@ -73,9 +79,31 @@ export function webApplicationSchema(tool: { name: string; description: string; 
     description: tool.description,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
-    browserRequirements: "Requires JavaScript",
+    browserRequirements: "Requires JavaScript. Works in current versions of Chrome, Edge, Firefox and Safari.",
     inLanguage: "en",
+    isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    publisher: { "@type": "Organization", name: en.site.brand, url: absolute("/", site) },
+    ...(tool.image && { image: absolute(tool.image, site) }),
+    ...(tool.features?.length && { featureList: tool.features }),
+    ...(tool.updated && { dateModified: tool.updated }),
+  };
+}
+
+export function howToSchema(name: string, steps: { title: string; text: string }[], site: URL, image?: string) {
+  return {
+    "@context": CONTEXT,
+    "@type": "HowTo",
+    name,
+    totalTime: "PT1M",
+    estimatedCost: { "@type": "MonetaryAmount", currency: "USD", value: "0" },
+    ...(image && { image: absolute(image, site) }),
+    step: steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.title,
+      text: step.text,
+    })),
   };
 }
 

@@ -7,8 +7,9 @@ const PAGES = [
   { name: "pdf-hub", path: "/pdf-tools/", schema: "CollectionPage" },
   { name: "all-tools", path: "/tools/", schema: "CollectionPage" },
   { name: "tool", path: "/merge-pdf/", schema: "WebApplication" },
-  { name: "text-tool", path: "/word-counter/", schema: "WebApplication" },
-  { name: "variant", path: "/compress-image-to-20kb/", schema: "WebApplication" },
+  // Coming-soon tools carry only their breadcrumb until they work.
+  { name: "text-tool", path: "/word-counter/", schema: "BreadcrumbList" },
+  { name: "variant", path: "/compress-image-to-20kb/", schema: "BreadcrumbList" },
 ];
 
 async function jsonLdTypes(page: Page) {
@@ -20,7 +21,7 @@ async function jsonLdTypes(page: Page) {
 
 test("homepage - lists live tools with the most used first", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Everyday tools for PDFs, images and Bangla" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Free tools that get everyday jobs done in seconds" })).toBeVisible();
   const cards = page.getByTestId("tool-card");
   await expect(cards).toHaveCount(19);
   await expect(cards.first()).toHaveAttribute("href", "/merge-pdf/");

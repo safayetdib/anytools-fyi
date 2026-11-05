@@ -45,14 +45,53 @@ test("mobile - a tab bar sits at the bottom of every page", async ({ page }) => 
 });
 
 test("mobile - the Search tab opens search", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/about/");
   await tabs(page).getByRole("button", { name: "Search" }).click();
   await expect(page.getByRole("banner").getByRole("combobox")).toBeFocused();
 });
 
-test("mobile - the Dark theme tab switches the theme", async ({ page }) => {
+test("mobile - on the homepage the Search tab goes to the page's search box", async ({ page }) => {
   await page.goto("/");
-  await tabs(page).getByRole("button", { name: "Dark theme" }).click();
+  await tabs(page).getByRole("button", { name: "Search" }).click();
+  await expect(page.locator("#hero-search")).toBeFocused();
+});
+
+test("mobile - the Menu tab opens a drawer from the right", async ({ page }) => {
+  await page.goto("/about/");
+  const tab = tabs(page).getByRole("button", { name: "Menu" });
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-expanded", "true");
+  const close = page.getByRole("button", { name: "Close menu" });
+  await expect(close).toBeFocused();
+  const drawer = page.locator("#site-menu");
+  // The drawer slides in, so its place is read once it has settled.
+  await expect.poll(async () => {
+    const box = await drawer.boundingBox();
+    return [Math.round((box?.x ?? 0) + (box?.width ?? 0)), box?.y, box?.height];
+  }).toEqual([375, 0, 812]);
+  await expect(drawer.getByRole("link", { name: "Merge PDF" })).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/drawer.png` });
+  await close.click();
+  await expect(drawer).toBeHidden();
+  await expect(tab).toBeFocused();
+  await expect(tab).toHaveAttribute("aria-expanded", "false");
+});
+
+test("mobile - the drawer closes with Escape or a tap outside it", async ({ page }) => {
+  await page.goto("/about/");
+  await tabs(page).getByRole("button", { name: "Menu" }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#site-menu")).toBeHidden();
+  await tabs(page).getByRole("button", { name: "Menu" }).click();
+  await expect(page.locator("#site-menu")).toBeVisible();
+  await page.mouse.click(20, 400);
+  await expect(page.locator("#site-menu")).toBeHidden();
+});
+
+test("mobile - the top bar holds the logo and the theme switch, with no Menu button", async ({ page }) => {
+  await page.goto("/about/");
+  await expect(page.getByRole("banner").locator("summary")).toBeHidden();
+  await page.getByRole("banner").getByRole("button", { name: "Dark theme" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
 

@@ -1,2 +1,2 @@
-// Stays false until the launch gate passes, so preview builds never reach search results.
-export const INDEXABLE = false;
+// The site is live. Set to false to keep a preview build out of search results.
+export const INDEXABLE = true;

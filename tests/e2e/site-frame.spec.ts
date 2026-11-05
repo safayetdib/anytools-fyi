@@ -14,10 +14,10 @@ test("site frame - has landmarks, one h1 and a contact link", async ({ page }) =
   await expect(page.getByRole("contentinfo").getByRole("link", { name: "Contact" })).toBeVisible();
 });
 
-test("site frame - metadata stays private and allows pinch zoom", async ({ page }) => {
+test("site frame - the home page is indexable and allows pinch zoom", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /^index, follow/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://anytools.fyi/");
   await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
   const viewport = await page.locator('meta[name="viewport"]').getAttribute("content");
@@ -65,7 +65,7 @@ for (const width of [320, 360, 640, 900, 1440]) {
 test("site frame - nav and footer links are at least 44px tall on phones", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
-  const links = page.locator("header a:visible, header summary, footer a");
+  const links = page.locator("header a:visible, header summary:visible, header button:visible, footer a");
   const count = await links.count();
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {
@@ -111,20 +111,31 @@ test("site frame - logo stays still with reduced motion", async ({ browser }) =>
   await context.close();
 });
 
-test("site frame - logo and menu share one row on a small phone", async ({ page }) => {
+test("site frame - logo and theme switch share one row on a small phone", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto("/");
   const logo = await page.locator(".header .logo").boundingBox();
-  const menu = await page.locator(".header summary").boundingBox();
+  const menu = await page.getByRole("banner").getByRole("button", { name: "Dark theme" }).boundingBox();
   expect(Math.abs((logo?.y ?? 0) + (logo?.height ?? 0) / 2 - ((menu?.y ?? 0) + (menu?.height ?? 0) / 2))).toBeLessThan(4);
 });
 
 test("site frame - icons and manifest are served", async ({ page, request }) => {
   await page.goto("/");
-  for (const selector of ['link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'link[rel="manifest"]']) {
+  for (const selector of ['link[rel="icon"][type="image/svg+xml"]', 'link[rel="icon"][sizes]', 'link[rel="apple-touch-icon"]', 'link[rel="manifest"]']) {
     const href = await page.locator(selector).getAttribute("href");
     expect((await request.get(href ?? "")).ok(), selector).toBe(true);
   }
   const manifest = await (await request.get("/site.webmanifest")).json();
   for (const icon of manifest.icons) expect((await request.get(icon.src)).ok(), icon.src).toBe(true);
+});
+
+test("site frame - the header stays at the top while scrolling", async ({ page }) => {
+  for (const width of [375, 1366]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto("/merge-pdf/");
+    await page.mouse.wheel(0, 1500);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+    expect((await page.getByRole("banner").boundingBox())?.y).toBe(0);
+    await expect(page.getByRole("banner").getByRole("link", { name: "AnyTools.fyi home" })).toBeInViewport();
+  }
 });

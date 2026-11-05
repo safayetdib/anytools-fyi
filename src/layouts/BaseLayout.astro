@@ -9,10 +9,26 @@ interface Props {
   title: string;
   description: string;
   skipLabel?: string;
+  /** Keeps the page out of search results, such as a tool that isn't built yet. */
+  noindex?: boolean;
+  /** The share image, as a path under /og/. Defaults to the site image. */
+  image?: { path: string; alt: string };
+  type?: "website" | "article";
 }
 
-const { title, description, skipLabel = en.a11y.skipToContent } = Astro.props;
+const {
+  title,
+  description,
+  skipLabel = en.a11y.skipToContent,
+  noindex = false,
+  image = { path: "/og/site.png", alt: en.meta.imageAlt },
+  type = "website",
+} = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const imageUrl = new URL(image.path, Astro.site).href;
+// Share cards show the site name separately, so their title drops the " | AnyTools.fyi" ending.
+const shareTitle = title.replace(` | ${en.site.name}`, "");
+const robots = !INDEXABLE || noindex ? "noindex, follow" : "index, follow, max-image-preview:large, max-snippet:-1";
 ---
 
 <!doctype html>
@@ -27,20 +43,37 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
       } catch {}
     </script>
-    {!INDEXABLE && <meta name="robots" content="noindex" />}
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
     <link rel="canonical" href={canonical} />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#0a6b52" />
-    <meta property="og:type" content="website" />
+    <meta name="application-name" content={en.site.brand} />
+    <meta name="apple-mobile-web-app-title" content={en.site.brand} />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#16211d" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <meta property="og:type" content={type} />
     <meta property="og:site_name" content={en.site.name} />
-    <meta property="og:title" content={title} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={shareTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={image.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={shareTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content={image.alt} />
     <slot name="head" />
   </head>
   <body>

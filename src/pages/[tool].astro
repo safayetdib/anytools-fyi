@@ -13,7 +13,8 @@ import { fill } from "../i18n/format";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getEntry, render } from "astro:content";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
-import { breadcrumbSchema, faqSchema, webApplicationSchema } from "../lib/schema";
+import { breadcrumbSchema, faqSchema, howToSchema, webApplicationSchema } from "../lib/schema";
+import { isToolIndexable, toolMeta } from "../lib/seo";
 import { TOOLS, hubFor, isHubLive, staysOnDevice, toolBySlug, variantsOf, type Tool } from "../lib/tools";
 
 const toolModules = import.meta.glob<AstroComponentFactory>("../tools/*/Tool.astro", { eager: true, import: "default" });
@@ -46,8 +47,12 @@ const sizes = variantsOf(parent ?? tool);
 const related = tool.related.map((slug) => toolBySlug(slug) as Tool);
 // The privacy promise is made only by tools that do all their work in the browser.
 const local = staysOnDevice(tool);
-const title = fill(local ? (isText ? p.titleText : p.titleFiles) : p.titlePlain, { name: strings.name });
-const description = `${strings.description} ${local ? p.metaSuffix : p.metaSuffixPlain}`;
+const { title, description } = toolMeta(tool);
+// Coming-soon pages stay reachable but out of search results until the tool works.
+const indexable = isToolIndexable(tool);
+const image = indexable
+  ? { path: `/og/${tool.slug}.png`, alt: fill(en.meta.toolImageAlt, { name: strings.name, description: strings.description }) }
+  : undefined;
 const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`];
 const Diagram = diagrams[`../tools/${tool.slug}/Diagram.astro`];
 const help = await getEntry("tools", tool.slug);
@@ -57,10 +62,28 @@ const updatedLabel = help
   : undefined;
 ---
 
-<BaseLayout title={title} description={description} skipLabel={p.skip}>
-  <JsonLd slot="head" data={webApplicationSchema({ name: strings.name, description, path }, site)} />
+<BaseLayout title={title} description={description} skipLabel={p.skip} noindex={!indexable} image={image}>
+  {
+    indexable && (
+      <JsonLd
+        slot="head"
+        data={webApplicationSchema(
+          {
+            name: strings.name,
+            description,
+            path,
+            image: image?.path,
+            features: help?.data.steps.map((step) => step.title),
+            updated: help?.data.updated,
+          },
+          site,
+        )}
+      />
+    )
+  }
   <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
-  {help && <JsonLd slot="head" data={faqSchema(help.data.faq)} />}
+  {indexable && help && <JsonLd slot="head" data={howToSchema(help.data.howToTitle, help.data.steps, site, image?.path)} />}
+  {indexable && help && <JsonLd slot="head" data={faqSchema(help.data.faq)} />}
   <div class="container page-top">
     <div class="crumbs">
       <Breadcrumb items={crumbs} />

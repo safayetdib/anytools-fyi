@@ -1057,7 +1057,7 @@ const limits = isFiles
 
   .shell-page-toolbar {
     position: sticky;
-    top: var(--space-sm);
+    top: calc(var(--header-height, 0px) + var(--space-sm));
     z-index: 6;
     display: flex;
     flex-wrap: wrap;

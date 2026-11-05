@@ -12,7 +12,7 @@ const path = Astro.url.pathname;
 const updatedLabel = new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(new Date(updated));
 ---
 
-<BaseLayout title={`${title} | ${en.site.name}`} description={description}>
+<BaseLayout title={`${title} | ${en.site.name}`} description={description} noindex={draft}>
   <div class="container page-top">
     <Breadcrumb items={[{ name: en.nav.home, path: "/" }, { name: title, path }]} />
     <article class="prose">

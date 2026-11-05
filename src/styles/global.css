@@ -116,3 +116,8 @@ svg {
     padding-bottom: calc(3.75rem + env(safe-area-inset-bottom));
   }
 }
+
+/* Links to a section and focused fields scroll clear of the sticky header. */
+html {
+  scroll-padding-top: calc(var(--header-height, 4.5rem) + var(--space-sm));
+}

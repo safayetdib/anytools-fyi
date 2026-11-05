@@ -6,8 +6,11 @@ import Logo from "./Logo.astro";
 import ToolIcon from "./ToolIcon.astro";
 
 const path = Astro.url.pathname;
+// The homepage has its own large search box, so the header leaves its one out there.
+const isHome = path === "/";
 const tools = en.tools as Record<string, { name: string }>;
-const quick = en.nav.quick.map((slug) => toolBySlug(slug) as Tool);
+// Quick links point only to tools that work today.
+const quick = en.nav.quick.map((slug) => toolBySlug(slug) as Tool).filter((tool) => tool.built);
 const groups = HUBS.map((hub) => ({
   hub,
   live: isHubLive(hub.id),
@@ -20,25 +23,24 @@ const groups = HUBS.map((hub) => ({
     <a class="logo" href="/" aria-label={en.a11y.home}>
       <Logo intro />
     </a>
-    <div class="search-slot">
-      <SearchBox id="header-search" />
-    </div>
+    {
+      !isHome && (
+        <div class="search-slot">
+          <SearchBox id="header-search" />
+        </div>
+      )
+    }
     <nav class="nav" aria-label={en.a11y.mainNav}>
-      <button class="search-toggle" type="button" aria-label={en.search.open} aria-expanded="false" data-search-toggle hidden>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="m20 20-3.5-3.5"></path>
-        </svg>
-      </button>
-      <button class="icon-button theme-toggle" type="button" aria-label={en.theme.label} aria-pressed="false" data-theme-toggle hidden>
-        <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path>
-        </svg>
-        <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="4"></circle>
-          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
-        </svg>
-      </button>
+      {
+        !isHome && (
+          <button class="search-toggle" type="button" aria-label={en.search.open} aria-expanded="false" data-search-toggle hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.5-3.5"></path>
+            </svg>
+          </button>
+        )
+      }
       <ul class="quick">
         {
           quick.map((tool) => (
@@ -58,20 +60,35 @@ const groups = HUBS.map((hub) => ({
             <path d="m6 9 6 6 6-6"></path>
           </svg>
         </summary>
-        <div class="panel">
+        <div class="drawer-backdrop" data-menu-close aria-hidden="true"></div>
+        <div class="panel" id="site-menu">
+          <div class="drawer-head">
+            <p class="drawer-title">{en.nav.menu}</p>
+            <button class="drawer-close" type="button" aria-label={en.nav.closeMenu} data-menu-close>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg>
+            </button>
+          </div>
           <div class="container groups">
             {
               groups.map((group) => (
                 <div class="group">
                   <p class="group-title">
-                    {group.live ? <a href={`/${group.hub.slug}/`}>{en.hubs[group.hub.id].name}</a> : en.hubs[group.hub.id].name}
+                    {group.live ? (
+                      <a href={`/${group.hub.slug}/`}>
+                        {en.hubs[group.hub.id].name}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+                      </a>
+                    ) : (
+                      <span>{en.hubs[group.hub.id].name}</span>
+                    )}
                   </p>
                   <ul>
                     {group.tools.map((tool) => (
                       <li>
-                        <a class="tool-link" href={`/${tool.slug}/`}>
+                        <a class="tool-link" href={`/${tool.slug}/`} aria-current={path === `/${tool.slug}/` ? "page" : undefined}>
                           <ToolIcon tool={tool} size="sm" />
-                          {tools[tool.slug].name}
+                          <span class="tool-name">{tools[tool.slug].name}</span>
+                          {!tool.built && <span class="soon">{en.nav.soon}</span>}
                         </a>
                       </li>
                     ))}
@@ -81,20 +98,22 @@ const groups = HUBS.map((hub) => ({
             }
           </div>
           <div class="container see-all">
-            <a href="/tools/">{en.nav.seeAll}</a>
-            <button class="panel-theme" type="button" aria-pressed="false" data-theme-toggle hidden>
-              <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <a class="see-all-link" href="/tools/">
+              {en.nav.seeAll}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </a>
+          </div>
+        </div>
+      </details>
+      <button class="icon-button theme-toggle" type="button" aria-label={en.theme.label} aria-pressed="false" data-theme-toggle hidden>
+        <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path>
         </svg>
         <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4"></circle>
           <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
         </svg>
-              {en.theme.label}
-            </button>
-          </div>
-        </div>
-      </details>
+      </button>
     </nav>
   </div>
   <nav class="tabbar" aria-label={en.nav.tabs.label}>
@@ -110,10 +129,9 @@ const groups = HUBS.map((hub) => ({
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
       {en.nav.tabs.search}
     </button>
-    <button class="tab" type="button" aria-pressed="false" data-theme-toggle hidden>
-      <svg class="moon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path></svg>
-      <svg class="sun" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
-      {en.theme.label}
+    <button class="tab" type="button" aria-expanded="false" aria-controls="site-menu" data-tab-menu>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+      {en.nav.menu}
     </button>
   </nav>
 </header>
@@ -143,11 +161,26 @@ const groups = HUBS.map((hub) => ({
     sync();
   })();
 
-  // The Search tab opens the header search on phones.
+  // Other sticky parts sit below the header, and focused items scroll clear of it.
+  (() => {
+    const header = document.querySelector(".header");
+    if (!header) return;
+    const sync = () =>
+      document.documentElement.style.setProperty("--header-height", `${Math.round(header.getBoundingClientRect().height)}px`);
+    new ResizeObserver(sync).observe(header);
+    sync();
+  })();
+
+  // The Search tab opens the header search on phones, or goes to the page's own search box on the homepage.
   document.querySelector("[data-tab-search]")?.addEventListener("click", () => {
     const header = document.querySelector(".header");
     const input = header?.querySelector("[data-search] input");
-    if (!header || !input) return;
+    if (!header || !input) {
+      const own = document.querySelector("main [data-search] input");
+      own?.scrollIntoView({ block: "center" });
+      own?.focus();
+      return;
+    }
     header.setAttribute("data-search-open", "");
     document.querySelector("[data-search-toggle]")?.setAttribute("aria-expanded", "true");
     window.scrollTo({ top: 0 });
@@ -158,10 +191,30 @@ const groups = HUBS.map((hub) => ({
     const menu = document.querySelector("[data-menu]");
     if (!menu) return;
     const summary = menu.querySelector("summary");
+    // On phones the menu is a drawer from the right, opened from the header or the Menu tab.
+    const tab = document.querySelector("[data-tab-menu]");
+    let opener = summary;
+    tab?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      opener = tab;
+      menu.open = !menu.open;
+    });
+    summary.addEventListener("click", () => (opener = summary));
+    menu.addEventListener("toggle", () => {
+      tab?.setAttribute("aria-expanded", String(menu.open));
+      const close = menu.querySelector(".drawer-close");
+      if (menu.open && close && getComputedStyle(close).display !== "none") close.focus();
+    });
+    menu.querySelectorAll("[data-menu-close]").forEach((button) =>
+      button.addEventListener("click", () => {
+        menu.open = false;
+        opener.focus();
+      }),
+    );
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && menu.open) {
         menu.open = false;
-        summary.focus();
+        opener.focus();
       }
     });
     document.addEventListener("click", (event) => {
@@ -171,8 +224,10 @@ const groups = HUBS.map((hub) => ({
 </script>
 
 <style>
+  /* The header stays at the top while the page scrolls. */
   .header {
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 20;
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border-subtle);
@@ -213,14 +268,20 @@ const groups = HUBS.map((hub) => ({
   }
 
   .search-toggle[hidden],
-  .theme-toggle[hidden],
-  .panel-theme[hidden] {
+  .theme-toggle[hidden] {
     display: none;
   }
 
-  /* The header switch needs room, so phones get it at the bottom of the menu instead. */
+  /* The theme switch sits quietly at the far right of the top bar, on phones too. */
   .theme-toggle {
-    display: none;
+    border-color: transparent;
+  }
+
+  @media (hover: hover) {
+    .theme-toggle:hover {
+      background: var(--color-bg);
+      color: var(--color-accent);
+    }
   }
 
   .sun,
@@ -242,21 +303,6 @@ const groups = HUBS.map((hub) => ({
     }
   }
 
-  .panel-theme {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
-    min-height: 44px;
-    padding: 0 var(--space-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-button);
-    background: transparent;
-    color: var(--color-text);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
   @media (min-width: 480px) {
     .row {
       column-gap: var(--space-lg);
@@ -264,14 +310,6 @@ const groups = HUBS.map((hub) => ({
 
     .logo {
       --logo-size: 2rem;
-    }
-
-    .theme-toggle {
-      display: inline-flex;
-    }
-
-    .panel-theme {
-      display: none;
     }
   }
 
@@ -372,51 +410,100 @@ const groups = HUBS.map((hub) => ({
     border-bottom: 1px solid var(--color-border-subtle);
   }
 
+  /* The menu: one card per category, each with a quiet heading and one-line tool rows. */
   .groups {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-    gap: var(--space-xl) var(--space-2xl);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-lg) var(--space-xl);
   }
 
   .group ul {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   .group-title {
-    margin: 0 0 var(--space-sm);
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    margin: 0 0 var(--space-xs);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border-subtle);
     color: var(--color-text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
   .group-title a {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
+    gap: var(--space-xs);
+    min-height: 2.25rem;
     color: inherit;
+    text-decoration: none;
+  }
+
+  .group-title a svg {
+    transition: transform var(--dur-fast) var(--ease-out);
   }
 
   .tool-link {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: 0.75rem;
     min-height: 44px;
-    padding: var(--space-xs);
-    margin-inline: calc(var(--space-xs) * -1);
+    padding: var(--space-xs) var(--space-sm);
+    margin-inline: calc(var(--space-sm) * -1);
     border-radius: var(--radius-button);
     color: var(--color-text);
+    font-size: 0.9375rem;
     font-weight: 600;
     text-decoration: none;
+  }
+
+  .tool-link[aria-current="page"] {
+    background: var(--color-bg);
+    color: var(--color-accent);
+  }
+
+  .tool-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .soon {
+    flex: none;
+    padding: 1px var(--space-sm);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 
   @media (hover: hover) {
     .tool-link:hover {
       background: var(--color-bg);
       color: var(--color-accent);
+    }
+
+    .group-title a:hover {
+      color: var(--color-accent);
+    }
+
+    .group-title a:hover svg,
+    .see-all-link:hover svg {
+      transform: translateX(3px);
     }
   }
 
@@ -427,13 +514,22 @@ const groups = HUBS.map((hub) => ({
     justify-content: space-between;
     gap: var(--space-md);
     margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-subtle);
   }
 
-  .see-all a {
+  .see-all-link {
     display: inline-flex;
     align-items: center;
+    gap: var(--space-xs);
     min-height: 44px;
+    color: var(--color-accent);
     font-weight: 700;
+    text-decoration: none;
+  }
+
+  .see-all-link svg {
+    transition: transform var(--dur-fast) var(--ease-out);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -477,6 +573,7 @@ const groups = HUBS.map((hub) => ({
 
     .groups {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-xl) var(--space-2xl);
     }
   }
 
@@ -486,12 +583,13 @@ const groups = HUBS.map((hub) => ({
     }
 
     .groups {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: var(--space-lg);
+      gap: var(--space-xl) var(--space-3xl);
     }
   }
   /* Phones: a slim app bar on top and a tab bar at the bottom. */
-  .tabbar {
+  .tabbar,
+  .drawer-head,
+  .drawer-backdrop {
     display: none;
   }
 
@@ -505,8 +603,9 @@ const groups = HUBS.map((hub) => ({
       border-color: transparent;
     }
 
-    /* The Search tab replaces the top search button. */
-    .search-toggle {
+    /* The Search and Menu tabs replace the top search button and Menu button. */
+    .search-toggle,
+    summary {
       display: none !important;
     }
 
@@ -557,6 +656,117 @@ const groups = HUBS.map((hub) => ({
 
     .tab:active {
       background: var(--color-bg);
+    }
+
+    .tab[aria-expanded="true"] {
+      color: var(--color-accent);
+    }
+
+    /* The menu opens as a drawer from the right, above everything else. */
+    .header:has(.menu[open]) {
+      z-index: 50;
+    }
+
+    :global(:root:has(.menu[open])) {
+      overflow: hidden;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: block;
+      background: rgb(0 0 0 / 0.45);
+    }
+
+    .panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: auto;
+      z-index: 41;
+      display: flex;
+      flex-direction: column;
+      width: min(21rem, 86vw);
+      max-height: none;
+      padding: 0 0 calc(var(--space-lg) + env(safe-area-inset-bottom));
+      border-bottom: 0;
+      border-left: 1px solid var(--color-border-subtle);
+      box-shadow: -16px 0 40px -20px rgb(0 0 0 / 0.5);
+    }
+
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(var(--space-sm) + env(safe-area-inset-top)) var(--space-sm) var(--space-sm) var(--space-md);
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .drawer-title {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+
+    .drawer-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: var(--radius-button);
+      background: transparent;
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .panel .container {
+      width: 100%;
+      padding-inline: var(--space-md);
+    }
+
+    .panel .tool-link {
+      margin-inline: 0;
+    }
+
+    .panel .groups {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-lg);
+      padding-top: var(--space-lg);
+    }
+
+    .panel .see-all {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  @media (max-width: 599px) and (prefers-reduced-motion: no-preference) {
+    .menu[open] .panel {
+      animation: drawer-in var(--dur-slow) var(--ease-out);
+    }
+
+    .menu[open] .drawer-backdrop {
+      animation: drawer-fade var(--dur-slow) var(--ease-out);
+    }
+
+    @keyframes drawer-in {
+      from {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes drawer-fade {
+      from {
+        opacity: 0;
+      }
     }
   }
 </style>

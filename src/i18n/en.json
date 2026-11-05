@@ -1,8 +1,9 @@
 {
   "site": {
+    "brand": "AnyTools",
     "name": "AnyTools.fyi",
-    "tagline": "Free everyday tools for PDFs, images, Bangla text and more. No signup and no watermarks.",
-    "title": "AnyTools.fyi: Free Everyday Tools, No Signup"
+    "tagline": "Free, fast tools for everyday jobs: merge PDFs, shrink photos, format text and more. No signup, no watermarks and no limits.",
+    "title": "AnyTools.fyi: Free Online Tools for PDFs, Images and More"
   },
   "a11y": {
     "skipToContent": "Skip to main content",
@@ -28,10 +29,12 @@
       "home": "Home",
       "tools": "Tools",
       "search": "Search"
-    }
+    },
+    "closeMenu": "Close menu",
+    "soon": "Soon"
   },
   "footer": {
-    "promise": "Free everyday tools for PDFs, images, Bangla text and more.",
+    "promise": "Free tools for everyday jobs. No signup, no watermarks.",
     "tools": "Tools",
     "company": "Company",
     "legal": "Legal",
@@ -45,79 +48,81 @@
     "credits": "Credits"
   },
   "home": {
-    "heading": "Everyday tools for PDFs, images and Bangla",
-    "lead": "Free, with no signup and no watermarks. Made to work well on any phone or computer.",
+    "heading": "Free tools that get everyday jobs done in seconds",
+    "lead": "Merge PDFs, shrink photos for forms, format code and more. No signup, no watermarks and no limits, on any phone or computer.",
     "toolsHeading": "Tools",
     "why": {
-      "heading": "Why people use AnyTools",
+      "heading": "Why people choose AnyTools",
       "items": [
         {
-          "title": "Clear steps, no surprises",
-          "body": "Every tool shows how to use it and what its limits are, before you start."
+          "title": "Done in seconds",
+          "body": "Pick a tool, add your file and you're finished. No apps to install and nothing to set up."
         },
         {
-          "title": "Free, with no signup",
-          "body": "No account, no watermarks and no daily limits."
+          "title": "Free, for real",
+          "body": "No account, no watermarks, no daily limits and no paid upgrade standing in your way."
         },
         {
-          "title": "Built for any phone",
-          "body": "Pages are kept small so tools load quickly, even on low-cost phones and slow connections."
+          "title": "Made for your phone",
+          "body": "Pages load fast and stay easy to use, even on low-cost phones and slow connections."
         },
         {
-          "title": "Bangla tools included",
-          "body": "Convert Bijoy text, write numbers in Bangla words and prepare photos for Bangladeshi forms."
+          "title": "Clear at every step",
+          "body": "Each tool shows how it works and what it can handle before you start, so there are no surprises."
         }
       ],
       "privacyLink": "See how we protect your privacy"
     }
   },
   "allTools": {
-    "title": "All Tools: Free PDF, Image and Bangla Tools | AnyTools.fyi",
+    "title": "All Tools: Free PDF, Image and Text Tools | AnyTools.fyi",
     "heading": "All tools",
-    "description": "Every free AnyTools.fyi tool, grouped by category. No signup and no watermarks."
+    "description": "Browse every free AnyTools tool by category, from PDF and image tools to text, language and developer tools. No signup, no watermarks."
   },
   "hubs": {
     "pdf": {
       "name": "PDF tools",
       "pill": "PDF",
-      "title": "PDF Tools: Free, No Signup | AnyTools.fyi",
-      "description": "Merge, split and convert PDF files. Free, with no signup."
+      "title": "Free PDF Tools Online: Merge, Split, Convert | AnyTools.fyi",
+      "description": "Free online PDF tools to merge, split and convert PDF files in a few taps. No signup and no watermarks, on any phone or computer."
     },
     "image": {
       "name": "Image tools",
       "pill": "Image",
       "title": "Image Tools: Free, No Signup | AnyTools.fyi",
-      "description": "Compress, resize and convert images. Free, with no signup."
+      "description": "Compress, resize and convert photos for forms, email and the web. Free, with no signup."
     },
     "bangla": {
       "name": "Bangla tools",
       "pill": "Bangla",
       "title": "Bangla Tools: Free, No Signup | AnyTools.fyi",
-      "description": "Free tools for Bangla text, numbers and dates, with no signup."
+      "description": "Convert and write Bangla text, numbers and dates. Free, with no signup."
     },
     "developer": {
       "name": "Developer tools",
       "pill": "Developer",
       "title": "Developer Tools: Free, No Signup | AnyTools.fyi",
-      "description": "Format JSON, encode Base64 and generate passwords. Free, with no signup."
+      "description": "Format JSON, encode Base64 and create strong passwords in a click. Free, with no signup."
     },
     "text": {
       "name": "Text tools",
       "pill": "Text",
       "title": "Text Tools: Free, No Signup | AnyTools.fyi",
-      "description": "Free text tools, with no signup."
+      "description": "Count words and tidy up text in seconds. Free, with no signup."
     },
     "calculators": {
       "name": "Calculators",
       "pill": "Calculators",
       "title": "Free Calculators | AnyTools.fyi",
-      "description": "Free calculators, with no signup. For information only."
+      "description": "Quick, free calculators for everyday numbers, with no signup. For information only."
     }
   },
   "tools": {
     "merge-pdf": {
       "name": "Merge PDF",
-      "description": "Combine several PDFs into one, in the order you choose."
+      "description": "Combine PDFs into one file in seconds, in exactly the order you want.",
+      "title": "Merge PDF Files Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Merge PDF files online for free. Combine PDFs in any order, then rotate, crop, reorder or remove pages. No signup, no watermark, nothing uploaded."
     },
     "compress-image": {
       "name": "Compress image",
@@ -352,7 +357,7 @@
     "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first."
   },
   "toolPage": {
-    "leadFiles": "Free, with no signup.",
+    "leadFiles": "Free, with no signup and no watermarks.",
     "leadText": "Free, with no signup.",
     "titleFiles": "{name}: Free, No Upload | AnyTools.fyi",
     "titleText": "{name}: Free and Private | AnyTools.fyi",
@@ -377,7 +382,7 @@
     "heading": "We can't find that page",
     "body": "The link may be old or mistyped. Try one of these tools, or see the full list.",
     "popular": "Popular tools",
-    "description": "This page doesn't exist on AnyTools.fyi."
+    "description": "This page doesn't exist on AnyTools. Try one of our free tools, or see the full list."
   },
   "info": {
     "draft": "Draft: this page will be finished and reviewed before the site launches.",
@@ -433,5 +438,12 @@
     "oursNote": "Nothing is sent to a server.",
     "privacyCaption": "Most online tools upload your file to their server to do the work. AnyTools does the work inside your browser, so your file never leaves your device.",
     "privacyLink": "How to check this yourself"
+  },
+  "meta": {
+    "imageAlt": "AnyTools: free tools for everyday jobs, on any phone or computer",
+    "toolImageAlt": "{name} on AnyTools: {description}"
+  },
+  "card": {
+    "comingSoon": "Coming soon"
   }
 }

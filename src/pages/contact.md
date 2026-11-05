@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/InfoLayout.astro
 title: "Contact"
-description: "How to reach the AnyTools.fyi team."
+description: "How to reach the AnyTools team with a question, a bug report, an idea for a new tool or a privacy request."
 draft: true
 updated: "2026-11-06"
 ---
