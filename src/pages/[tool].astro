@@ -60,7 +60,9 @@ const updatedLabel = help
   <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
   {help && <JsonLd slot="head" data={faqSchema(help.data.faq)} />}
   <div class="container page-top">
-    <Breadcrumb items={crumbs} />
+    <div class="crumbs">
+      <Breadcrumb items={crumbs} />
+    </div>
     <div class="title-row">
       <ToolIcon tool={tool} />
       <h1>{strings.name}</h1>
@@ -102,6 +104,7 @@ const updatedLabel = help
     }
 
     <p class="trust">
+      <svg class="trust-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
       {isText ? p.trustText : p.trustFiles}
       <a href="/how-we-protect-your-privacy/">{en.footer.howWeProtect}</a>
     </p>
@@ -109,17 +112,17 @@ const updatedLabel = help
     {
       help && Explainer && (
         <div class="help">
-          <section aria-labelledby="limits-heading">
+          <section aria-labelledby="limits-heading" data-fold>
             <h2 id="limits-heading">{p.limits}</h2>
             <LimitCards limits={help.data.limits} />
           </section>
 
-          <section aria-labelledby="steps-heading">
+          <section aria-labelledby="steps-heading" data-fold>
             <h2 id="steps-heading">{help.data.howToTitle}</h2>
             <Steps steps={help.data.steps} />
           </section>
 
-          <section aria-labelledby="explainer-heading" class="explainer">
+          <section aria-labelledby="explainer-heading" class="explainer" data-fold>
             <h2 id="explainer-heading">{help.data.diagramTitle ?? strings.name}</h2>
             <div class="prose">
               <Explainer />
@@ -128,20 +131,20 @@ const updatedLabel = help
           </section>
 
           {help.data.tips.length > 0 && (
-            <section aria-labelledby="tips-heading">
+            <section aria-labelledby="tips-heading" data-fold>
               <h2 id="tips-heading">{help.data.tipsTitle}</h2>
               <TipCards tips={help.data.tips} />
             </section>
           )}
 
           {!isText && (
-            <section aria-labelledby="privacy-heading">
+            <section aria-labelledby="privacy-heading" data-fold>
               <h2 id="privacy-heading">{en.help.privacyTitle}</h2>
               <PrivacyDiagram />
             </section>
           )}
 
-          <section aria-labelledby="faq-heading">
+          <section aria-labelledby="faq-heading" data-fold>
             <h2 id="faq-heading">{p.questions}</h2>
             <Faq faq={help.data.faq} />
           </section>
@@ -163,6 +166,47 @@ const updatedLabel = help
     }
   </div>
 </BaseLayout>
+
+<script>
+  // On phones the guide folds: each heading becomes a button, so the tool stays near the top.
+  const phone = matchMedia("(max-width: 599px)");
+  const CHEVRON =
+    '<svg class="fold-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+
+  function setUpFolds() {
+    document.querySelectorAll<HTMLElement>("[data-fold]").forEach((section) => {
+      const heading = section.querySelector("h2");
+      if (!heading) return;
+      const toggle = heading.querySelector<HTMLButtonElement>(".fold-toggle");
+      if (phone.matches && !toggle) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "fold-toggle";
+        button.setAttribute("aria-expanded", "false");
+        const label = document.createElement("span");
+        label.append(...Array.from(heading.childNodes));
+        button.append(label);
+        button.insertAdjacentHTML("beforeend", CHEVRON);
+        heading.append(button);
+        section.toggleAttribute("data-folded", true);
+      } else if (!phone.matches && toggle) {
+        heading.replaceChildren(...Array.from(toggle.firstElementChild?.childNodes ?? []));
+        section.removeAttribute("data-folded");
+      }
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(".fold-toggle");
+    const section = button?.closest<HTMLElement>("[data-fold]");
+    if (!button || !section) return;
+    const open = button.getAttribute("aria-expanded") !== "true";
+    button.setAttribute("aria-expanded", String(open));
+    section.toggleAttribute("data-folded", !open);
+  });
+  phone.addEventListener("change", setUpFolds);
+  setUpFolds();
+</script>
 
 <style>
   .title-row {
@@ -254,6 +298,13 @@ const updatedLabel = help
     font-weight: 400;
   }
 
+  .trust-icon {
+    display: inline;
+    margin-right: var(--space-xs);
+    vertical-align: -2px;
+    color: var(--color-accent);
+  }
+
   .related {
     margin-top: var(--space-4xl);
   }
@@ -288,6 +339,121 @@ const updatedLabel = help
   @media (min-width: 900px) {
     .tool-area {
       padding-block: var(--space-2xl);
+    }
+  }
+
+  /* Phones: the tool comes first and the guide folds into one tidy list. */
+  @media (max-width: 599px) {
+    .crumbs {
+      display: none;
+    }
+
+    .page-top {
+      padding-top: var(--space-2xl);
+    }
+
+    .title-row {
+      gap: var(--space-sm);
+      margin-top: 0;
+    }
+
+    .title-row :global(.tool-icon) {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.625rem;
+    }
+
+    .title-row h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .lead {
+      margin-top: var(--space-xl);
+      font-size: 0.9375rem;
+    }
+
+    .trust {
+      margin-top: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-button);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      font-size: 0.875rem;
+    }
+
+    .trust a {
+      min-height: 0;
+      padding-block: var(--space-xs);
+    }
+
+    .help {
+      gap: 0;
+      margin-top: var(--space-xl);
+      overflow: hidden;
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      background: var(--color-surface);
+    }
+
+    .help > section {
+      padding: 0 var(--space-md);
+    }
+
+    .help > section + section {
+      border-top: 1px solid var(--color-border-subtle);
+    }
+
+    .help > section:not([data-folded]) {
+      padding-bottom: var(--space-lg);
+    }
+
+    .help h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .help > section:not([data-folded]) h2 {
+      margin-bottom: var(--space-md);
+    }
+
+    .help > [data-folded] > :global(:not(h2)) {
+      display: none;
+    }
+
+    .help :global(.fold-toggle) {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      width: 100%;
+      min-height: 3.25rem;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--color-text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .help :global(.fold-chevron) {
+      flex: none;
+      color: var(--color-text-muted);
+      transition: transform var(--dur-base) var(--ease-out);
+    }
+
+    .help :global(.fold-toggle[aria-expanded="true"] .fold-chevron) {
+      transform: rotate(180deg);
+    }
+
+    .related {
+      margin-top: var(--space-2xl);
+    }
+
+    .related h2 {
+      margin-bottom: var(--space-md);
+      font-size: 1.125rem;
     }
   }
 </style>

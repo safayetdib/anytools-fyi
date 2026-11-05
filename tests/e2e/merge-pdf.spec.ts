@@ -12,7 +12,7 @@ const pdf = async (name: string, widths: number[]) => ({
   buffer: Buffer.from(await makePdf(widths)),
 });
 const picker = (page: Page) => page.getByLabel("Select PDF files");
-const mergeButton = (page: Page) => page.getByRole("button", { name: "Merge PDF" });
+const mergeButton = (page: Page) => page.getByRole("button", { name: "Merge PDF", exact: true });
 
 async function mergeAndRead(page: Page) {
   await mergeButton(page).click();
@@ -765,6 +765,8 @@ for (const [width, height] of [
     for (const name of ["Close", "Zoom in", "Zoom out", "Fit to screen", "Previous page", "Next page", "Rotate left", "Rotate right", "Crop", "Move", "Remove this page"]) {
       await expect(viewer.getByRole("button", { name, exact: true })).toBeInViewport();
     }
+    // Phones open the position box from the Move button.
+    if (width < 600) await viewer.getByRole("button", { name: "Move", exact: true }).click();
     await expect(viewer.getByLabel("Move to position")).toBeInViewport();
     const image = await viewer.locator("img").boundingBox();
     const tools = await viewer.getByTestId("viewer-tools").boundingBox();
@@ -779,10 +781,13 @@ test("viewer - buttons are in a set order with icons", async ({ page }) => {
   await mergeForEditing(page, [100], [200]);
   await page.getByRole("button", { name: "Open page 1 larger" }).click();
   const names = await page.getByTestId("viewer-tools").getByRole("button").evaluateAll((buttons) =>
-    buttons.map((b) => b.textContent?.trim()),
+    buttons.map((b) => b.getAttribute("aria-label") ?? b.textContent?.trim()),
   );
   expect(names).toEqual(["Rotate left", "Rotate right", "Crop", "Move", "Remove this page"]);
-  expect(await page.getByTestId("viewer-tools").locator("button svg").count()).toBe(5);
+  const withIcons = await page.getByTestId("viewer-tools").getByRole("button").evaluateAll((buttons) =>
+    buttons.every((b) => b.querySelector("svg")),
+  );
+  expect(withIcons).toBe(true);
 });
 
 // --- Leaving the page ---
@@ -863,6 +868,8 @@ test("merge pdf - guidance covers editing pages and leaving the page", async ({ 
 
 async function dragRow(page: Page, from: number, to: number) {
   const rows = page.getByTestId("shell-file");
+  // Keep the rows clear of the screen edges, where dragging scrolls the page.
+  await page.locator('[data-el="list"]').evaluate((list) => list.scrollIntoView({ block: "center" }));
   const grip = await rows.nth(from).locator(".shell-file-grip").boundingBox();
   const target = await rows.nth(to).boundingBox();
   if (!grip || !target) throw new Error("Rows not found");

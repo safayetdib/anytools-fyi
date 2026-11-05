@@ -97,6 +97,25 @@ const groups = HUBS.map((hub) => ({
       </details>
     </nav>
   </div>
+  <nav class="tabbar" aria-label={en.nav.tabs.label}>
+    <a class="tab" href="/" aria-current={path === "/" ? "page" : undefined}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"></path></svg>
+      {en.nav.tabs.home}
+    </a>
+    <a class="tab" href="/tools/" aria-current={path === "/tools/" ? "page" : undefined}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="3.25"></rect><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"></rect></svg>
+      {en.nav.tabs.tools}
+    </a>
+    <button class="tab" type="button" data-tab-search>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      {en.nav.tabs.search}
+    </button>
+    <button class="tab" type="button" aria-pressed="false" data-theme-toggle hidden>
+      <svg class="moon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"></path></svg>
+      <svg class="sun" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      {en.theme.label}
+    </button>
+  </nav>
 </header>
 
 <script is:inline>
@@ -123,6 +142,17 @@ const groups = HUBS.map((hub) => ({
     query.addEventListener("change", sync);
     sync();
   })();
+
+  // The Search tab opens the header search on phones.
+  document.querySelector("[data-tab-search]")?.addEventListener("click", () => {
+    const header = document.querySelector(".header");
+    const input = header?.querySelector("[data-search] input");
+    if (!header || !input) return;
+    header.setAttribute("data-search-open", "");
+    document.querySelector("[data-search-toggle]")?.setAttribute("aria-expanded", "true");
+    window.scrollTo({ top: 0 });
+    input.focus();
+  });
 
   (() => {
     const menu = document.querySelector("[data-menu]");
@@ -458,6 +488,75 @@ const groups = HUBS.map((hub) => ({
     .groups {
       grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: var(--space-lg);
+    }
+  }
+  /* Phones: a slim app bar on top and a tab bar at the bottom. */
+  .tabbar {
+    display: none;
+  }
+
+  @media (max-width: 599px) {
+    .row {
+      min-height: 3.5rem;
+    }
+
+    .search-toggle,
+    summary {
+      border-color: transparent;
+    }
+
+    /* The Search tab replaces the top search button. */
+    .search-toggle {
+      display: none !important;
+    }
+
+    .tabbar {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      padding: var(--space-xs) var(--space-xs) calc(var(--space-xs) + env(safe-area-inset-bottom));
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border-subtle);
+    }
+
+    /* While a tool is in use, its own bar owns the bottom of the screen. */
+    :global(:root:has([data-tool-shell][data-task])) .tabbar {
+      display: none;
+    }
+
+    .tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      min-height: 52px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-button);
+      background: transparent;
+      color: var(--color-text-muted);
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .tab[hidden] {
+      display: none;
+    }
+
+    .tab[aria-current="page"] {
+      color: var(--color-accent);
+    }
+
+    .tab:active {
+      background: var(--color-bg);
     }
   }
 </style>

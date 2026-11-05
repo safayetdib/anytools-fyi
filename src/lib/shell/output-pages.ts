@@ -530,9 +530,24 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     }
   }
 
+  // On phones, Move opens the position box above the tools.
+  const moveToggle = el<HTMLButtonElement>(root, "viewer-move-toggle");
+  function setMoveOpen(open: boolean) {
+    viewerEdit.toggleAttribute("data-move-open", open);
+    moveToggle.setAttribute("aria-expanded", String(open));
+    // The tools grow or shrink, so the page is fitted to the new space.
+    if (viewer.open) layoutViewer();
+  }
+  moveToggle.addEventListener("click", () => {
+    const open = !viewerEdit.hasAttribute("data-move-open");
+    setMoveOpen(open);
+    if (open) viewerPosition.focus();
+  });
+
   async function showViewerPage(index: number) {
     if (!preview) return;
     if (cropping) endCrop();
+    setMoveOpen(false);
     viewerIndex = index;
     zoom = 1;
     viewerTitle.textContent = fill(t.pageOf, { page: index + 1, total: order.length });
@@ -584,6 +599,23 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   });
   viewerScroll.addEventListener("pointerup", () => (pan = null));
   viewerScroll.addEventListener("pointercancel", () => (pan = null));
+
+  // On a touch screen, a sideways swipe on an unzoomed page turns to the next or previous page.
+  const SWIPE_DISTANCE = 60;
+  let swipe: { x: number; y: number } | null = null;
+  viewerScroll.addEventListener("pointerdown", (event) => {
+    swipe = event.pointerType === "touch" && zoom <= 1 && !cropping ? { x: event.clientX, y: event.clientY } : null;
+  });
+  viewerScroll.addEventListener("pointerup", (event) => {
+    if (!swipe) return;
+    const dx = event.clientX - swipe.x;
+    const dy = event.clientY - swipe.y;
+    swipe = null;
+    if (Math.abs(dx) < SWIPE_DISTANCE || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0 && viewerIndex < order.length - 1) void showViewerPage(viewerIndex + 1);
+    if (dx > 0 && viewerIndex > 0) void showViewerPage(viewerIndex - 1);
+  });
+  viewerScroll.addEventListener("pointercancel", () => (swipe = null));
 
   function drawCropBox() {
     cropBoxEl.style.left = `${cropBox.x * 100}%`;

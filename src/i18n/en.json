@@ -22,7 +22,13 @@
       "merge-pdf",
       "split-pdf",
       "compress-image"
-    ]
+    ],
+    "tabs": {
+      "label": "Quick links",
+      "home": "Home",
+      "tools": "Tools",
+      "search": "Search"
+    }
   },
   "footer": {
     "promise": "Your files are processed in your browser and are not uploaded to our servers.",
@@ -329,7 +335,21 @@
     "pageCropped": "Page {page} cropped.",
     "cropRemoved": "Crop removed from page {page}.",
     "cropHelpDrag": "Drag the box or its corners.",
-    "cropHelpKeys": "With a keyboard, use the arrow keys to move it, and Shift with the arrow keys to resize it."
+    "cropHelpKeys": "With a keyboard, use the arrow keys to move it, and Shift with the arrow keys to resize it.",
+    "stepOf": "Step {step} of 3: {name}",
+    "stepSelect": "Select",
+    "stepArrange": "Arrange",
+    "stepDone": "Download",
+    "moreFor": "More for {name}",
+    "sheetUp": "Move up",
+    "sheetDown": "Move down",
+    "sheetRemove": "Remove",
+    "sheetCancel": "Cancel",
+    "moveOpen": "Move",
+    "swipeHint": "Swipe for the next page",
+    "rotateLeftShort": "Left",
+    "rotateRightShort": "Right",
+    "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first."
   },
   "toolPage": {
     "leadFiles": "Free, with no signup.",

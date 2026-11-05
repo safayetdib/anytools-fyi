@@ -12,6 +12,8 @@ const GRIP_ICON =
 // How close to the screen's top or bottom edge, in pixels, a dragged row must be before the page scrolls.
 const DRAG_SCROLL_EDGE = 96;
 const DRAG_SCROLL_STEP = 14;
+const MORE_ICON =
+  '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
 const DOWNLOAD_ICON =
   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>';
 
@@ -152,6 +154,12 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       buttons.push(button(fill(t.moveDown, { name: file.name }), "↓", { action: "down", id }));
     }
     buttons.push(button(fill(t.remove, { name: file.name }), "×", { action: "remove", id }));
+    // Phones show one More button instead, which opens these actions in a sheet.
+    const more = button(fill(t.moreFor, { name: file.name }), "", { action: "more", id });
+    more.classList.add("shell-file-more");
+    more.innerHTML = MORE_ICON;
+    more.setAttribute("aria-haspopup", "dialog");
+    buttons.push(more);
     const signature = buttons.map((b) => b.dataset.action).join();
     if (actions.dataset.signature !== signature) {
       actions.dataset.signature = signature;
@@ -301,8 +309,18 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     if (files.length === 1 && tool.previewOutput) void outputPages.load(files[0]);
   }
 
+  const steps = root.querySelector<HTMLElement>('[data-el="steps-text"]');
+  const STEP_NAMES = [t.stepSelect, t.stepArrange, t.stepDone];
+
   function render() {
     screens.forEach((screen) => (screen.hidden = screen.dataset.screen !== state.screen));
+    // Phones show a step bar and give the tool the bottom of the screen while it's in use.
+    if (!isText) {
+      const step = state.screen === "select" ? 1 : state.screen === "result" ? 3 : 2;
+      root.dataset.step = String(step);
+      root.toggleAttribute("data-task", state.screen !== "select");
+      if (steps) steps.textContent = fill(t.stepOf, { step, name: STEP_NAMES[step - 1] });
+    }
     error.hidden = !state.error;
     error.textContent = state.error ?? "";
     warning.hidden = !state.warning;
@@ -328,8 +346,12 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     if (from === "select" && state.screen === "working") focus(el(root, "working-heading"));
   }
 
+  // Focus goes to the same kind of button the person used, whichever is showing at this screen width.
+  const visible = (selector: string) =>
+    Array.from(list?.querySelectorAll<HTMLButtonElement>(selector) ?? []).filter((b) => b.offsetParent !== null);
+
   function focusAfterRemove(index: number) {
-    const buttons = list?.querySelectorAll<HTMLButtonElement>('[data-action="remove"]') ?? [];
+    const buttons = visible('[data-action="remove"]').length ? visible('[data-action="remove"]') : visible('[data-action="more"]');
     focus(buttons[Math.min(index, buttons.length - 1)] ?? pickInput);
   }
 
@@ -363,6 +385,10 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     if (!target) return;
     const { action, id } = target.dataset;
     if (!id) return;
+    if (action === "more") {
+      openFileSheet(id);
+      return;
+    }
     if (action === "remove") {
       const index = state.files.findIndex((f) => f.id === id);
       controller.removeFile(id);
@@ -376,6 +402,44 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       `[data-id="${id}"][data-action="${action === "up" ? "down" : "up"}"]`,
     );
     focus(same ?? other);
+  });
+
+  // --- A file's actions in a bottom sheet, on phones ---
+
+  const sheet = root.querySelector<HTMLDialogElement>('[data-el="file-sheet"]');
+  let sheetFile = "";
+
+  function openFileSheet(id: string) {
+    if (!sheet) return;
+    const index = state.files.findIndex((f) => f.id === id);
+    if (index < 0) return;
+    sheetFile = id;
+    el(sheet, "file-sheet-title").textContent = state.files[index].file.name;
+    sheet.querySelector<HTMLElement>('[data-sheet="up"]')!.hidden = index === 0;
+    sheet.querySelector<HTMLElement>('[data-sheet="down"]')!.hidden = index === state.files.length - 1;
+    sheet.showModal();
+  }
+
+  sheet?.addEventListener("click", (event) => {
+    if (event.target === sheet) return sheet.close();
+    const action = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-sheet]")?.dataset.sheet;
+    if (!action) return;
+    const id = sheetFile;
+    sheet.close();
+    if (action === "remove") {
+      const index = state.files.findIndex((f) => f.id === id);
+      controller.removeFile(id);
+      if (state.screen === "select") focus(pickInput);
+      else focusAfterRemove(index);
+    } else if (action === "up" || action === "down") {
+      controller.moveFile(id, action === "up" ? -1 : 1);
+      focus(list?.querySelector<HTMLElement>(`[data-id="${id}"][data-action="more"]`) ?? null);
+    }
+  });
+
+  sheet?.addEventListener("close", () => {
+    const more = list?.querySelector<HTMLElement>(`[data-id="${sheetFile}"][data-action="more"]`);
+    if (more && document.activeElement === document.body) focus(more);
   });
 
   // Alt with an up or down arrow moves the focused row, like the page editor.
