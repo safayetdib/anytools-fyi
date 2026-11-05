@@ -1,0 +1,18 @@
+# Response headers for Cloudflare.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Built code and styles have a content hash in their names, so browsers can keep them for a year.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/og/*
+  Cache-Control: public, max-age=86400
+
+/search-index.json
+  Cache-Control: public, max-age=3600

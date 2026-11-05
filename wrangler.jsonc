@@ -1,0 +1,13 @@
+// Cloudflare hosting. The site is plain files, so no Worker code runs and requests stay free and unlimited.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "anytools-fyi",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Missing pages get the site's own 404 page.
+    "not_found_handling": "404-page",
+    // Matches Astro's trailingSlash: "always", so /merge-pdf redirects to /merge-pdf/.
+    "html_handling": "force-trailing-slash"
+  }
+}
