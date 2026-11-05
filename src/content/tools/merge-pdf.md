@@ -13,7 +13,7 @@ steps:
     text: "Select Merge PDF. It runs in your browser, and keeps working offline once your files are chosen."
   - icon: rotate
     title: "Check and fix the pages"
-    text: "Select pages to turn, move or remove them, or make every page A4 or Letter. Then select Apply changes."
+    text: "Select pages to turn, move or remove them. Open a page to zoom in or crop it, or make every page A4 or Letter. Then select Apply changes."
   - icon: download
     title: "Download"
     text: "Download merged.pdf. Your original files aren't changed."
@@ -60,7 +60,7 @@ faq:
   - question: "Does it work offline?"
     answer: "Yes, once your files are chosen. The page loads its PDF tool as soon as you start choosing files. After that, you can turn off your connection and still merge and edit pages."
   - question: "Can I turn, move or remove pages after merging?"
-    answer: "Yes. Tick the pages you want, then use Rotate, Move to or Remove in the toolbar above them. You can also drag pages on a computer, press Alt with an arrow key, or open a page larger to change it there. Page size makes every page A4 or Letter. Select Apply changes, then download the updated file. Undo changes puts everything back."
+    answer: "Yes. Tick the pages you want, then use Rotate, Move to or Remove in the toolbar above them. You can also drag pages on a computer, press Alt with an arrow key, or open a page larger to zoom in, crop away margins or change it there. Cropping keeps text sharp and selectable. Page size makes every page A4 or Letter. Select Apply changes, then download the updated file. Undo changes puts everything back."
   - question: "What happens to my files when I leave the page?"
     answer: "They're cleared. Your files are only held in this browser tab, so starting over, closing the tab or leaving the page removes them, and pressing Back won't bring them back. If you haven't downloaded your result yet, your browser asks before you leave."
   - question: "Can I merge password-protected PDFs?"

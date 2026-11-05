@@ -315,7 +315,21 @@
     "showingAll": "Showing all {total} pages",
     "showMoreCount": "Show {count} more pages",
     "showMoreOne": "Show 1 more page",
-    "showAllCount": "Show all {total} pages"
+    "showAllCount": "Show all {total} pages",
+    "selectedAll": "All {count} pages selected",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomFit": "Fit to screen",
+    "zoomedTo": "Zoomed to {percent}%.",
+    "crop": "Crop",
+    "cropApply": "Apply crop",
+    "cropCancel": "Cancel",
+    "cropReset": "Remove crop",
+    "cropArea": "Crop area",
+    "pageCropped": "Page {page} cropped.",
+    "cropRemoved": "Crop removed from page {page}.",
+    "cropHelpDrag": "Drag the box or its corners.",
+    "cropHelpKeys": "With a keyboard, use the arrow keys to move it, and Shift with the arrow keys to resize it."
   },
   "toolPage": {
     "leadFiles": "Free, with no signup.",

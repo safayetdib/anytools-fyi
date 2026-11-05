@@ -1,5 +1,6 @@
 import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
+import { fromScreen, isFullPage, toScreen, type CropRect } from "./crop";
 import { isChanged, movePage, movePageTo, moveSelectedTo } from "./page-order";
 import type { ConfirmOptions } from "./confirm";
 import type { OutputPreview, PagePlan, PageSize, ToolDefinition, ToolOutput } from "./types";
@@ -47,6 +48,7 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   const sizeLabel = el(root, "size-label");
   const pageSizeSelect = el<HTMLSelectElement>(root, "page-size");
   const moveMenu = el<HTMLDetailsElement>(root, "move-menu");
+  const removeSelected = el<HTMLButtonElement>(root, "remove-selected");
   const movePosition = el<HTMLInputElement>(root, "move-position");
   const viewer = el<HTMLDialogElement>(root, "viewer");
   const viewerTitle = el(root, "viewer-title");
@@ -55,6 +57,16 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   const viewerNext = el<HTMLButtonElement>(root, "viewer-next");
   const viewerEdit = el(root, "viewer-edit");
   const viewerPosition = el<HTMLInputElement>(root, "viewer-position");
+  const viewerScroll = el(root, "viewer-scroll");
+  const viewerCanvas = el(root, "viewer-canvas");
+  const zoomIn = el<HTMLButtonElement>(root, "zoom-in");
+  const zoomOut = el<HTMLButtonElement>(root, "zoom-out");
+  const zoomFit = el<HTMLButtonElement>(root, "zoom-fit");
+  const zoomLevel = el(root, "zoom-level");
+  const cropButton = el<HTMLButtonElement>(root, "viewer-crop");
+  const cropBoxEl = el(root, "crop-box");
+  const cropTools = el(root, "crop-tools");
+  const cropReset = el<HTMLButtonElement>(root, "crop-reset");
   const editable = Boolean(tool.rearrangeOutput);
 
   let preview: OutputPreview | null = null;
@@ -70,9 +82,10 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   let pageSize: PageSize = "original";
   const selected = new Set<number>();
   const tiles = new Map<number, HTMLLIElement>();
-  // Extra clockwise turns, by page number, not yet applied to the file.
+  // Extra clockwise turns and crops, by page number, not yet applied to the file.
   const rotations = new Map<number, number>();
-  const images = new Map<number, { rotation: number; url: string }>();
+  const crops = new Map<number, CropRect>();
+  const images = new Map<number, { key: string; url: string }>();
   const rendering = new Set<number>();
 
   note.textContent = editable ? t.previewNoteEditable : t.previewNote;
@@ -80,17 +93,21 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   toolbar.hidden = !editable;
 
   const rotationOf = (page: number) => rotations.get(page) ?? 0;
+  // What a thumbnail shows, so it's redrawn whenever its rotation or crop changes.
+  const lookOf = (page: number) => `${rotationOf(page)}:${JSON.stringify(crops.get(page) ?? null)}`;
 
   function changed() {
     return (
       preview !== null &&
-      (isChanged(order, preview.pageCount) || order.some((page) => rotationOf(page) !== 0) || pageSize !== "original")
+      (isChanged(order, preview.pageCount) ||
+        order.some((page) => rotationOf(page) !== 0 || crops.has(page)) ||
+        pageSize !== "original")
     );
   }
 
   function plan(): PagePlan {
     return {
-      pages: order.map((page) => ({ page, rotate: rotationOf(page) as 0 | 90 | 180 | 270 })),
+      pages: order.map((page) => ({ page, rotate: rotationOf(page) as 0 | 90 | 180 | 270, crop: crops.get(page) })),
       pageSize,
     };
   }
@@ -100,7 +117,16 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   function renderToolbar() {
     for (const page of selected) if (!order.includes(page)) selected.delete(page);
     const picking = selected.size > 0;
-    status.textContent = picking ? plural(selected.size, t.selectedOne, t.selectedMany) : t.selectPrompt;
+    // With every page selected, moving changes nothing and removing isn't allowed, so only Rotate and Clear show.
+    const everything = picking && selected.size === order.length;
+    status.textContent = everything
+      ? fill(t.selectedAll, { count: order.length })
+      : picking
+        ? plural(selected.size, t.selectedOne, t.selectedMany)
+        : t.selectPrompt;
+    moveMenu.hidden = everything;
+    removeSelected.hidden = everything;
+    if (everything) moveMenu.open = false;
     tip.hidden = picking;
     idleActions.hidden = picking;
     selectionActions.hidden = !picking;
@@ -200,22 +226,22 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     const run = token;
     if (!current) return;
     for (const page of order.slice(0, shown)) {
-      const rotation = rotationOf(page);
-      if (images.get(page)?.rotation === rotation || rendering.has(page)) continue;
+      const look = lookOf(page);
+      if (images.get(page)?.key === look || rendering.has(page)) continue;
       rendering.add(page);
       try {
-        const { blob } = await current.renderPage(page, PAGE_THUMBNAIL_WIDTH, rotation);
+        const { blob } = await current.renderPage(page, PAGE_THUMBNAIL_WIDTH, rotationOf(page), crops.get(page));
         if (run !== token) return;
         const url = URL.createObjectURL(blob);
         const old = images.get(page);
         if (old) URL.revokeObjectURL(old.url);
-        images.set(page, { rotation, url });
+        images.set(page, { key: look, url });
         const img = document.createElement("img");
         img.src = url;
         img.alt = "";
         tiles.get(page)?.querySelector(".shell-page-blank, img")?.replaceWith(img);
-        // The page may have been turned again while it was drawing.
-        if (rotationOf(page) !== rotation) void renderThumbnails();
+        // The page may have been turned or cropped again while it was drawing.
+        if (lookOf(page) !== look) void renderThumbnails();
       } catch {
         // A page that can't be drawn keeps its blank tile, and the file itself is still fine.
       } finally {
@@ -426,6 +452,7 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     const confirmed = await hooks.confirm({ question: t.undoQuestion, yes: t.undoYes, no: t.undoNo, returnFocus: undo });
     if (!confirmed || !preview) return;
     rotations.clear();
+    crops.clear();
     selected.clear();
     pageSize = "original";
     pageSizeSelect.value = "original";
@@ -456,13 +483,58 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     }
   });
 
-  // --- Larger view ---
+  // --- Larger view: zoom and crop ---
 
-  async function showViewerPage(index: number) {
+  const ZOOM_LEVELS = [1, 1.5, 2, 3, 4];
+  const MIN_CROP = 0.05;
+  let zoom = 1;
+  let zoomTimer = 0;
+  let pageAspect = 0.75;
+  let pageTurn = 0;
+  let cropping = false;
+  let cropBox: CropRect = { x: 0, y: 0, width: 1, height: 1 };
+  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+  // Sizes the page to fit the view at 100%, or larger when zoomed, and returns its width in CSS pixels.
+  function layoutViewer() {
+    const area = viewerScroll.getBoundingClientRect();
+    const fitWidth = Math.max(40, Math.min(area.width - 32, (area.height - 32) * pageAspect));
+    const width = fitWidth * zoom;
+    viewerCanvas.style.width = `${width}px`;
+    viewerCanvas.style.height = `${width / pageAspect}px`;
+    viewer.classList.toggle("is-zoomed", zoom > 1);
+    zoomLevel.textContent = `${Math.round(zoom * 100)}%`;
+    zoomOut.disabled = zoom <= ZOOM_LEVELS[0] || cropping;
+    zoomIn.disabled = zoom >= ZOOM_LEVELS[ZOOM_LEVELS.length - 1] || cropping;
+    zoomFit.disabled = zoom === 1 || cropping;
+    return width;
+  }
+
+  async function renderViewerImage() {
     const current = preview;
     if (!current) return;
-    viewerIndex = index;
+    const page = order[viewerIndex];
     const run = ++viewerToken;
+    const scale = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.round(layoutViewer() * scale);
+    try {
+      const result = await current.renderPage(page, width, rotationOf(page), cropping ? undefined : crops.get(page));
+      if (run !== viewerToken) return;
+      if (viewerImage.src) URL.revokeObjectURL(viewerImage.src);
+      viewerImage.src = URL.createObjectURL(result.blob);
+      pageAspect = result.width / result.height;
+      pageTurn = result.turn;
+      layoutViewer();
+    } catch {
+      // The thumbnail is still there to look at, so a failed large render needs no message.
+    }
+  }
+
+  async function showViewerPage(index: number) {
+    if (!preview) return;
+    if (cropping) endCrop();
+    viewerIndex = index;
+    zoom = 1;
     viewerTitle.textContent = fill(t.pageOf, { page: index + 1, total: order.length });
     viewerPosition.value = String(index + 1);
     viewerPosition.max = String(order.length);
@@ -471,16 +543,170 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     // A disabled button drops keyboard focus, so hand it to the button that still works.
     if (viewerPrev.disabled && document.activeElement === viewerPrev) viewerNext.focus();
     if (viewerNext.disabled && document.activeElement === viewerNext) viewerPrev.focus();
-    const width = Math.min(1400, Math.round(window.innerWidth * Math.min(window.devicePixelRatio || 1, 2)));
-    try {
-      const { blob } = await current.renderPage(order[index], width, rotationOf(order[index]));
-      if (run !== viewerToken) return;
-      if (viewerImage.src) URL.revokeObjectURL(viewerImage.src);
-      viewerImage.src = URL.createObjectURL(blob);
-    } catch {
-      // The thumbnail is still there to look at, so a failed large render needs no message.
-    }
+    await renderViewerImage();
   }
+
+  // Zooms around the middle of what's in view, then redraws the page sharply at the new size.
+  function setZoom(next: number) {
+    if (cropping) return;
+    const target = clamp(next, ZOOM_LEVELS[0], ZOOM_LEVELS[ZOOM_LEVELS.length - 1]);
+    const centreX = (viewerScroll.scrollLeft + viewerScroll.clientWidth / 2) / Math.max(viewerScroll.scrollWidth, 1);
+    const centreY = (viewerScroll.scrollTop + viewerScroll.clientHeight / 2) / Math.max(viewerScroll.scrollHeight, 1);
+    zoom = target;
+    layoutViewer();
+    viewerScroll.scrollLeft = centreX * viewerScroll.scrollWidth - viewerScroll.clientWidth / 2;
+    viewerScroll.scrollTop = centreY * viewerScroll.scrollHeight - viewerScroll.clientHeight / 2;
+    hooks.announce(fill(t.zoomedTo, { percent: Math.round(zoom * 100) }));
+    window.clearTimeout(zoomTimer);
+    zoomTimer = window.setTimeout(() => void renderViewerImage(), 150);
+  }
+
+  const zoomStep = (direction: 1 | -1) => {
+    const index = ZOOM_LEVELS.findIndex((level) => level >= zoom - 0.001);
+    setZoom(ZOOM_LEVELS[clamp(index + direction, 0, ZOOM_LEVELS.length - 1)]);
+  };
+
+  zoomIn.addEventListener("click", () => zoomStep(1));
+  zoomOut.addEventListener("click", () => zoomStep(-1));
+  zoomFit.addEventListener("click", () => setZoom(1));
+
+  // Dragging a zoomed page moves around it, like a map.
+  let pan: { x: number; y: number; left: number; top: number } | null = null;
+  viewerScroll.addEventListener("pointerdown", (event) => {
+    if (zoom <= 1 || cropping || event.button > 0) return;
+    viewerScroll.setPointerCapture(event.pointerId);
+    pan = { x: event.clientX, y: event.clientY, left: viewerScroll.scrollLeft, top: viewerScroll.scrollTop };
+  });
+  viewerScroll.addEventListener("pointermove", (event) => {
+    if (!pan) return;
+    viewerScroll.scrollLeft = pan.left - (event.clientX - pan.x);
+    viewerScroll.scrollTop = pan.top - (event.clientY - pan.y);
+  });
+  viewerScroll.addEventListener("pointerup", () => (pan = null));
+  viewerScroll.addEventListener("pointercancel", () => (pan = null));
+
+  function drawCropBox() {
+    cropBoxEl.style.left = `${cropBox.x * 100}%`;
+    cropBoxEl.style.top = `${cropBox.y * 100}%`;
+    cropBoxEl.style.width = `${cropBox.width * 100}%`;
+    cropBoxEl.style.height = `${cropBox.height * 100}%`;
+  }
+
+  async function startCrop() {
+    const page = order[viewerIndex];
+    cropping = true;
+    zoom = 1;
+    viewer.classList.add("is-cropping");
+    viewerEdit.hidden = true;
+    cropTools.hidden = false;
+    cropReset.hidden = !crops.has(page);
+    // The box appears and takes focus at once, so keys work straight away. The whole page is redrawn behind it.
+    const existing = crops.get(page);
+    cropBox = existing ? toScreen(existing, pageTurn) : { x: 0.05, y: 0.05, width: 0.9, height: 0.9 };
+    drawCropBox();
+    cropBoxEl.hidden = false;
+    cropBoxEl.focus();
+    await renderViewerImage();
+  }
+
+  function endCrop() {
+    cropping = false;
+    viewer.classList.remove("is-cropping");
+    cropBoxEl.hidden = true;
+    cropTools.hidden = true;
+    viewerEdit.hidden = !editable;
+  }
+
+  function finishCrop(message: string) {
+    endCrop();
+    renderGrid();
+    hooks.announce(fill(message, { page: viewerIndex + 1 }));
+    void renderViewerImage();
+    cropButton.focus();
+  }
+
+  cropButton.addEventListener("click", () => void startCrop());
+  el(root, "crop-apply").addEventListener("click", () => {
+    const page = order[viewerIndex];
+    const crop = fromScreen(cropBox, pageTurn);
+    if (isFullPage(crop)) crops.delete(page);
+    else crops.set(page, crop);
+    finishCrop(crops.has(page) ? t.pageCropped : t.cropRemoved);
+  });
+  el(root, "crop-cancel").addEventListener("click", () => {
+    endCrop();
+    void renderViewerImage();
+    cropButton.focus();
+  });
+  cropReset.addEventListener("click", () => {
+    crops.delete(order[viewerIndex]);
+    finishCrop(t.cropRemoved);
+  });
+
+  // The crop box moves when dragged, and its corners resize it. Arrow keys do the same for keyboard users.
+  let cropDrag: { handle: string; x: number; y: number; start: CropRect } | null = null;
+  cropBoxEl.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    cropBoxEl.setPointerCapture(event.pointerId);
+    const handle = (event.target as HTMLElement).dataset.handle ?? "move";
+    cropDrag = { handle, x: event.clientX, y: event.clientY, start: { ...cropBox } };
+  });
+  cropBoxEl.addEventListener("pointermove", (event) => {
+    if (!cropDrag) return;
+    const area = viewerCanvas.getBoundingClientRect();
+    const dx = (event.clientX - cropDrag.x) / area.width;
+    const dy = (event.clientY - cropDrag.y) / area.height;
+    const { handle, start } = cropDrag;
+    const right = start.x + start.width;
+    const bottom = start.y + start.height;
+    let { x, y, width, height } = start;
+    if (handle === "move") {
+      x = clamp(start.x + dx, 0, 1 - width);
+      y = clamp(start.y + dy, 0, 1 - height);
+    } else {
+      if (handle.includes("w")) {
+        x = clamp(start.x + dx, 0, right - MIN_CROP);
+        width = right - x;
+      }
+      if (handle.includes("e")) width = clamp(start.width + dx, MIN_CROP, 1 - start.x);
+      if (handle.includes("n")) {
+        y = clamp(start.y + dy, 0, bottom - MIN_CROP);
+        height = bottom - y;
+      }
+      if (handle.includes("s")) height = clamp(start.height + dy, MIN_CROP, 1 - start.y);
+    }
+    cropBox = { x, y, width, height };
+    drawCropBox();
+  });
+  cropBoxEl.addEventListener("pointerup", () => (cropDrag = null));
+  cropBoxEl.addEventListener("pointercancel", () => (cropDrag = null));
+  cropBoxEl.addEventListener("keydown", (event) => {
+    const step = 0.01;
+    const moves: Record<string, [number, number]> = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step],
+      ArrowDown: [0, step],
+    };
+    if (event.key === "Enter") {
+      event.preventDefault();
+      el(root, "crop-apply").click();
+      return;
+    }
+    const move = moves[event.key];
+    if (!move) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const [dx, dy] = move;
+    if (event.shiftKey) {
+      cropBox.width = clamp(cropBox.width + dx, MIN_CROP, 1 - cropBox.x);
+      cropBox.height = clamp(cropBox.height + dy, MIN_CROP, 1 - cropBox.y);
+    } else {
+      cropBox.x = clamp(cropBox.x + dx, 0, 1 - cropBox.width);
+      cropBox.y = clamp(cropBox.y + dy, 0, 1 - cropBox.height);
+    }
+    drawCropBox();
+  });
 
   function openViewer(index: number) {
     viewer.showModal();
@@ -513,15 +739,28 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     if (removePages([order[viewerIndex]])) void showViewerPage(Math.min(viewerIndex, order.length - 1));
   });
   document.addEventListener("keydown", (event) => {
-    if (!viewer.open || event.target === viewerPosition) return;
+    if (!viewer.open || cropping || (event.target as HTMLElement).closest("input")) return;
     if (event.key === "ArrowLeft" && viewerIndex > 0) void showViewerPage(viewerIndex - 1);
     if (event.key === "ArrowRight" && viewerIndex < order.length - 1) void showViewerPage(viewerIndex + 1);
+    if (event.key === "+" || event.key === "=") zoomStep(1);
+    if (event.key === "-") zoomStep(-1);
+    if (event.key === "0") setZoom(1);
+  });
+  window.addEventListener("resize", () => {
+    if (viewer.open) layoutViewer();
   });
   viewer.addEventListener("click", (event) => {
     if (event.target === viewer) viewer.close();
   });
+  // Escape while cropping cancels the crop instead of closing the view.
+  viewer.addEventListener("cancel", (event) => {
+    if (!cropping) return;
+    event.preventDefault();
+    el(root, "crop-cancel").click();
+  });
   viewer.addEventListener("close", () => {
     viewerToken++;
+    if (cropping) endCrop();
     shown = Math.max(shown, viewerIndex + 1);
     renderGrid();
     focusTile(viewerIndex, "[data-open]");
@@ -556,6 +795,8 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
       tiles.clear();
       selected.clear();
       rotations.clear();
+      crops.clear();
+      viewer.classList.remove("is-cropping", "is-zoomed");
       pageSize = "original";
       pageSizeSelect.value = "original";
       images.forEach(({ url }) => URL.revokeObjectURL(url));

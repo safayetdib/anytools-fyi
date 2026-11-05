@@ -81,3 +81,45 @@ describe("rearrangePdf with blank pages", () => {
     expect(await pageSizes(result.bytes)).toEqual([[842, 595]]);
   });
 });
+
+describe("rearrangePdf with crops", () => {
+  it("crops a page without changing its content", async () => {
+    const { pageCropBoxes } = await import("../../../tests/fixtures/pdf");
+    const source = await makePdf([200, 200], 300);
+    const result = await rearrangePdf(source, {
+      pages: [
+        { page: 1, rotate: 0, crop: { x: 0.5, y: 0, width: 0.5, height: 1 } },
+        { page: 2, rotate: 0, crop: { x: 0, y: 0, width: 0.5, height: 0.5 } },
+      ],
+      pageSize: "original",
+    });
+    // PDF boxes are measured from the bottom-left corner, so the top half starts 150 points up.
+    expect(await pageCropBoxes(result.bytes)).toEqual([
+      [100, 0, 100, 300],
+      [0, 150, 100, 150],
+    ]);
+    expect(await pageWidths(result.bytes)).toEqual([200, 200]);
+  });
+
+  it("crops inside an existing crop", async () => {
+    const { PDFDocument } = await import("pdf-lib");
+    const { pageCropBoxes } = await import("../../../tests/fixtures/pdf");
+    const doc = await PDFDocument.load(await makePdf([200], 300));
+    doc.getPage(0).setCropBox(50, 50, 100, 200);
+    const result = await rearrangePdf(await doc.save(), {
+      pages: [{ page: 1, rotate: 0, crop: { x: 0.5, y: 0, width: 0.5, height: 1 } }],
+      pageSize: "original",
+    });
+    expect(await pageCropBoxes(result.bytes)).toEqual([[100, 50, 50, 200]]);
+  });
+
+  it("places only the cropped area on a standard sheet", async () => {
+    // Cropping a tall page to a wide strip makes it a landscape sheet when matching each page.
+    const source = await makePdf([200], 600);
+    const result = await rearrangePdf(source, {
+      pages: [{ page: 1, rotate: 0, crop: { x: 0, y: 0, width: 1, height: 0.2 } }],
+      pageSize: "a4-auto",
+    });
+    expect(await pageSizes(result.bytes)).toEqual([[842, 595]]);
+  });
+});

@@ -1,4 +1,5 @@
 import { PDFDocument, degrees, type PDFPage } from "pdf-lib";
+import type { CropRect } from "../shell/crop";
 import type { PagePlan, PageSize } from "../shell/types";
 
 // Sheet sizes in PDF points (1/72 inch).
@@ -13,17 +14,41 @@ function sheetFor(pageSize: Exclude<PageSize, "original">, wide: boolean): [numb
   return landscape ? [long, short] : [short, long];
 }
 
+// The area to keep, in PDF points from the bottom-left corner, inside the page's current crop box.
+function cropArea(page: PDFPage, crop?: CropRect) {
+  const box = page.getCropBox();
+  if (!crop) return box;
+  return {
+    x: box.x + crop.x * box.width,
+    y: box.y + (1 - crop.y - crop.height) * box.height,
+    width: crop.width * box.width,
+    height: crop.height * box.height,
+  };
+}
+
 // Draws a source page, turned clockwise by `turn`, centred and scaled to fit inside the sheet's margins.
-async function placeOnSheet(result: PDFDocument, source: PDFPage, turn: number, pageSize: Exclude<PageSize, "original">) {
+async function placeOnSheet(
+  result: PDFDocument,
+  source: PDFPage,
+  turn: number,
+  pageSize: Exclude<PageSize, "original">,
+  crop?: CropRect,
+) {
   const sideways = turn === 90 || turn === 270;
-  const { width: sourceWidth, height: sourceHeight } = source.getSize();
+  const area = cropArea(source, crop);
+  const { width: sourceWidth, height: sourceHeight } = area;
   // A page with nothing drawn on it can't be embedded, so it becomes an empty sheet of the right shape.
   if (!source.node.Contents()) {
     const wide = sideways ? sourceHeight > sourceWidth : sourceWidth > sourceHeight;
     result.addPage(sheetFor(pageSize, wide));
     return;
   }
-  const embedded = await result.embedPage(source);
+  const embedded = await result.embedPage(source, {
+    left: area.x,
+    bottom: area.y,
+    right: area.x + area.width,
+    top: area.y + area.height,
+  });
   const shownWidth = sideways ? embedded.height : embedded.width;
   const shownHeight = sideways ? embedded.width : embedded.height;
   const [sheetWidth, sheetHeight] = sheetFor(pageSize, shownWidth > shownHeight);
@@ -59,14 +84,19 @@ export async function rearrangePdf(bytes: Uint8Array, plan: PagePlan): Promise<{
       pages.map(({ page }) => page - 1),
     );
     copies.forEach((copy, index) => {
-      copy.setRotation(degrees((copy.getRotation().angle + pages[index].rotate) % 360));
+      const { rotate, crop } = pages[index];
+      copy.setRotation(degrees((copy.getRotation().angle + rotate) % 360));
+      if (crop) {
+        const area = cropArea(copy, crop);
+        copy.setCropBox(area.x, area.y, area.width, area.height);
+      }
       result.addPage(copy);
     });
   } else {
-    for (const { page, rotate } of pages) {
+    for (const { page, rotate, crop } of pages) {
       const original = source.getPage(page - 1);
       const turn = (((original.getRotation().angle + rotate) % 360) + 360) % 360;
-      await placeOnSheet(result, original, turn, pageSize);
+      await placeOnSheet(result, original, turn, pageSize, crop);
     }
   }
   return { bytes: await result.save(), pageCount: result.getPageCount() };

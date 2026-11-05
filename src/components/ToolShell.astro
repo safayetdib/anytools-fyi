@@ -224,12 +224,34 @@ const limits = isFiles
   <dialog class="shell-viewer" data-el="viewer" aria-labelledby="shell-viewer-title">
     <div class="shell-viewer-head">
       <p class="shell-viewer-title" id="shell-viewer-title" data-el="viewer-title"></p>
+      <div class="shell-viewer-zoom" role="group" aria-label={t.zoomFit}>
+        <button class="shell-icon-button" type="button" data-el="zoom-out" aria-label={t.zoomOut}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M8 11h6" /></svg>
+        </button>
+        <span class="shell-viewer-zoom-level" data-el="zoom-level">100%</span>
+        <button class="shell-icon-button" type="button" data-el="zoom-in" aria-label={t.zoomIn}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M8 11h6" /><path d="M11 8v6" /></svg>
+        </button>
+        <button class="shell-icon-button" type="button" data-el="zoom-fit" aria-label={t.zoomFit}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5" /><path d="M20 9V4h-5" /><path d="M4 15v5h5" /><path d="M20 15v5h-5" /></svg>
+        </button>
+      </div>
       <button class="shell-icon-button" type="button" data-el="viewer-close" aria-label={t.close}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12" /><path d="M18 6 6 18" /></svg>
       </button>
     </div>
     <div class="shell-viewer-stage">
-      <img data-el="viewer-image" alt="" />
+      <div class="shell-viewer-scroll" data-el="viewer-scroll">
+        <div class="shell-viewer-canvas" data-el="viewer-canvas">
+          <img data-el="viewer-image" alt="" />
+          <div class="shell-crop" data-el="crop-box" tabindex="0" role="group" aria-label={t.cropArea} aria-describedby="shell-crop-help" hidden>
+            <span class="shell-crop-handle" data-handle="nw" aria-hidden="true"></span>
+            <span class="shell-crop-handle" data-handle="ne" aria-hidden="true"></span>
+            <span class="shell-crop-handle" data-handle="sw" aria-hidden="true"></span>
+            <span class="shell-crop-handle" data-handle="se" aria-hidden="true"></span>
+          </div>
+        </div>
+      </div>
       <button class="shell-viewer-nav shell-viewer-prev" type="button" data-el="viewer-prev" aria-label={t.previous}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
       </button>
@@ -247,6 +269,10 @@ const limits = isFiles
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" /></svg>
           {t.rotateRight}
         </button>
+        <button class="shell-secondary" type="button" data-el="viewer-crop">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14" /><path d="M18 22V8a2 2 0 0 0-2-2H2" /></svg>
+          {t.crop}
+        </button>
       </div>
       <div class="shell-viewer-group">
         <label class="shell-viewer-position">
@@ -262,6 +288,19 @@ const limits = isFiles
         <button class="shell-secondary shell-danger" type="button" data-el="viewer-remove">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M6 7l1 13h10l1-13" /><path d="M9 7V4h6v3" /></svg>
           {t.removeThis}
+        </button>
+      </div>
+    </div>
+    <div class="shell-viewer-tools shell-crop-tools" data-el="crop-tools" hidden>
+      <p class="shell-hint" id="shell-crop-help">
+        {t.cropHelpDrag}<span class="shell-viewer-extra"> {t.cropHelpKeys}</span>
+      </p>
+      <div class="shell-viewer-group">
+        <button class="shell-secondary shell-danger" type="button" data-el="crop-reset" hidden>{t.cropReset}</button>
+        <button class="shell-secondary" type="button" data-el="crop-cancel">{t.cropCancel}</button>
+        <button class="shell-primary" type="button" data-el="crop-apply">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+          {t.cropApply}
         </button>
       </div>
     </div>
@@ -1311,19 +1350,123 @@ const limits = isFiles
     position: relative;
     display: flex;
     flex: 1;
-    align-items: center;
-    justify-content: center;
     min-height: 0;
-    padding: var(--space-md) 4.5rem;
+    padding: 0 4rem;
     background: var(--color-bg);
   }
 
-  .shell-viewer-stage img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+  /* The page sits in its own scroll area, so a zoomed page can be moved around while the arrows stay put. */
+  .shell-viewer-scroll {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+    padding: var(--space-md);
+  }
+
+  .shell-viewer.is-zoomed .shell-viewer-scroll {
+    cursor: grab;
+  }
+
+  .shell-viewer.is-zoomed .shell-viewer-scroll:active {
+    cursor: grabbing;
+  }
+
+  .shell-viewer-canvas {
+    position: relative;
+    flex-shrink: 0;
+    margin: auto;
+  }
+
+  .shell-viewer-canvas img {
+    display: block;
+    width: 100%;
+    height: 100%;
     background: #ffffff;
     box-shadow: 0 2px 10px rgb(0 0 0 / 0.2);
+  }
+
+  .shell-viewer-zoom {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-left: auto;
+  }
+
+  .shell-viewer-zoom-level {
+    min-width: 3.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .shell-viewer-zoom button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .shell-viewer.is-cropping .shell-viewer-nav {
+    display: none;
+  }
+
+  /* The crop box dims everything outside it, with a handle on each corner. */
+  .shell-crop {
+    position: absolute;
+    border: 2px solid #ffffff;
+    outline: 1px solid rgb(0 0 0 / 0.6);
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.5);
+    cursor: move;
+    touch-action: none;
+  }
+
+  .shell-viewer-canvas:has(.shell-crop:not([hidden])) {
+    overflow: hidden;
+  }
+
+  .shell-crop:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .shell-crop-handle {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 3px solid #ffffff;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.5);
+    touch-action: none;
+  }
+
+  .shell-crop-handle[data-handle="nw"] {
+    top: -12px;
+    left: -12px;
+    cursor: nwse-resize;
+  }
+
+  .shell-crop-handle[data-handle="ne"] {
+    top: -12px;
+    right: -12px;
+    cursor: nesw-resize;
+  }
+
+  .shell-crop-handle[data-handle="sw"] {
+    bottom: -12px;
+    left: -12px;
+    cursor: nesw-resize;
+  }
+
+  .shell-crop-handle[data-handle="se"] {
+    right: -12px;
+    bottom: -12px;
+    cursor: nwse-resize;
+  }
+
+  .shell-crop-tools .shell-hint {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.875rem;
+    text-align: center;
   }
 
   .shell-viewer-nav {
@@ -1408,7 +1551,20 @@ const limits = isFiles
     }
 
     .shell-viewer-stage {
+      padding: 0;
+    }
+
+    .shell-viewer-scroll {
       padding: var(--space-sm);
+    }
+
+    .shell-viewer-zoom-level {
+      display: none;
+    }
+
+    .shell-viewer-head {
+      gap: var(--space-xs);
+      padding-left: var(--space-md);
     }
 
     .shell-viewer-prev {
@@ -1431,7 +1587,8 @@ const limits = isFiles
       display: contents;
     }
 
-    .shell-viewer-tools .shell-secondary {
+    .shell-viewer-tools .shell-secondary,
+    .shell-viewer-tools .shell-primary {
       width: 100%;
       padding: 0 var(--space-sm);
     }
@@ -1442,7 +1599,9 @@ const limits = isFiles
       min-width: 0;
     }
 
-    .shell-viewer-tools [data-el="viewer-remove"] {
+    .shell-viewer-tools [data-el="viewer-remove"],
+    .shell-crop-tools .shell-hint,
+    .shell-crop-tools [data-el="crop-reset"] {
       grid-column: 1 / -1;
     }
 

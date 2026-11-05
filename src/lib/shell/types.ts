@@ -1,3 +1,5 @@
+import type { CropRect } from "./crop";
+
 export interface FileToolConfig {
   mode: "files";
   // Shown under the file list heading, to say what the order or options mean for this tool.
@@ -46,12 +48,14 @@ export interface RenderedPage {
   blob: Blob;
   width: number;
   height: number;
+  // The page's total clockwise turn as drawn, including any rotation it already had.
+  turn: number;
 }
 
 export interface OutputPreview {
   pageCount: number;
   // Rotation is extra clockwise turning, on top of the page's own, so previews match unapplied changes.
-  renderPage(pageNumber: number, width: number, rotation?: number): Promise<RenderedPage>;
+  renderPage(pageNumber: number, width: number, rotation?: number, crop?: CropRect): Promise<RenderedPage>;
   close(): void;
 }
 
@@ -66,7 +70,8 @@ export type PageSize =
 
 // How to rebuild a result: which pages to keep, in order, how far to turn each one clockwise, and the sheet size.
 export interface PagePlan {
-  pages: { page: number; rotate: 0 | 90 | 180 | 270 }[];
+  // Crops are fractions of the page before turning, as in ./crop.
+  pages: { page: number; rotate: 0 | 90 | 180 | 270; crop?: CropRect }[];
   pageSize: PageSize;
 }
 

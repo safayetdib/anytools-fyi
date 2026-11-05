@@ -74,6 +74,14 @@ export async function pageRotations(bytes: Uint8Array | Buffer): Promise<number[
   return doc.getPages().map((page) => page.getRotation().angle);
 }
 
+export async function pageCropBoxes(bytes: Uint8Array | Buffer): Promise<number[][]> {
+  const doc = await PDFDocument.load(bytes);
+  return doc.getPages().map((page) => {
+    const box = page.getCropBox();
+    return [box.x, box.y, box.width, box.height].map((value) => Math.round(value));
+  });
+}
+
 export async function pageSizes(bytes: Uint8Array | Buffer): Promise<[number, number][]> {
   const doc = await PDFDocument.load(bytes);
   return doc.getPages().map((page) => [Math.round(page.getWidth()), Math.round(page.getHeight())]);

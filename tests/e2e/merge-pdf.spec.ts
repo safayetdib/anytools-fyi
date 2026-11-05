@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { makeEncryptedPdf, makePdf, pageRotations, pageSizes, pageWidths } from "../fixtures/pdf";
+import { makeEncryptedPdf, makePdf, pageCropBoxes, pageRotations, pageSizes, pageWidths } from "../fixtures/pdf";
 
 const SCREENSHOT_DIR = "test-results/screenshots/merge-pdf";
 const PAGE = "/merge-pdf/";
@@ -447,12 +447,15 @@ test("edit pages - remove selected pages, then apply", async ({ page }) => {
   expect(await pageWidths(await applyAndLoad(page))).toEqual([200]);
 });
 
-test("edit pages - every page can't be removed", async ({ page }) => {
+test("edit pages - the last page can't be removed", async ({ page }) => {
   await mergeForEditing(page, [100], [200]);
-  await toolbar(page).getByRole("button", { name: "Select all" }).click();
-  await toolbar(page).getByRole("button", { name: "Remove", exact: true }).click();
-  await expect(tiles(page)).toHaveCount(2);
+  await page.getByRole("button", { name: "Open page 1 larger" }).click();
+  const viewer = page.getByRole("dialog");
+  await viewer.getByRole("button", { name: "Remove this page" }).click();
+  await expect(viewer).toContainText("Page 1 of 1");
+  await viewer.getByRole("button", { name: "Remove this page" }).click();
   await expect(page.getByTestId("shell-live")).toContainText("needs at least one page");
+  await expect(viewer).toContainText("Page 1 of 1");
 });
 
 test("edit pages - rotate selected pages and see them turn", async ({ page }) => {
@@ -759,7 +762,7 @@ for (const [width, height] of [
     const viewer = page.getByRole("dialog");
     await expect(viewer.locator("img")).toBeVisible();
     await expect.poll(() => viewer.locator("img").evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
-    for (const name of ["Close", "Previous page", "Next page", "Rotate left", "Rotate right", "Move", "Remove this page"]) {
+    for (const name of ["Close", "Zoom in", "Zoom out", "Fit to screen", "Previous page", "Next page", "Rotate left", "Rotate right", "Crop", "Move", "Remove this page"]) {
       await expect(viewer.getByRole("button", { name, exact: true })).toBeInViewport();
     }
     await expect(viewer.getByLabel("Move to position")).toBeInViewport();
@@ -778,8 +781,8 @@ test("viewer - buttons are in a set order with icons", async ({ page }) => {
   const names = await page.getByTestId("viewer-tools").getByRole("button").evaluateAll((buttons) =>
     buttons.map((b) => b.textContent?.trim()),
   );
-  expect(names).toEqual(["Rotate left", "Rotate right", "Move", "Remove this page"]);
-  expect(await page.getByTestId("viewer-tools").locator("button svg").count()).toBe(4);
+  expect(names).toEqual(["Rotate left", "Rotate right", "Crop", "Move", "Remove this page"]);
+  expect(await page.getByTestId("viewer-tools").locator("button svg").count()).toBe(5);
 });
 
 // --- Leaving the page ---
@@ -1042,4 +1045,170 @@ test.describe("phone layout", () => {
     const second = await columns.nth(1).boundingBox();
     expect(Math.abs((first?.y ?? 0) - (second?.y ?? 0))).toBeLessThanOrEqual(2);
   });
+});
+
+test("edit pages - with every page selected, only Rotate and Clear show", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  const bar = toolbar(page);
+  await bar.getByRole("button", { name: "Select all" }).click();
+  await expect(bar).toContainText("All 3 pages selected");
+  await expect(bar.getByRole("button", { name: "Rotate", exact: true })).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Clear", exact: true })).toBeVisible();
+  await expect(bar.getByText("Move to…")).toBeHidden();
+  await expect(bar.getByRole("button", { name: "Remove", exact: true })).toBeHidden();
+  await select(page, 2).uncheck();
+  await expect(bar).toContainText("2 pages selected");
+  await expect(bar.getByText("Move to…")).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Remove", exact: true })).toBeVisible();
+  await bar.getByRole("button", { name: "Clear", exact: true }).click();
+  await expect(page.locator("[data-select]:checked")).toHaveCount(0);
+});
+
+// --- Zoom and crop in the larger view ---
+
+async function openLarger(page: Page, n: number) {
+  await page.getByRole("button", { name: `Open page ${n} larger` }).click();
+  const viewer = page.getByRole("dialog");
+  await expect.poll(() => viewer.locator("img").evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  return viewer;
+}
+
+test("zoom - zooms in, out and back to fit", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  const width = () => viewer.locator('[data-el="viewer-canvas"]').evaluate((el) => el.getBoundingClientRect().width);
+  const fit = await width();
+  await expect(viewer.getByText("100%")).toBeVisible();
+  await viewer.getByRole("button", { name: "Zoom in" }).click();
+  await expect(viewer.getByText("150%")).toBeVisible();
+  expect(await width()).toBeCloseTo(fit * 1.5, 0);
+  await page.keyboard.press("+");
+  await expect(viewer.getByText("200%")).toBeVisible();
+  await viewer.getByRole("button", { name: "Zoom out" }).click();
+  await expect(viewer.getByText("150%")).toBeVisible();
+  await viewer.getByRole("button", { name: "Fit to screen" }).click();
+  await expect(viewer.getByText("100%")).toBeVisible();
+  expect(await width()).toBeCloseTo(fit, 0);
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/zoom-fit.png` });
+});
+
+test("zoom - a zoomed page can be dragged around", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Zoom in" }).click();
+  await viewer.getByRole("button", { name: "Zoom in" }).click();
+  await viewer.getByRole("button", { name: "Zoom in" }).click();
+  const scroller = viewer.locator('[data-el="viewer-scroll"]');
+  const before = await scroller.evaluate((el) => el.scrollTop);
+  const box = await scroller.boundingBox();
+  if (!box) throw new Error("No scroll area");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 150, { steps: 5 });
+  await page.mouse.up();
+  expect(await scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(before);
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/zoom-300.png` });
+});
+
+test("crop - drag a corner, apply, and the PDF keeps only that area", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  const cropBox = viewer.getByRole("group", { name: "Crop area" });
+  await expect(cropBox).toBeFocused();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/crop-start.png` });
+  const canvas = await viewer.locator('[data-el="viewer-canvas"]').boundingBox();
+  const handle = await cropBox.locator('[data-handle="se"]').boundingBox();
+  if (!canvas || !handle) throw new Error("Crop box not found");
+  // Drag the bottom-right corner to the middle of the page.
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await viewer.getByRole("button", { name: "Apply crop" }).click();
+  await expect(page.getByTestId("shell-live")).toContainText("Page 1 cropped");
+  await expect(viewer.getByRole("button", { name: "Crop", exact: true })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("You've changed the pages.")).toBeVisible();
+  const [box] = await pageCropBoxes(await applyAndLoad(page));
+  // The default box starts 5% in, so the kept area runs from 5% to the middle of the 200 x 300 page.
+  expect(box[0]).toBeCloseTo(10, -1);
+  expect(box[2]).toBeCloseTo(90, -1);
+  expect(box[3]).toBeCloseTo(135, -1);
+});
+
+test("crop - the keyboard can move and resize the box", async ({ page }) => {
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  for (let i = 0; i < 20; i++) await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("shell-live")).toContainText("Page 1 cropped");
+  await page.keyboard.press("Escape");
+  const [box] = await pageCropBoxes(await applyAndLoad(page));
+  expect(box[2]).toBeCloseTo(140, -1);
+});
+
+test("crop - cancel and Escape leave the page alone, and Remove crop undoes it", async ({ page }) => {
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(viewer).toBeVisible();
+  await expect(viewer.getByRole("group", { name: "Crop area" })).toBeHidden();
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  await viewer.getByRole("button", { name: "Apply crop" }).click();
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  await viewer.getByRole("button", { name: "Remove crop" }).click();
+  await expect(page.getByTestId("shell-live")).toContainText("Crop removed from page 1");
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("You've changed the pages.")).toBeHidden();
+});
+
+test("crop - a crop follows the page when it's turned afterwards", async ({ page }) => {
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  await viewer.getByRole("button", { name: "Apply crop" }).click();
+  await viewer.getByRole("button", { name: "Rotate right" }).click();
+  await page.keyboard.press("Escape");
+  const bytes = await applyAndLoad(page);
+  expect(await pageRotations(bytes)).toEqual([90, 0]);
+  const [box] = await pageCropBoxes(bytes);
+  expect(box[2]).toBeCloseTo(180, -1);
+  expect(box[3]).toBeCloseTo(270, -1);
+});
+
+test("crop - the thumbnail shows the cropped page", async ({ page }) => {
+  await mergeForEditing(page, [200], [200]);
+  const thumb = page.locator('.shell-page-item[data-page="1"] img');
+  await expect.poll(() => thumb.evaluate((img) => (img as HTMLImageElement).naturalHeight > (img as HTMLImageElement).naturalWidth)).toBe(true);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  for (let i = 0; i < 50; i++) await page.keyboard.press("Shift+ArrowUp");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+  await expect.poll(() => page.locator('.shell-page-item[data-page="1"] img').evaluate((img) => (img as HTMLImageElement).naturalWidth > (img as HTMLImageElement).naturalHeight)).toBe(true);
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`crop - crop mode has no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await mergeForEditing(page, [200], [200]);
+    const viewer = await openLarger(page, 1);
+    await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+  });
+}
+
+test("crop - crop mode fits a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await mergeForEditing(page, [200], [200]);
+  const viewer = await openLarger(page, 1);
+  await viewer.getByRole("button", { name: "Crop", exact: true }).click();
+  for (const name of ["Cancel", "Apply crop"]) await expect(viewer.getByRole("button", { name })).toBeInViewport();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/crop-375.png` });
 });
