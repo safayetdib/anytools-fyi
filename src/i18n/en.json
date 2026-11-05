@@ -247,8 +247,7 @@
     "lockedAnnounce": "{name} has a password, so it can't be used until the password is removed.",
     "previewHeading": "Preview",
     "previewNote": "Check the pages before you download. Select a page to see it larger.",
-    "showMore": "Show more pages",
-    "showing": "Showing {shown} of {total} pages.",
+    "showing": "Showing {shown} of {total} pages",
     "openPage": "Open page {page} larger",
     "pageLabel": "Page {page}",
     "pageOf": "Page {page} of {total}",
@@ -310,7 +309,13 @@
     "undoYes": "Yes, undo changes",
     "undoNo": "Keep changes",
     "moveToShort": "Move to",
-    "positionWord": "position"
+    "positionWord": "position",
+    "dragHint": "Drag to reorder",
+    "showLess": "Show first {count} only",
+    "showingAll": "Showing all {total} pages",
+    "showMoreCount": "Show {count} more pages",
+    "showMoreOne": "Show 1 more page",
+    "showAllCount": "Show all {total} pages"
   },
   "toolPage": {
     "leadFiles": "Free, with no signup.",
@@ -360,7 +365,7 @@
     "summary": "Done. {count} PDFs merged into merged.pdf, with {pages} pages ({size}).",
     "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
     "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
-    "arrangeHint": "The merged file follows this order, from top to bottom. Use the arrows to change it, or add more files.",
+    "arrangeHint": "Drag files, or use the arrows, to change the order. The merged file follows this list from top to bottom.",
     "diagram": {
       "fileA": "certificate.pdf",
       "fileB": "transcript.pdf",

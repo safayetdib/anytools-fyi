@@ -87,4 +87,14 @@ const { faq } = Astro.props;
       }
     }
   }
+
+  @media (max-width: 599px) {
+    summary {
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    p {
+      padding: 0 var(--space-md) var(--space-md);
+    }
+  }
 </style>

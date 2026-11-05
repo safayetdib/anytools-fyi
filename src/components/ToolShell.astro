@@ -200,9 +200,23 @@ const limits = isFiles
         </div>
       </div>
       <ol class="shell-pages" data-el="pages"></ol>
-      <div class="shell-preview-more">
-        <p class="shell-hint" data-el="preview-count" aria-live="polite"></p>
-        <button class="shell-secondary" type="button" data-el="more" hidden>{t.showMore}</button>
+      <div class="shell-page-count" data-el="page-count" data-testid="page-count" hidden>
+        <p class="shell-page-count-text" data-el="preview-count" aria-live="polite"></p>
+        <div class="shell-page-count-bar" aria-hidden="true"><span data-el="preview-progress"></span></div>
+        <div class="shell-page-count-actions">
+          <button class="shell-secondary shell-more" type="button" data-el="more">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            <span data-el="more-label"></span>
+          </button>
+          <button class="shell-secondary" type="button" data-el="all">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 6 5 5 5-5" /><path d="m7 13 5 5 5-5" /></svg>
+            <span data-el="all-label"></span>
+          </button>
+          <button class="shell-text-button" type="button" data-el="less">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+            <span data-el="less-label"></span>
+          </button>
+        </div>
       </div>
     </section>
   </section>
@@ -398,8 +412,9 @@ const limits = isFiles
   }
 
   .shell-file {
+    position: relative;
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto auto minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--space-md);
     padding: 0.75rem var(--space-md);
@@ -707,16 +722,57 @@ const limits = isFiles
     gap: var(--space-sm);
   }
 
-  .shell-preview-more {
+
+
+  .shell-file-grip {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-md) var(--space-lg);
-    margin-top: var(--space-lg);
+    justify-content: center;
+    width: 2rem;
+    height: 44px;
+    margin-left: calc(var(--space-sm) * -1);
+    border-radius: var(--radius-button);
+    color: var(--color-text-muted);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
   }
 
-  .shell-preview-more p {
-    margin: 0;
+  @media (hover: hover) {
+    .shell-file-grip:hover {
+      background: var(--color-bg);
+      color: var(--color-accent);
+    }
+  }
+
+  .shell-file.is-dragging {
+    z-index: 3;
+    border-color: var(--color-accent);
+    box-shadow: 0 12px 28px -12px rgb(0 0 0 / 0.4);
+    cursor: grabbing;
+  }
+
+  .shell-file.is-dragging .shell-file-grip {
+    cursor: grabbing;
+  }
+
+  .shell-file.is-drop-before::before,
+  .shell-file.is-drop-after::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-accent);
+  }
+
+  .shell-file.is-drop-before::before {
+    top: -8px;
+  }
+
+  .shell-file.is-drop-after::after {
+    bottom: -8px;
   }
 
   .shell-file-order {
@@ -782,6 +838,73 @@ const limits = isFiles
   .shell-preview h3 {
     margin: 0;
     font-size: 1.25rem;
+  }
+
+  /* Under the grid: where you are in the result, then each way to see more or fewer pages, most used first. */
+  .shell-page-count {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border-subtle);
+    text-align: center;
+  }
+
+  .shell-page-count-text {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .shell-page-count-bar {
+    width: min(20rem, 100%);
+    height: 6px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-border-subtle);
+  }
+
+  .shell-page-count-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-accent);
+    transition: width var(--dur-slow) var(--ease-out);
+  }
+
+  .shell-page-count-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+
+  .shell-more {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .shell-text-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--shell-button-height);
+    padding: 0 var(--space-md);
+    border: 0;
+    border-radius: var(--radius-button);
+    background: none;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .shell-text-button:hover {
+      color: var(--color-accent);
+    }
   }
 
   .shell-pages {
@@ -990,26 +1113,35 @@ const limits = isFiles
     }
   }
 
+  /* Every frame has the same shape. The page image is pinned inside it, so no page can stretch the frame. */
   .shell-page-frame {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative;
+    display: block;
     aspect-ratio: 3 / 4;
-    padding: var(--space-xs);
+    min-height: 0;
+    overflow: hidden;
     border-radius: 0.25rem;
     background: var(--color-bg);
   }
 
   .shell-page-frame img {
-    max-width: 100%;
-    max-height: 100%;
+    position: absolute;
+    inset: var(--space-xs);
+    width: auto;
+    height: auto;
+    max-width: calc(100% - var(--space-xs) * 2);
+    max-height: calc(100% - var(--space-xs) * 2);
+    margin: auto;
     background: #ffffff;
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
   }
 
   .shell-page-blank {
+    position: absolute;
+    inset: var(--space-xs);
     width: 75%;
     aspect-ratio: 3 / 4;
+    margin: auto;
     border-radius: 2px;
     background: #ffffff;
   }
@@ -1327,7 +1459,7 @@ const limits = isFiles
   /* Last, so it overrides the base row layout above. */
   @media (max-width: 479px) {
     .shell-file {
-      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-columns: auto auto minmax(0, 1fr);
     }
 
     .shell-file-order {
@@ -1367,6 +1499,78 @@ const limits = isFiles
       to {
         stroke-dashoffset: 0;
       }
+    }
+  }
+
+  /* Phones: slightly shorter buttons, three pages per row, and no keyboard-and-mouse tip. */
+  @media (max-width: 599px) {
+    .shell {
+      --shell-button-height: 3rem;
+    }
+
+    .shell-pick,
+    .shell-primary {
+      padding-inline: var(--space-lg);
+      font-size: 1rem;
+    }
+
+    .shell-zone {
+      padding: var(--space-xl) var(--space-md);
+    }
+
+    .shell-file {
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+    }
+
+    .shell-thumb {
+      width: 48px;
+    }
+
+    .shell-run-row,
+    .shell-result-bar {
+      padding: var(--space-sm);
+    }
+
+    .shell-page-toolbar {
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+    }
+
+    .shell-page-status .shell-hint {
+      display: none;
+    }
+
+    .shell-page-actions {
+      width: 100%;
+    }
+
+    .shell-page-actions > * {
+      flex: 1 1 auto;
+    }
+
+    .shell-pages {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .shell-page-item {
+      padding: 2px;
+    }
+
+    .shell-page-check {
+      gap: 6px;
+      padding: 0 6px;
+      font-size: 0.8125rem;
+    }
+
+    .shell-page-check input {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    .shell-heading {
+      font-size: 1.25rem;
     }
   }
 </style>

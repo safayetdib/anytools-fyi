@@ -141,4 +141,27 @@ const whyIcons = [
       padding-block: var(--space-4xl) var(--space-3xl);
     }
   }
+
+  @media (max-width: 599px) {
+    .why li {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      column-gap: var(--space-sm);
+    }
+
+    .why-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .why h3 {
+      margin: 0;
+    }
+
+    .why p {
+      grid-column: 1 / -1;
+      margin-top: var(--space-xs);
+    }
+  }
 </style>

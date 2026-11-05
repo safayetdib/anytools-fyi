@@ -7,7 +7,7 @@ steps:
     text: "Choose the files, or drop them onto the page. Each one shows a preview of its first page and its page count."
   - icon: arrange
     title: "Put them in order"
-    text: "Use the up and down arrows, add more files, or remove any you don't need. Start over clears the list."
+    text: "Drag files by their handle, or use the up and down arrows. Add more files, or remove any you don't need. Start over clears the list."
   - icon: merge
     title: "Merge"
     text: "Select Merge PDF. It runs in your browser, and keeps working offline once your files are chosen."

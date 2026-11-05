@@ -31,7 +31,11 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   const note = el(root, "preview-note");
   const grid = el<HTMLOListElement>(root, "pages");
   const count = el(root, "preview-count");
+  const pageCount = el(root, "page-count");
+  const progress = el(root, "preview-progress");
   const more = el<HTMLButtonElement>(root, "more");
+  const all = el<HTMLButtonElement>(root, "all");
+  const less = el<HTMLButtonElement>(root, "less");
   const apply = el<HTMLButtonElement>(root, "apply");
   const undo = el<HTMLButtonElement>(root, "undo");
   const toolbar = el(root, "page-toolbar");
@@ -170,10 +174,25 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
       return item;
     });
     grid.replaceChildren(...items);
-    count.textContent = order.length > shown ? fill(t.showing, { shown, total: order.length }) : "";
-    more.hidden = order.length <= shown;
+    renderPageCount();
     hooks.onChange(changed());
     void renderThumbnails();
+  }
+
+  // Each button says exactly how many pages it will show. Show all appears only when it does more than Show more.
+  function renderPageCount() {
+    const total = order.length;
+    const next = Math.min(PREVIEW_BATCH, total - shown);
+    pageCount.hidden = total <= PREVIEW_BATCH;
+    count.textContent = shown >= total ? fill(t.showingAll, { total }) : fill(t.showing, { shown, total });
+    progress.style.width = `${total ? Math.round((shown / total) * 100) : 0}%`;
+    more.hidden = next <= 0;
+    (more.querySelector("[data-el=more-label]") as HTMLElement).textContent =
+      next === 1 ? t.showMoreOne : fill(t.showMoreCount, { count: next });
+    all.hidden = total - shown <= PREVIEW_BATCH;
+    (all.querySelector("[data-el=all-label]") as HTMLElement).textContent = fill(t.showAllCount, { total });
+    less.hidden = shown <= PREVIEW_BATCH;
+    (less.querySelector("[data-el=less-label]") as HTMLElement).textContent = fill(t.showLess, { count: PREVIEW_BATCH });
   }
 
   async function renderThumbnails() {
@@ -314,6 +333,23 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   more.addEventListener("click", () => {
     shown = Math.min(order.length, shown + PREVIEW_BATCH);
     renderGrid();
+  });
+
+  all.addEventListener("click", () => {
+    shown = order.length;
+    renderGrid();
+    less.focus();
+  });
+
+  // Going back to the first batch shrinks the page, so focus and scroll follow the Show more button.
+  less.addEventListener("click", () => {
+    shown = Math.min(PREVIEW_BATCH, order.length);
+    renderGrid();
+    more.focus({ preventScroll: true });
+    more.scrollIntoView({
+      block: "center",
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
   });
 
   el(root, "select-all").addEventListener("click", () => {

@@ -112,4 +112,20 @@ const { limits } = Astro.props;
       border-left: 1px solid var(--color-border-subtle);
     }
   }
+
+  @media (max-width: 599px) {
+    .limit {
+      gap: var(--space-sm);
+      padding: var(--space-md);
+    }
+
+    .badge {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+
+    .value {
+      font-size: 1.125rem;
+    }
+  }
 </style>

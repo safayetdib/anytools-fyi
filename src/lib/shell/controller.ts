@@ -124,6 +124,17 @@ export function createToolController(tool: ToolDefinition) {
       update({ files, announcement: fill(t.moved, { name: files[to].file.name, position: to + 1 }) });
     },
 
+    // Moves a file to an index counted from 0, clamped to the list. Used by dragging.
+    moveFileTo(id: string, index: number) {
+      const from = state.files.findIndex((f) => f.id === id);
+      if (from < 0) return;
+      const files = [...state.files];
+      const [moved] = files.splice(from, 1);
+      const to = Math.min(Math.max(index, 0), files.length);
+      files.splice(to, 0, moved);
+      update({ files, announcement: fill(t.moved, { name: moved.file.name, position: to + 1 }) });
+    },
+
     setPreview(id: string, preview: FilePreview) {
       const files = state.files.map((f) => (f.id === id ? { ...f, preview } : f));
       const file = files.find((f) => f.id === id);

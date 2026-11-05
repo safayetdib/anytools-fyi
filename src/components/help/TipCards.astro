@@ -61,4 +61,28 @@ const { tips } = Astro.props;
     color: var(--color-text-muted);
     line-height: 1.5;
   }
+
+  @media (max-width: 599px) {
+    .tip {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      column-gap: var(--space-sm);
+      padding: var(--space-md);
+    }
+
+    .badge {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+
+    h3 {
+      margin: 0;
+    }
+
+    p {
+      grid-column: 1 / -1;
+      margin-top: var(--space-xs);
+    }
+  }
 </style>

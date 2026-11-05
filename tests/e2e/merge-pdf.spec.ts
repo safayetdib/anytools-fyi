@@ -152,7 +152,7 @@ test("merge pdf - guides the visitor before and after choosing files", async ({ 
   await page.goto(PAGE);
   await expect(page.getByText("Choose 2 or more PDF files, up to 100 MB each.")).toBeVisible();
   await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200, 210])]);
-  await expect(page.getByText("The merged file follows this order")).toBeVisible();
+  await expect(page.getByText("Drag files, or use the arrows, to change the order.")).toBeVisible();
   await expect(page.getByTestId("shell-total")).toHaveText(/^2 files · 3 pages · [\d.]+ (B|KB)$/);
 });
 
@@ -201,12 +201,12 @@ test("merge pdf - long results preview in batches", async ({ page }) => {
   await mergeButton(page).click();
   const thumbs = page.getByRole("button", { name: /^Open page \d+ larger$/ });
   await expect(thumbs).toHaveCount(12);
-  await expect(page.getByText("Showing 12 of 30 pages.")).toBeVisible();
-  await page.getByRole("button", { name: "Show more pages" }).click();
+  await expect(page.getByText("Showing 12 of 30 pages")).toBeVisible();
+  await page.getByRole("button", { name: /^Show \d+ more pages?$/ }).click();
   await expect(thumbs).toHaveCount(24);
-  await page.getByRole("button", { name: "Show more pages" }).click();
+  await page.getByRole("button", { name: /^Show \d+ more pages?$/ }).click();
   await expect(thumbs).toHaveCount(30);
-  await expect(page.getByRole("button", { name: "Show more pages" })).toBeHidden();
+  await expect(page.getByRole("button", { name: /^Show \d+ more pages?$/ })).toBeHidden();
 });
 
 test("merge pdf - action buttons don't touch", async ({ page }) => {
@@ -342,7 +342,7 @@ test("merge pdf - the page count and Show more have room between them", async ({
   await page.goto(PAGE);
   await picker(page).setInputFiles([await pdf("a.pdf", Array.from({ length: 20 }, () => 100)), await pdf("b.pdf", [200])]);
   await mergeButton(page).click();
-  await expect(page.getByRole("button", { name: "Show more pages" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Show \d+ more pages?$/ })).toBeVisible();
   const count = await box(page, '[data-el="preview-count"]');
   const more = await box(page, '[data-el="more"]');
   const gap = Math.max(more.x - (count.x + count.width), more.y - (count.y + count.height));
@@ -356,7 +356,7 @@ for (const width of [375, 1366]) {
     await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", Array.from({ length: 14 }, () => 200))]);
     await page.getByTestId("shell-action-bar").screenshot({ path: `${SCREENSHOT_DIR}/actions-${width}.png` });
     await mergeButton(page).click();
-    await expect(page.getByRole("button", { name: "Show more pages" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Show \d+ more pages?$/ })).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.locator('[data-screen="result"]').screenshot({ path: `${SCREENSHOT_DIR}/result-bar-${width}.png` });
@@ -854,4 +854,192 @@ test("merge pdf - guidance covers editing pages and leaving the page", async ({ 
   await expect(page.getByTestId("tip-card").nth(1)).toContainText("Fix sideways scans");
   await page.locator("summary", { hasText: "What happens to my files when I leave the page?" }).click();
   await expect(page.getByText("pressing Back won't bring them back")).toBeVisible();
+});
+
+// --- Dragging files into order ---
+
+async function dragRow(page: Page, from: number, to: number) {
+  const rows = page.getByTestId("shell-file");
+  const grip = await rows.nth(from).locator(".shell-file-grip").boundingBox();
+  const target = await rows.nth(to).boundingBox();
+  if (!grip || !target) throw new Error("Rows not found");
+  const startX = grip.x + grip.width / 2;
+  const startY = grip.y + grip.height / 2;
+  // Aim above the middle of the target row to drop before it, or below to drop after it.
+  const endY = to < from ? target.y + target.height * 0.25 : target.y + target.height * 0.75;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(startX, (startY + endY) / 2, { steps: 5 });
+  await page.mouse.move(startX, endY, { steps: 5 });
+  await page.mouse.up();
+}
+
+const names = (page: Page) =>
+  page.getByTestId("shell-file").locator(".shell-file-name").allTextContents();
+
+test("drag files - every row has a grip to drag it", async ({ page }) => {
+  await page.goto(PAGE);
+  await manyFiles(page, 3);
+  await expect(page.locator(".shell-file-grip")).toHaveCount(3);
+  expect(await page.locator(".shell-file-grip").first().evaluate((el) => getComputedStyle(el).cursor)).toBe("grab");
+  await expect(page.getByText("Drag files, or use the arrows")).toBeVisible();
+});
+
+test("drag files - dragging a row up changes the merged order", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200]), await pdf("c.pdf", [300])]);
+  await dragRow(page, 2, 0);
+  expect(await names(page)).toEqual(["c.pdf", "a.pdf", "b.pdf"]);
+  await expect(page.getByTestId("shell-live")).toContainText("c.pdf moved to position 1");
+  expect(await mergeAndRead(page)).toEqual([300, 100, 200]);
+});
+
+test("drag files - dragging a row down works too", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto(PAGE);
+  await manyFiles(page, 4);
+  await dragRow(page, 0, 2);
+  expect(await names(page)).toEqual(["document-2.pdf", "document-3.pdf", "document-1.pdf", "document-4.pdf"]);
+});
+
+test("drag files - Alt and an arrow key move the focused row", async ({ page }) => {
+  await page.goto(PAGE);
+  await manyFiles(page, 3);
+  const remove = page.getByRole("button", { name: "Remove document-3.pdf" });
+  await remove.focus();
+  await page.keyboard.press("Alt+ArrowUp");
+  await page.keyboard.press("Alt+ArrowUp");
+  expect(await names(page)).toEqual(["document-3.pdf", "document-1.pdf", "document-2.pdf"]);
+  await expect(remove).toBeFocused();
+});
+
+for (const width of [320, 768]) {
+  test(`drag files - rows with grips fit ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto(PAGE);
+    await manyFiles(page, 3);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.locator(".shell-files").screenshot({ path: `${SCREENSHOT_DIR}/drag-rows-${width}.png` });
+  });
+}
+
+// --- Page shapes in the preview grid ---
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`preview grid - very tall and very wide pages stay inside their frames in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await page.goto(PAGE);
+    await picker(page).setInputFiles([
+      { name: "tall.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makePdf([200], 1200)) },
+      { name: "wide.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makePdf([1200], 200)) },
+      await pdf("normal.pdf", [210]),
+    ]);
+    await mergeButton(page).click();
+    await expect.poll(() => imagesLoaded(page, ".shell-pages img")).toEqual([true, true, true]);
+    const fits = await page.locator(".shell-page-frame").evaluateAll((frames) =>
+      frames.map((frame) => {
+        const box = frame.getBoundingClientRect();
+        const img = frame.querySelector("img")?.getBoundingClientRect();
+        return Boolean(img) && img!.top >= box.top - 0.5 && img!.bottom <= box.bottom + 0.5 && img!.left >= box.left - 0.5 && img!.right <= box.right + 0.5;
+      }),
+    );
+    expect(fits).toEqual([true, true, true]);
+    const heights = await page.locator(".shell-page-item").evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().height)));
+    expect(new Set(heights).size).toBe(1);
+    await page.locator(".shell-pages").screenshot({ path: `${SCREENSHOT_DIR}/page-shapes-${colorScheme}.png` });
+  });
+}
+
+// --- Showing more and fewer pages ---
+
+test("preview grid - page count controls say exactly what they do", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([
+    await pdf("a.pdf", Array.from({ length: 20 }, () => 100)),
+    await pdf("b.pdf", Array.from({ length: 10 }, () => 200)),
+  ]);
+  await mergeButton(page).click();
+  const controls = page.getByTestId("page-count");
+  await expect(controls).toContainText("Showing 12 of 30 pages");
+  const names = () => controls.getByRole("button").evaluateAll((buttons) =>
+    buttons.filter((b) => !(b as HTMLElement).hidden).map((b) => b.textContent?.trim()),
+  );
+  expect(await names()).toEqual(["Show 12 more pages", "Show all 30 pages"]);
+  await expect(controls.getByRole("button", { name: "Show 12 more pages" }).locator("svg")).toBeVisible();
+
+  await controls.getByRole("button", { name: "Show 12 more pages" }).click();
+  await expect(tiles(page)).toHaveCount(24);
+  // The next batch reaches the end, so Show all would do the same thing and is hidden.
+  expect(await names()).toEqual(["Show 6 more pages", "Show first 12 only"]);
+
+  await controls.getByRole("button", { name: "Show first 12 only" }).click();
+  await expect(tiles(page)).toHaveCount(12);
+  await expect(controls.getByRole("button", { name: "Show 12 more pages" })).toBeFocused();
+
+  await controls.getByRole("button", { name: "Show all 30 pages" }).click();
+  await expect(tiles(page)).toHaveCount(30);
+  await expect(controls).toContainText("Showing all 30 pages");
+  expect(await names()).toEqual(["Show first 12 only"]);
+  await page.getByTestId("page-count").screenshot({ path: `${SCREENSHOT_DIR}/page-count.png` });
+});
+
+test("preview grid - page count controls fit a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", Array.from({ length: 30 }, () => 100)), await pdf("b.pdf", [200])]);
+  await mergeButton(page).click();
+  await page.getByRole("button", { name: "Show 12 more pages" }).click();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  await page.getByTestId("page-count").screenshot({ path: `${SCREENSHOT_DIR}/page-count-320.png` });
+});
+
+test("preview grid - short results need neither button", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await expect(page.getByRole("button", { name: /^Show \d+ more pages?$/ })).toBeHidden();
+  await expect(page.getByTestId("page-count")).toBeHidden();
+});
+
+// --- Phone layout ---
+
+test.describe("phone layout", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("pages show three to a row, and the keyboard tip is hidden", async ({ page }) => {
+    await mergeForEditing(page, [100, 100], [200, 210]);
+    await expect(page.locator(".shell-page-item")).toHaveCount(4);
+    const tops = await page.locator(".shell-page-item").evaluateAll((items) =>
+      items.slice(0, 3).map((item) => Math.round(item.getBoundingClientRect().top)),
+    );
+    expect(new Set(tops).size).toBe(1);
+    await expect(page.locator('[data-el="page-tip"]')).toBeHidden();
+    for (const box of await page.locator(".shell-page-check, [data-testid='page-toolbar'] button:visible").all()) {
+      expect((await box.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test("the download button fits on one line", async ({ page }) => {
+    await mergeForEditing(page, [100], [200]);
+    const link = page.getByRole("link", { name: /^Download merged\.pdf/ });
+    expect((await link.boundingBox())?.height ?? 0).toBeLessThanOrEqual(56);
+  });
+
+  test("guidance cards put icons beside their titles", async ({ page }) => {
+    await page.goto(PAGE);
+    const step = page.getByTestId("step").first();
+    const icon = await step.locator(".icon").boundingBox();
+    const title = await step.locator("h3").boundingBox();
+    expect(Math.abs((icon?.y ?? 0) + (icon?.height ?? 0) / 2 - ((title?.y ?? 0) + (title?.height ?? 0) / 2))).toBeLessThanOrEqual(6);
+  });
+
+  test("footer link columns sit side by side", async ({ page }) => {
+    await page.goto("/");
+    const columns = page.locator("footer .columns > div");
+    const first = await columns.nth(0).boundingBox();
+    const second = await columns.nth(1).boundingBox();
+    expect(Math.abs((first?.y ?? 0) - (second?.y ?? 0))).toBeLessThanOrEqual(2);
+  });
 });

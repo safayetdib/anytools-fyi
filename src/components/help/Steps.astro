@@ -134,4 +134,38 @@ const { steps } = Astro.props;
       transform: translateY(-50%);
     }
   }
+
+  @media (max-width: 599px) {
+    .step {
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: var(--space-sm);
+    }
+
+    .number {
+      width: 2rem;
+      height: 2rem;
+      font-size: 0.875rem;
+    }
+
+    .step:not(:last-child) .marker::after {
+      top: 2rem;
+    }
+
+    .card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      column-gap: var(--space-sm);
+      padding: var(--space-md);
+    }
+
+    h3 {
+      margin: 0;
+    }
+
+    p {
+      grid-column: 1 / -1;
+      margin-top: var(--space-xs);
+    }
+  }
 </style>

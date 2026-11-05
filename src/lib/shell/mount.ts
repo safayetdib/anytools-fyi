@@ -7,6 +7,11 @@ import { createOutputPages } from "./output-pages";
 import type { ToolDefinition } from "./types";
 
 const t = en.shell;
+const GRIP_ICON =
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="2"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/></svg>';
+// How close to the screen's top or bottom edge, in pixels, a dragged row must be before the page scrolls.
+const DRAG_SCROLL_EDGE = 96;
+const DRAG_SCROLL_STEP = 14;
 const DOWNLOAD_ICON =
   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>';
 
@@ -94,6 +99,13 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     const item = document.createElement("li");
     item.className = "shell-file";
     item.setAttribute("data-testid", "shell-file");
+    item.dataset.id = queued.id;
+    // The grip is for mouse and touch dragging. Keyboard users have the arrow buttons and Alt with arrow keys.
+    const grip = document.createElement("span");
+    grip.className = "shell-file-grip";
+    grip.title = t.dragHint;
+    grip.setAttribute("aria-hidden", "true");
+    grip.innerHTML = GRIP_ICON;
     const order = document.createElement("span");
     order.className = "shell-file-order";
     order.setAttribute("aria-hidden", "true");
@@ -110,12 +122,12 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     info.append(name, meta);
     const actions = document.createElement("span");
     actions.className = "shell-file-actions";
-    item.append(order, thumb, info, actions);
+    item.append(grip, order, thumb, info, actions);
     return item;
   }
 
   function updateRow(item: HTMLLIElement, queued: QueuedFile, index: number) {
-    const [order, thumb, info, actions] = Array.from(item.children) as HTMLElement[];
+    const [, order, thumb, info, actions] = Array.from(item.children) as HTMLElement[];
     order.textContent = String(index + 1);
     const meta = info.lastElementChild as HTMLElement;
     const { text, problem } = fileMeta(queued);
@@ -364,6 +376,84 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       `[data-id="${id}"][data-action="${action === "up" ? "down" : "up"}"]`,
     );
     focus(same ?? other);
+  });
+
+  // Alt with an up or down arrow moves the focused row, like the page editor.
+  list?.addEventListener("keydown", (event) => {
+    if (!event.altKey || (event.key !== "ArrowUp" && event.key !== "ArrowDown")) return;
+    const row = (event.target as HTMLElement).closest<HTMLLIElement>(".shell-file");
+    const id = row?.dataset.id;
+    if (!id) return;
+    event.preventDefault();
+    const focused = document.activeElement as HTMLElement | null;
+    controller.moveFile(id, event.key === "ArrowUp" ? -1 : 1);
+    const action = focused?.dataset.action;
+    const again =
+      (focused?.isConnected ? focused : null) ??
+      list.querySelector<HTMLElement>(`[data-id="${id}"][data-action="${action}"]`) ??
+      list.querySelector<HTMLElement>(`[data-id="${id}"][data-action="remove"]`);
+    focus(again);
+  });
+
+  // Dragging a row by its grip. Pointer events cover both mouse and touch.
+  let drag: { id: string; row: HTMLLIElement; from: number; to: number; startY: number; startScroll: number } | null =
+    null;
+
+  function dropIndex(pointerY: number) {
+    if (!drag || !list) return 0;
+    const others = Array.from(list.children).filter((row) => row !== drag?.row) as HTMLElement[];
+    const before = others.findIndex((row) => {
+      const box = row.getBoundingClientRect();
+      return pointerY < box.top + box.height / 2;
+    });
+    return before === -1 ? others.length : before;
+  }
+
+  function showDropLine(index: number) {
+    if (!list || !drag) return;
+    const others = Array.from(list.children).filter((row) => row !== drag?.row) as HTMLElement[];
+    others.forEach((row) => row.classList.remove("is-drop-before", "is-drop-after"));
+    if (index < others.length) others[index].classList.add("is-drop-before");
+    else others.at(-1)?.classList.add("is-drop-after");
+  }
+
+  function endDrag() {
+    if (!drag || !list) return;
+    const { id, row, from, to } = drag;
+    drag = null;
+    row.classList.remove("is-dragging");
+    row.style.transform = "";
+    list.querySelectorAll(".is-drop-before, .is-drop-after").forEach((other) => {
+      other.classList.remove("is-drop-before", "is-drop-after");
+    });
+    if (to !== from) controller.moveFileTo(id, to);
+  }
+
+  list?.addEventListener("pointerdown", (event) => {
+    const grip = (event.target as HTMLElement).closest<HTMLElement>(".shell-file-grip");
+    const row = grip?.closest<HTMLLIElement>(".shell-file");
+    if (!grip || !row?.dataset.id || event.button > 0) return;
+    event.preventDefault();
+    grip.setPointerCapture(event.pointerId);
+    const from = Array.from(list.children).indexOf(row);
+    drag = { id: row.dataset.id, row, from, to: from, startY: event.clientY, startScroll: window.scrollY };
+    row.classList.add("is-dragging");
+  });
+
+  list?.addEventListener("pointermove", (event) => {
+    if (!drag) return;
+    if (event.clientY < DRAG_SCROLL_EDGE) window.scrollBy(0, -DRAG_SCROLL_STEP);
+    else if (event.clientY > window.innerHeight - DRAG_SCROLL_EDGE) window.scrollBy(0, DRAG_SCROLL_STEP);
+    const offset = event.clientY - drag.startY + (window.scrollY - drag.startScroll);
+    drag.row.style.transform = `translateY(${offset}px)`;
+    drag.to = dropIndex(event.clientY);
+    showDropLine(drag.to);
+  });
+
+  list?.addEventListener("pointerup", endDrag);
+  list?.addEventListener("pointercancel", () => {
+    if (drag) drag.to = drag.from;
+    endDrag();
   });
 
   textInput?.addEventListener("input", () => controller.setText(textInput.value));

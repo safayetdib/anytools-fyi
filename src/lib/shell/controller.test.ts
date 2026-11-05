@@ -293,3 +293,15 @@ it("clears everything, including typed text, when the page is left", async () =>
   expect(text.state.text).toBe("");
   expect(text.state.screen).toBe("working");
 });
+
+describe("moving a file to a position", () => {
+  it("moves a file anywhere in the list and announces where", () => {
+    const c = createToolController(fileTool());
+    c.addFiles([txt("a.txt"), txt("b.txt"), txt("c.txt")]);
+    c.moveFileTo(c.state.files[2].id, 0);
+    expect(c.state.files.map((f) => f.file.name)).toEqual(["c.txt", "a.txt", "b.txt"]);
+    expect(c.state.announcement).toContain("position 1");
+    c.moveFileTo(c.state.files[0].id, 9);
+    expect(c.state.files.map((f) => f.file.name)).toEqual(["a.txt", "b.txt", "c.txt"]);
+  });
+});
