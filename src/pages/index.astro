@@ -2,6 +2,7 @@
 import CategoryPills from "../components/CategoryPills.astro";
 import HeroArt from "../components/HeroArt.astro";
 import JsonLd from "../components/JsonLd.astro";
+import SearchBox from "../components/SearchBox.astro";
 import ToolGrid from "../components/ToolGrid.astro";
 import en from "../i18n/en.json";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -9,6 +10,13 @@ import { organizationSchema, websiteSchema } from "../lib/schema";
 import { listedTools } from "../lib/tools";
 
 const site = Astro.site as URL;
+const why = en.home.why;
+const whyIcons = [
+  '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  '<path d="M20 12v8H4v-8"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+  '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  '<path d="M5 8h14"/><path d="M5 16h14"/><path d="M9 4 7 20"/><path d="m17 4-2 16"/>',
+];
 ---
 
 <BaseLayout title={en.site.title} description={en.site.tagline}>
@@ -19,6 +27,9 @@ const site = Astro.site as URL;
       <div>
         <h1>{en.home.heading}</h1>
         <p class="lead">{en.home.lead}</p>
+        <div class="hero-search">
+          <SearchBox id="hero-search" variant="hero" />
+        </div>
       </div>
       <HeroArt />
     </section>
@@ -27,6 +38,22 @@ const site = Astro.site as URL;
     <div class="tools">
       <ToolGrid tools={listedTools()} />
     </div>
+
+    <section class="why" aria-labelledby="why-heading">
+      <h2 id="why-heading">{why.heading}</h2>
+      <ul>
+        {
+          why.items.map((item, index) => (
+            <li>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={whyIcons[index]} />
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="more" href="/how-we-protect-your-privacy/">{why.privacyLink}</a>
+    </section>
   </div>
 </BaseLayout>
 
@@ -46,8 +73,58 @@ const site = Astro.site as URL;
     font-size: clamp(1rem, 0.95rem + 0.3vw, 1.1875rem);
   }
 
+  .hero > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hero-search {
+    max-width: 36rem;
+    margin-top: var(--space-md);
+  }
+
   .tools {
     margin-top: var(--space-md);
+  }
+
+  .why {
+    margin-top: var(--space-2xl);
+  }
+
+  .why h2 {
+    margin: 0 0 var(--space-lg);
+    font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+  }
+
+  .why ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .why svg {
+    color: var(--color-accent);
+  }
+
+  .why h3 {
+    margin: var(--space-sm) 0 var(--space-xs);
+    font-size: 1.0625rem;
+  }
+
+  .why p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: var(--space-md);
+    font-weight: 700;
   }
 
   @media (min-width: 900px) {

@@ -63,3 +63,18 @@ export function collectionSchema(
     },
   };
 }
+
+export function webApplicationSchema(tool: { name: string; description: string; path: string }, site: URL) {
+  return {
+    "@context": CONTEXT,
+    "@type": "WebApplication",
+    name: tool.name,
+    url: absolute(tool.path, site),
+    description: tool.description,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Any",
+    browserRequirements: "Requires JavaScript",
+    inLanguage: "en",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  };
+}

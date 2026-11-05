@@ -65,7 +65,7 @@ for (const width of [320, 360, 640, 900, 1440]) {
 test("site frame - nav and footer links are at least 44px tall on phones", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
-  const links = page.locator("header a, footer a");
+  const links = page.locator("header a:visible, header summary, footer a");
   const count = await links.count();
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {

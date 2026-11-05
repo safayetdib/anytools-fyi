@@ -52,9 +52,29 @@ svg {
 
 .container {
   width: 100%;
-  max-width: 75rem;
+  max-width: 80rem;
   margin-inline: auto;
   padding-inline: var(--space-md);
+}
+
+@media (min-width: 900px) {
+  .container {
+    padding-inline: var(--space-xl);
+  }
+}
+
+.prose {
+  max-width: 42rem;
+}
+
+.prose h2 {
+  margin: var(--space-xl) 0 var(--space-sm);
+  font-size: 1.375rem;
+}
+
+.prose p,
+.prose li {
+  line-height: 1.7;
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -13,23 +13,57 @@
     "breadcrumb": "Breadcrumb"
   },
   "nav": {
-    "allTools": "All tools",
     "home": "Home",
-    "all": "All"
+    "all": "All",
+    "allTools": "All tools",
+    "menu": "Menu",
+    "seeAll": "See all tools",
+    "quick": [
+      "merge-pdf",
+      "split-pdf",
+      "compress-image"
+    ]
   },
   "footer": {
     "promise": "Your files are processed in your browser and are not uploaded to our servers.",
+    "tools": "Tools",
+    "company": "Company",
+    "legal": "Legal",
     "howWeProtect": "How we protect your privacy",
     "about": "About",
     "contact": "Contact",
-    "privacy": "Privacy",
-    "terms": "Terms",
-    "accessibility": "Accessibility"
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "cookies": "Cookies",
+    "accessibility": "Accessibility",
+    "credits": "Credits"
   },
   "home": {
     "heading": "Everyday tools that stay on your device",
     "lead": "Free, with no signup. Your files are processed in your browser and are not uploaded to our servers.",
-    "toolsHeading": "Tools"
+    "toolsHeading": "Tools",
+    "why": {
+      "heading": "Why people use AnyTools",
+      "items": [
+        {
+          "title": "Files stay on your device",
+          "body": "Tools run in your browser, so your files are not uploaded to our servers."
+        },
+        {
+          "title": "Free, with no signup",
+          "body": "No account, no watermarks and no daily limits."
+        },
+        {
+          "title": "Built for any phone",
+          "body": "Pages are kept small so tools load quickly, even on low-cost phones and slow connections."
+        },
+        {
+          "title": "Bangla tools included",
+          "body": "Convert Bijoy text, write numbers in Bangla words and prepare photos for Bangladeshi forms."
+        }
+      ],
+      "privacyLink": "See how we protect your privacy"
+    }
   },
   "allTools": {
     "title": "All Tools: Free PDF, Image and Bangla Tools | AnyTools.fyi",
@@ -105,15 +139,18 @@
     },
     "compress-image-to-20kb": {
       "name": "Compress image to 20 KB",
-      "description": "Shrink a photo to fit a 20 KB upload limit."
+      "description": "Shrink a photo to fit a 20 KB upload limit.",
+      "size": "20 KB"
     },
     "compress-image-to-50kb": {
       "name": "Compress image to 50 KB",
-      "description": "Shrink a photo to fit a 50 KB upload limit."
+      "description": "Shrink a photo to fit a 50 KB upload limit.",
+      "size": "50 KB"
     },
     "compress-image-to-100kb": {
       "name": "Compress image to 100 KB",
-      "description": "Shrink a photo to fit a 100 KB upload limit."
+      "description": "Shrink a photo to fit a 100 KB upload limit.",
+      "size": "100 KB"
     },
     "photo-signature-resizer": {
       "name": "Photo and signature resizer",
@@ -200,5 +237,42 @@
     "copied": "Copied.",
     "copyFailed": "Couldn't copy. Select the text and copy it yourself.",
     "noscript": "This tool runs in your browser and needs JavaScript. Turn it on and reload the page."
+  },
+  "toolPage": {
+    "leadFiles": "Free, with no signup. Your files stay on your device.",
+    "leadText": "Free, with no signup. Nothing you enter leaves your device.",
+    "titleFiles": "{name}: Free, No Upload | AnyTools.fyi",
+    "titleText": "{name}: Free and Private | AnyTools.fyi",
+    "metaSuffix": "Free, runs in your browser, no signup.",
+    "comingSoonTitle": "This tool is being built",
+    "comingSoonBody": "When it's ready, it will run here in your browser.",
+    "trustFiles": "Your files stay on your device. Nothing is uploaded.",
+    "trustText": "What you type stays on your device. Nothing is sent to our servers.",
+    "related": "Related tools",
+    "sizes": "Choose a target size",
+    "skip": "Skip to tool"
+  },
+  "notFound": {
+    "title": "Page not found | AnyTools.fyi",
+    "heading": "We can't find that page",
+    "body": "The link may be old or mistyped. Try one of these tools, or see the full list.",
+    "popular": "Popular tools",
+    "description": "This page doesn't exist on AnyTools.fyi."
+  },
+  "info": {
+    "draft": "Draft: this page will be finished and reviewed before the site launches.",
+    "updated": "Last updated"
+  },
+  "search": {
+    "label": "Search tools",
+    "placeholder": "Search tools, like merge PDF or ছবি",
+    "open": "Search",
+    "listLabel": "Matching tools",
+    "one": "1 tool found.",
+    "many": "{count} tools found.",
+    "none": "No tools match “{query}”.",
+    "seeAll": "See all tools",
+    "headerLandmark": "Site search",
+    "heroLandmark": "Find a tool"
   }
 }

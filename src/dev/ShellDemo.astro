@@ -1,12 +1,10 @@
 ---
-import ToolShell from "../../components/ToolShell.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { tool as fileDemo } from "../../tools/shell-demo/tool";
-import { tool as textDemo } from "../../tools/shell-demo-text/tool";
+import ToolShell from "../components/ToolShell.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { tool as fileDemo } from "../tools/shell-demo/tool";
+import { tool as textDemo } from "../tools/shell-demo-text/tool";
 
-// Built only for browser tests, so these pages never reach a deploy.
 export function getStaticPaths() {
-  if (!process.env.SHELL_DEMO) return [];
   return [{ params: { demo: "shell-demo" } }, { params: { demo: "shell-demo-text" } }];
 }
 
@@ -32,9 +30,9 @@ const isText = Astro.params.demo === "shell-demo-text";
 </BaseLayout>
 
 <script>
-  import { mountToolShell } from "../../lib/shell/mount";
-  import { tool as fileDemo } from "../../tools/shell-demo/tool";
-  import { tool as textDemo } from "../../tools/shell-demo-text/tool";
+  import { mountToolShell } from "../lib/shell/mount";
+  import { tool as fileDemo } from "../tools/shell-demo/tool";
+  import { tool as textDemo } from "../tools/shell-demo-text/tool";
 
   const page = document.querySelector<HTMLElement>("[data-demo]");
   const root = document.querySelector<HTMLElement>("[data-tool-shell]");

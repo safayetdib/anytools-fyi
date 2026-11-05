@@ -1,0 +1,52 @@
+---
+import ToolGrid from "../components/ToolGrid.astro";
+import en from "../i18n/en.json";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { listedTools } from "../lib/tools";
+
+const n = en.notFound;
+---
+
+<BaseLayout title={n.title} description={n.description}>
+  <div class="container">
+    <section class="intro">
+      <svg width="120" height="90" viewBox="0 0 120 90" aria-hidden="true">
+        <rect x="30" y="8" width="60" height="74" rx="8" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"></rect>
+        <path d="M48 34c0-7 5-12 12-12s12 5 12 11c0 9-12 9-12 17" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"></path>
+        <circle cx="60" cy="62" r="3" fill="var(--color-accent)"></circle>
+      </svg>
+      <h1>{n.heading}</h1>
+      <p>{n.body}</p>
+      <a class="all" href="/tools/">{en.nav.seeAll}</a>
+    </section>
+    <h2>{n.popular}</h2>
+    <ToolGrid tools={listedTools().slice(0, 5)} />
+  </div>
+</BaseLayout>
+
+<style>
+  .intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-block: var(--space-xl);
+    text-align: center;
+  }
+
+  .intro p {
+    max-width: 32rem;
+    color: var(--color-text-muted);
+  }
+
+  .all {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: var(--space-lg) 0 var(--space-md);
+    font-size: 1.375rem;
+  }
+</style>

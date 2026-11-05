@@ -1,7 +1,7 @@
 ---
 import en from "../i18n/en.json";
-import { TOOL_ICONS } from "../lib/icons";
-import { hubFor, type Tool } from "../lib/tools";
+import type { Tool } from "../lib/tools";
+import ToolIcon from "./ToolIcon.astro";
 
 interface Props {
   tool: Tool;
@@ -13,20 +13,7 @@ const strings = (en.tools as Record<string, { name: string; description: string 
 ---
 
 <a class="card" href={`/${tool.slug}/`} data-testid="tool-card">
-  <span class="icon" style={`background:${hubFor(tool).color}`}>
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-      set:html={TOOL_ICONS[tool.slug]}
-    />
-  </span>
+  <span class="icon"><ToolIcon tool={tool} /></span>
   <Heading class="name">{strings.name}</Heading>
   <span class="description">{strings.description}</span>
 </a>
@@ -48,13 +35,7 @@ const strings = (en.tools as Record<string, { name: string; description: string 
 
   .icon {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
     margin-bottom: var(--space-sm);
-    border-radius: var(--radius-button);
-    color: var(--color-on-category);
     transition: transform var(--dur-base) var(--ease-out);
   }
 

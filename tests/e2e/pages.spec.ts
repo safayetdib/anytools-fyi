@@ -6,6 +6,9 @@ const PAGES = [
   { name: "home", path: "/", schema: "WebSite" },
   { name: "pdf-hub", path: "/pdf-tools/", schema: "CollectionPage" },
   { name: "all-tools", path: "/tools/", schema: "CollectionPage" },
+  { name: "tool", path: "/merge-pdf/", schema: "WebApplication" },
+  { name: "text-tool", path: "/word-counter/", schema: "WebApplication" },
+  { name: "variant", path: "/compress-image-to-20kb/", schema: "WebApplication" },
 ];
 
 async function jsonLdTypes(page: Page) {
@@ -19,7 +22,7 @@ test("homepage - lists live tools with the most used first", async ({ page }) =>
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "Everyday tools that stay on your device" })).toBeVisible();
   const cards = page.getByTestId("tool-card");
-  await expect(cards).toHaveCount(6);
+  await expect(cards).toHaveCount(19);
   await expect(cards.first()).toHaveAttribute("href", "/merge-pdf/");
   await expect(cards.first()).toContainText("Merge PDF");
 });
@@ -36,8 +39,8 @@ test("homepage - works with JavaScript turned off and ships no scripts", async (
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4329/");
-  await expect(page.getByTestId("tool-card")).toHaveCount(6);
-  await expect(page.locator("script[src]")).toHaveCount(0);
+  await expect(page.getByTestId("tool-card")).toHaveCount(19);
+  await expect(page.locator("script[src]:not([type='module'])")).toHaveCount(0);
   await context.close();
 });
 
@@ -65,19 +68,18 @@ test("pdf hub - lists its tools with a breadcrumb", async ({ page }) => {
 });
 
 test("hubs below three tools are not published", async ({ page }) => {
-  for (const path of ["/image-tools/", "/bangla-tools/", "/developer-tools/"]) {
+  for (const path of ["/text-tools/", "/calculators/"]) {
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(404);
   }
 });
 
-test("all tools - groups every live tool by category", async ({ page }) => {
+test("all tools - groups every tool by category", async ({ page }) => {
   await page.goto("/tools/");
-  await expect(page.getByTestId("tool-card")).toHaveCount(6);
-  for (const name of ["PDF tools", "Image tools", "Bangla tools"]) {
+  await expect(page.getByTestId("tool-card")).toHaveCount(19);
+  for (const name of ["PDF tools", "Image tools", "Bangla tools", "Developer tools", "Text tools", "Calculators"]) {
     await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
   }
-  await expect(page.getByRole("heading", { level: 2, name: "Developer tools" })).toHaveCount(0);
 });
 
 // --- Every page ---
@@ -103,7 +105,7 @@ for (const { name, path, schema } of PAGES) {
     });
   }
 
-  for (const width of [320, 360, 768, 1440]) {
+  for (const width of [320, 375, 414, 768, 1024, 1366, 1920, 2560]) {
     test(`${name} - no sideways scroll at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(path);

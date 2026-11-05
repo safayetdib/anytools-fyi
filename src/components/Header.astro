@@ -1,15 +1,17 @@
 ---
 import en from "../i18n/en.json";
-import { liveHubs } from "../lib/tools";
+import { HUBS, isHubLive, listedTools, toolBySlug, type Tool } from "../lib/tools";
+import SearchBox from "./SearchBox.astro";
+import ToolIcon from "./ToolIcon.astro";
 
-const links = [
-  { href: "/merge-pdf/", label: en.tools["merge-pdf"].name },
-  { href: "/split-pdf/", label: en.tools["split-pdf"].name },
-  { href: "/compress-image/", label: en.tools["compress-image"].name },
-  ...liveHubs().map((hub) => ({ href: `/${hub.slug}/`, label: en.hubs[hub.id].name })),
-  { href: "/tools/", label: en.nav.allTools },
-];
 const path = Astro.url.pathname;
+const tools = en.tools as Record<string, { name: string }>;
+const quick = en.nav.quick.map((slug) => toolBySlug(slug) as Tool);
+const groups = HUBS.map((hub) => ({
+  hub,
+  live: isHubLive(hub.id),
+  tools: listedTools().filter((tool) => tool.hub === hub.id),
+}));
 ---
 
 <header class="header">
@@ -17,40 +19,92 @@ const path = Astro.url.pathname;
     <a class="logo" href="/" aria-label={en.a11y.home}>
       <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
         <rect width="32" height="32" rx="9" fill="var(--color-accent)"></rect>
-        <path
-          d="M10 7h8l5 5v13H10z"
-          fill="none"
-          stroke="var(--color-on-accent)"
-          stroke-width="2"
-          stroke-linejoin="round"></path>
-        <path
-          d="m13 18 2.5 2.5L20 16"
-          fill="none"
-          stroke="var(--color-on-accent)"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"></path>
+        <path d="M10 7h8l5 5v13H10z" fill="none" stroke="var(--color-on-accent)" stroke-width="2" stroke-linejoin="round"></path>
+        <path d="m13 18 2.5 2.5L20 16" fill="none" stroke="var(--color-on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
-      <span class="wordmark">AnyTools<span class="tld">.fyi</span></span>
+      <span>AnyTools<span class="tld">.fyi</span></span>
     </a>
-    <nav aria-label={en.a11y.mainNav}>
-      <ul>
+    <div class="search-slot">
+      <SearchBox id="header-search" />
+    </div>
+    <nav class="nav" aria-label={en.a11y.mainNav}>
+      <button class="search-toggle" type="button" aria-label={en.search.open} aria-expanded="false" data-search-toggle hidden>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m20 20-3.5-3.5"></path>
+        </svg>
+      </button>
+      <ul class="quick">
         {
-          links.map((link) => (
+          quick.map((tool) => (
             <li>
-              <a href={link.href} aria-current={path === link.href ? "page" : undefined}>
-                {link.label}
+              <a href={`/${tool.slug}/`} aria-current={path === `/${tool.slug}/` ? "page" : undefined}>
+                {tools[tool.slug].name}
               </a>
             </li>
           ))
         }
       </ul>
+      <details class="menu" data-menu>
+        <summary>
+          <span class="wide">{en.nav.allTools}</span>
+          <span class="narrow">{en.nav.menu}</span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </summary>
+        <div class="panel">
+          <div class="container groups">
+            {
+              groups.map((group) => (
+                <div class="group">
+                  <p class="group-title">
+                    {group.live ? <a href={`/${group.hub.slug}/`}>{en.hubs[group.hub.id].name}</a> : en.hubs[group.hub.id].name}
+                  </p>
+                  <ul>
+                    {group.tools.map((tool) => (
+                      <li>
+                        <a class="tool-link" href={`/${tool.slug}/`}>
+                          <ToolIcon tool={tool} size="sm" />
+                          {tools[tool.slug].name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+          <div class="container see-all">
+            <a href="/tools/">{en.nav.seeAll}</a>
+          </div>
+        </div>
+      </details>
     </nav>
   </div>
 </header>
 
+<script is:inline>
+  (() => {
+    const menu = document.querySelector("[data-menu]");
+    if (!menu) return;
+    const summary = menu.querySelector("summary");
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && menu.open) {
+        menu.open = false;
+        summary.focus();
+      }
+    });
+    document.addEventListener("click", (event) => {
+      if (menu.open && !menu.contains(event.target)) menu.open = false;
+    });
+  })();
+</script>
+
 <style>
   .header {
+    position: relative;
+    z-index: 20;
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border-subtle);
   }
@@ -59,8 +113,42 @@ const path = Astro.url.pathname;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    column-gap: var(--space-xl);
-    padding-block: var(--space-sm);
+    justify-content: space-between;
+    gap: 0 var(--space-md);
+    min-height: 4rem;
+  }
+
+  .search-slot {
+    display: none;
+    order: 3;
+    flex-basis: 100%;
+    padding-bottom: var(--space-sm);
+  }
+
+  .header[data-search-open] .search-slot {
+    display: block;
+  }
+
+  .search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .search-toggle[hidden] {
+    display: none;
+  }
+
+  .search-toggle[aria-expanded="true"] {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
 
   .logo {
@@ -78,18 +166,25 @@ const path = Astro.url.pathname;
     color: var(--color-accent);
   }
 
-  ul {
+  .nav {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0 var(--space-xs);
-    margin: 0 0 0 calc(var(--space-sm) * -1);
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .quick {
+    display: none;
+    gap: var(--space-xs);
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  nav a {
+  .quick a,
+  summary {
     display: inline-flex;
     align-items: center;
+    gap: var(--space-xs);
     min-height: 44px;
     padding-inline: var(--space-sm);
     border-radius: var(--radius-button);
@@ -100,10 +195,170 @@ const path = Astro.url.pathname;
     transition: color var(--dur-fast) var(--ease-out);
   }
 
-  nav a:hover,
-  nav a[aria-current="page"] {
+  summary {
+    padding-inline: var(--space-md);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .wide {
+    display: none;
+  }
+
+  .chevron {
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .menu[open] .chevron {
+    transform: rotate(180deg);
+  }
+
+  .menu[open] summary {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  @media (hover: hover) {
+    .quick a:hover,
+    summary:hover {
+      color: var(--color-accent);
+    }
+  }
+
+  .quick a[aria-current="page"] {
     color: var(--color-accent);
     text-decoration: underline;
     text-underline-offset: 4px;
+  }
+
+  .panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    max-height: calc(100dvh - 4rem);
+    overflow-y: auto;
+    padding-block: var(--space-lg);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-lg) var(--space-xl);
+  }
+
+  .group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .group-title {
+    margin: 0 0 var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .group-title a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: inherit;
+  }
+
+  .tool-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    padding: var(--space-xs);
+    margin-inline: calc(var(--space-xs) * -1);
+    border-radius: var(--radius-button);
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (hover: hover) {
+    .tool-link:hover {
+      background: var(--color-bg);
+      color: var(--color-accent);
+    }
+  }
+
+  .see-all {
+    margin-top: var(--space-md);
+  }
+
+  .see-all a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .menu[open] .panel {
+      animation: drop var(--dur-base) var(--ease-out);
+    }
+
+    @keyframes drop {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+    }
+  }
+
+  @media (min-width: 900px) {
+    .row {
+      flex-wrap: nowrap;
+    }
+
+    .search-slot,
+    .header[data-search-open] .search-slot {
+      display: block;
+      order: 0;
+      flex: 1;
+      max-width: 26rem;
+      padding: 0;
+    }
+
+    .search-toggle {
+      display: none !important;
+    }
+
+    .wide {
+      display: inline;
+    }
+
+    .narrow {
+      display: none;
+    }
+
+    .groups {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .quick {
+      display: flex;
+    }
+
+    .groups {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: var(--space-lg);
+    }
   }
 </style>

@@ -1,0 +1,198 @@
+---
+import Breadcrumb from "../components/Breadcrumb.astro";
+import JsonLd from "../components/JsonLd.astro";
+import ToolGrid from "../components/ToolGrid.astro";
+import ToolIcon from "../components/ToolIcon.astro";
+import en from "../i18n/en.json";
+import { fill } from "../i18n/format";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { breadcrumbSchema, webApplicationSchema } from "../lib/schema";
+import { TOOLS, hubFor, isHubLive, toolBySlug, variantsOf, type Tool } from "../lib/tools";
+
+export function getStaticPaths() {
+  return TOOLS.map((tool) => ({ params: { tool: tool.slug }, props: { tool } }));
+}
+
+interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+const site = Astro.site as URL;
+const tools = en.tools as Record<string, { name: string; description: string; size?: string }>;
+const p = en.toolPage;
+const strings = tools[tool.slug];
+const path = `/${tool.slug}/`;
+const isText = tool.input === "text";
+const hub = hubFor(tool);
+const parent = tool.variantOf ? (toolBySlug(tool.variantOf) as Tool) : undefined;
+const crumbs = [
+  { name: en.nav.home, path: "/" },
+  ...(isHubLive(hub.id) ? [{ name: en.hubs[hub.id].name, path: `/${hub.slug}/` }] : []),
+  ...(parent ? [{ name: tools[parent.slug].name, path: `/${parent.slug}/` }] : []),
+  { name: strings.name, path },
+];
+const sizes = variantsOf(parent ?? tool);
+const related = tool.related.map((slug) => toolBySlug(slug) as Tool);
+const title = fill(isText ? p.titleText : p.titleFiles, { name: strings.name });
+const description = `${strings.description} ${p.metaSuffix}`;
+---
+
+<BaseLayout title={title} description={description} skipLabel={p.skip}>
+  <JsonLd slot="head" data={webApplicationSchema({ name: strings.name, description, path }, site)} />
+  <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
+  <div class="container">
+    <Breadcrumb items={crumbs} />
+    <div class="intro">
+      <ToolIcon tool={tool} />
+      <div>
+        <h1>{strings.name}</h1>
+        <p class="lead">{strings.description} {isText ? p.leadText : p.leadFiles}</p>
+      </div>
+    </div>
+
+    {
+      sizes.length > 0 && (
+        <nav class="sizes" aria-label={p.sizes}>
+          <p class="sizes-title" aria-hidden="true">
+            {p.sizes}
+          </p>
+          <ul>
+            {sizes.map((size) => (
+              <li>
+                <a href={`/${size.slug}/`} aria-current={size.slug === tool.slug ? "page" : undefined}>
+                  {tools[size.slug].size}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    <section class="tool-area" data-testid="tool-area" aria-labelledby="tool-status">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="8" y="8" width="48" height="48" rx="12" fill="none" stroke="var(--color-border)" stroke-width="2" stroke-dasharray="6 6"></rect>
+        <path d="M24 34l6 6 12-14" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <h2 id="tool-status">{p.comingSoonTitle}</h2>
+      <p>{p.comingSoonBody}</p>
+    </section>
+
+    <p class="trust">
+      {isText ? p.trustText : p.trustFiles}
+      <a href="/how-we-protect-your-privacy/">{en.footer.howWeProtect}</a>
+    </p>
+
+    <section class="related" aria-labelledby="related-heading">
+      <h2 id="related-heading">{p.related}</h2>
+      <ToolGrid tools={related} />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .intro {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    margin-top: var(--space-sm);
+  }
+
+  .lead {
+    max-width: 40rem;
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+    font-size: clamp(1rem, 0.95rem + 0.3vw, 1.1875rem);
+  }
+
+  .sizes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+
+  .sizes-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .sizes ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sizes a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .sizes a[aria-current="page"] {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .tool-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: var(--space-lg);
+    padding: var(--space-xl) var(--space-md);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    text-align: center;
+  }
+
+  .tool-area h2 {
+    margin: var(--space-sm) 0 var(--space-xs);
+    font-size: 1.25rem;
+  }
+
+  .tool-area p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .trust {
+    margin: var(--space-md) 0 0;
+    font-weight: 600;
+  }
+
+  .trust a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-left: var(--space-xs);
+    font-weight: 400;
+  }
+
+  .related {
+    margin-top: var(--space-2xl);
+  }
+
+  .related h2 {
+    margin: 0 0 var(--space-md);
+    font-size: 1.375rem;
+  }
+
+  @media (min-width: 900px) {
+    .tool-area {
+      padding-block: var(--space-2xl);
+    }
+  }
+</style>

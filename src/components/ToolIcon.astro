@@ -1,0 +1,49 @@
+---
+import { iconFor } from "../lib/icons";
+import { hubFor, type Tool } from "../lib/tools";
+
+interface Props {
+  tool: Tool;
+  size?: "md" | "sm";
+}
+
+const { tool, size = "md" } = Astro.props;
+---
+
+<span class:list={["tool-icon", size]} style={`background:${hubFor(tool).color}`}>
+  <svg
+    width={size === "md" ? 24 : 18}
+    height={size === "md" ? 24 : 18}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    set:html={iconFor(tool)}
+  />
+</span>
+
+<style>
+  .tool-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-button);
+    color: var(--color-on-category);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .md {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .sm {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+  }
+</style>
