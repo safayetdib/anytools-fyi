@@ -85,3 +85,46 @@ for (const colorScheme of ["light", "dark"] as const) {
     await page.screenshot({ path: `${SCREENSHOT_DIR}/theme-${colorScheme}.png`, fullPage: true });
   });
 }
+
+// --- Logo ---
+
+test("site frame - logo links home from the header and footer", async ({ page }) => {
+  await page.goto("/merge-pdf/");
+  await expect(page.getByRole("banner").getByRole("link", { name: "AnyTools.fyi home" })).toBeVisible();
+  await page.getByRole("contentinfo").getByRole("link", { name: "AnyTools.fyi home" }).click();
+  await expect(page).toHaveURL("/");
+});
+
+test("site frame - logo types itself in once per visit", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveClass(/logo-intro/);
+  await page.goto("/tools/");
+  await expect(page.locator("html")).not.toHaveClass(/logo-intro/);
+});
+
+test("site frame - logo stays still with reduced motion", async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: "reduce" });
+  const page = await context.newPage();
+  await page.goto("/");
+  await expect(page.locator("html")).not.toHaveClass(/logo-intro/);
+  await expect(page.locator(".header .logo-glyph").first()).toHaveCSS("opacity", "1");
+  await context.close();
+});
+
+test("site frame - logo and menu share one row on a small phone", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto("/");
+  const logo = await page.locator(".header .logo").boundingBox();
+  const menu = await page.locator(".header summary").boundingBox();
+  expect(Math.abs((logo?.y ?? 0) + (logo?.height ?? 0) / 2 - ((menu?.y ?? 0) + (menu?.height ?? 0) / 2))).toBeLessThan(4);
+});
+
+test("site frame - icons and manifest are served", async ({ page, request }) => {
+  await page.goto("/");
+  for (const selector of ['link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'link[rel="manifest"]']) {
+    const href = await page.locator(selector).getAttribute("href");
+    expect((await request.get(href ?? "")).ok(), selector).toBe(true);
+  }
+  const manifest = await (await request.get("/site.webmanifest")).json();
+  for (const icon of manifest.icons) expect((await request.get(icon.src)).ok(), icon.src).toBe(true);
+});

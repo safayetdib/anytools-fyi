@@ -1,0 +1,190 @@
+---
+// The AnyTools.fyi logo: the tile icon and the wordmark, drawn as shapes.
+// Regenerate logo-data.json with `node scripts/build-logo.mjs`.
+import logo from "./logo-data.json";
+
+interface Props {
+  /** Types the wordmark in once per visit. Only the header uses this. */
+  intro?: boolean;
+}
+
+const { intro = false } = Astro.props;
+const { icon, glyphs, viewBox } = logo;
+
+const STEP = 70;
+const START = 420;
+const caretAt = (i: number) => glyphs[i].end + 4;
+const typed = START + glyphs.length * STEP;
+
+// The caret jumps to the end of each letter as it is typed, blinks, then fades.
+const total = typed + 1500;
+const pct = (ms: number) => `${((ms / total) * 100).toFixed(2)}%`;
+const caretFrames = [
+  `0%{opacity:0;transform:translateX(${caretAt(0)}px)}`,
+  `${pct(START - 1)}{opacity:0;transform:translateX(${caretAt(0)}px)}`,
+  ...glyphs.map((_, i) => `${pct(START + i * STEP)}{opacity:1;transform:translateX(${caretAt(i)}px)}`),
+  `${pct(typed + 300)}{opacity:1;transform:translateX(${caretAt(glyphs.length - 1)}px)}`,
+  `${pct(typed + 301)}{opacity:0}`,
+  `${pct(typed + 650)}{opacity:0}`,
+  `${pct(typed + 651)}{opacity:1}`,
+  `${pct(typed + 1000)}{opacity:1}`,
+  `100%{opacity:0;transform:translateX(${caretAt(glyphs.length - 1)}px)}`,
+].join("");
+const introCss = `@keyframes logo-caret{${caretFrames}}.logo-intro .logo-caret{animation:logo-caret ${total}ms step-end both}`;
+---
+
+{
+  intro && (
+    <script is:inline>
+      try {
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !sessionStorage.getItem("logoIntro")) {
+          document.documentElement.classList.add("logo-intro");
+          sessionStorage.setItem("logoIntro", "1");
+        }
+      } catch {}
+    </script>
+  )
+}
+{intro && <style is:inline set:html={introCss} />}
+<span class="logo-mark">
+  <svg class="logo-icon" viewBox={`0 0 ${icon.size} ${icon.size}`} aria-hidden="true">
+    <rect width={icon.size} height={icon.size} rx={icon.radius} class="logo-bg"></rect>
+    <g class="logo-tiles">
+      {
+        icon.tiles.map((tile, i) => (
+          <rect
+            x={tile.x}
+            y={tile.y}
+            width={icon.tile}
+            height={icon.tile}
+            rx={tile.r}
+            class={`logo-tile logo-${tile.role}`}
+            style={`--i:${i}`}
+          />
+        ))
+      }
+    </g>
+  </svg>
+  <svg class="logo-word" viewBox={viewBox.join(" ")} aria-hidden="true">
+    {glyphs.map((glyph, i) => <path d={glyph.d} class={`logo-glyph logo-${glyph.part}`} style={`--i:${i}`} />)}
+    <rect class="logo-caret" x="0" y="-70" width="6" height="84" rx="2"></rect>
+  </svg>
+</span>
+
+<style>
+  /* Set --logo-size on a parent to resize the whole logo. */
+  .logo-mark {
+    --logo-height: var(--logo-size, 2rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .logo-icon {
+    display: block;
+    flex: none;
+    width: var(--logo-height);
+    height: var(--logo-height);
+  }
+
+  /* The wordmark's x-height matches about 22px text when the icon is 32px. */
+  .logo-word {
+    display: block;
+    height: calc(var(--logo-height) * 0.72);
+    width: auto;
+    overflow: visible;
+  }
+
+  .logo-bg {
+    fill: var(--color-accent);
+  }
+
+  .logo-tile {
+    fill: var(--color-on-accent);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .logo-soft {
+    opacity: 0.55;
+  }
+
+  .logo-spark {
+    fill: var(--color-logo-spark);
+  }
+
+  .logo-tiles {
+    transform-box: view-box;
+    transform-origin: 16px 16px;
+  }
+
+  .logo-name {
+    fill: var(--color-text);
+  }
+
+  .logo-tld {
+    fill: var(--color-accent);
+  }
+
+  .logo-caret {
+    fill: var(--color-accent);
+    opacity: 0;
+  }
+
+  /* Pointing at the logo turns the tiles a quarter, like shuffling tools. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .logo-tiles {
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+
+    :global(a:hover) > .logo-mark .logo-tiles,
+    :global(a:focus-visible) > .logo-mark .logo-tiles {
+      transform: rotate(90deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.logo-intro) .logo-tile {
+      animation: logo-pop 420ms var(--ease-out) both;
+      animation-delay: calc(var(--i) * 90ms);
+    }
+
+    :global(.logo-intro) .logo-spark {
+      animation-name: logo-pop-spark;
+      animation-duration: 560ms;
+    }
+
+    :global(.logo-intro) .logo-glyph {
+      animation: logo-type 140ms var(--ease-out) both;
+      animation-delay: calc(420ms + var(--i) * 70ms);
+    }
+  }
+
+  @keyframes logo-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+  }
+
+  @keyframes logo-pop-spark {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.25);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes logo-type {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+</style>

@@ -2,6 +2,7 @@
 import en from "../i18n/en.json";
 import { HUBS, isHubLive, listedTools, toolBySlug, type Tool } from "../lib/tools";
 import SearchBox from "./SearchBox.astro";
+import Logo from "./Logo.astro";
 import ToolIcon from "./ToolIcon.astro";
 
 const path = Astro.url.pathname;
@@ -17,12 +18,7 @@ const groups = HUBS.map((hub) => ({
 <header class="header">
   <div class="container row">
     <a class="logo" href="/" aria-label={en.a11y.home}>
-      <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="9" fill="var(--color-accent)"></rect>
-        <path d="M10 7h8l5 5v13H10z" fill="none" stroke="var(--color-on-accent)" stroke-width="2" stroke-linejoin="round"></path>
-        <path d="m13 18 2.5 2.5L20 16" fill="none" stroke="var(--color-on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-      </svg>
-      <span>AnyTools<span class="tld">.fyi</span></span>
+      <Logo intro />
     </a>
     <div class="search-slot">
       <SearchBox id="header-search" />
@@ -157,7 +153,7 @@ const groups = HUBS.map((hub) => ({
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0 var(--space-lg);
+    gap: 0 var(--space-sm);
     min-height: 4.5rem;
   }
 
@@ -232,6 +228,14 @@ const groups = HUBS.map((hub) => ({
   }
 
   @media (min-width: 480px) {
+    .row {
+      column-gap: var(--space-lg);
+    }
+
+    .logo {
+      --logo-size: 2rem;
+    }
+
     .theme-toggle {
       display: inline-flex;
     }
@@ -246,19 +250,14 @@ const groups = HUBS.map((hub) => ({
     color: var(--color-accent);
   }
 
+  /* A smaller logo on narrow phones keeps the menu on the same row. */
   .logo {
+    --logo-size: 1.75rem;
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
     min-height: 44px;
-    color: var(--color-text);
-    font-size: 1.25rem;
-    font-weight: 700;
     text-decoration: none;
-  }
-
-  .tld {
-    color: var(--color-accent);
   }
 
   .nav {

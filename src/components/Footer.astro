@@ -1,4 +1,5 @@
 ---
+import Logo from "./Logo.astro";
 import en from "../i18n/en.json";
 import { liveHubs } from "../lib/tools";
 
@@ -37,7 +38,7 @@ const year = new Date().getUTCFullYear();
   <div class="container">
     <div class="top">
       <div class="brand">
-        <p class="name">AnyTools<span class="tld">.fyi</span></p>
+        <a class="name" href="/" aria-label={en.a11y.home}><Logo /></a>
         <p class="promise">{f.promise}</p>
       </div>
       <nav class="columns" aria-label={en.a11y.footerNav}>
@@ -75,13 +76,9 @@ const year = new Date().getUTCFullYear();
   }
 
   .name {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-  }
-
-  .tld {
-    color: var(--color-accent);
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
   }
 
   .promise {

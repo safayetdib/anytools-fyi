@@ -16,6 +16,7 @@
   --color-bar-border: #0a6b52;
   --color-bar-action: #ffffff;
   --color-on-bar-action: #0a6b52;
+  --color-logo-spark: #b7f5d8;
 
   --color-pdf: #c2412d;
   --color-image: #2563c9;
@@ -59,16 +60,12 @@
     --color-on-accent: #07241b;
     --color-danger: #ff9b8f;
     --color-warning: #f2b654;
-  --color-bar: #1b5e4c;
-  --color-on-bar: #eaf1ee;
-  --color-bar-border: #4fd1a5;
-  --color-bar-action: #4fd1a5;
-  --color-on-bar-action: #07241b;
     --color-bar: #1b5e4c;
     --color-on-bar: #eaf1ee;
     --color-bar-border: #4fd1a5;
     --color-bar-action: #4fd1a5;
     --color-on-bar-action: #07241b;
+    --color-logo-spark: #ffffff;
   }
 }
 
@@ -85,6 +82,12 @@
   --color-on-accent: #07241b;
   --color-danger: #ff9b8f;
   --color-warning: #f2b654;
+  --color-bar: #1b5e4c;
+  --color-on-bar: #eaf1ee;
+  --color-bar-border: #4fd1a5;
+  --color-bar-action: #4fd1a5;
+  --color-on-bar-action: #07241b;
+  --color-logo-spark: #ffffff;
 }
 
 :root[data-theme="light"] {
