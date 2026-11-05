@@ -1,0 +1,61 @@
+---
+import Breadcrumb from "../components/Breadcrumb.astro";
+import CategoryPills from "../components/CategoryPills.astro";
+import JsonLd from "../components/JsonLd.astro";
+import ToolGrid from "../components/ToolGrid.astro";
+import en from "../i18n/en.json";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { breadcrumbSchema, collectionSchema } from "../lib/schema";
+import { liveHubs, toolsForHub, type Hub } from "../lib/tools";
+
+export function getStaticPaths() {
+  return liveHubs().map((hub) => ({ params: { hub: hub.slug }, props: { hub } }));
+}
+
+interface Props {
+  hub: Hub;
+}
+
+const { hub } = Astro.props;
+const site = Astro.site as URL;
+const strings = en.hubs[hub.id];
+const tools = toolsForHub(hub.id);
+const path = `/${hub.slug}/`;
+const crumbs = [
+  { name: en.nav.home, path: "/" },
+  { name: strings.name, path },
+];
+const listed = tools.map((tool) => ({
+  name: (en.tools as Record<string, { name: string }>)[tool.slug].name,
+  path: `/${tool.slug}/`,
+}));
+---
+
+<BaseLayout title={strings.title} description={strings.description}>
+  <JsonLd
+    slot="head"
+    data={collectionSchema({ name: strings.name, description: strings.description, path }, listed, site)}
+  />
+  <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
+  <div class="container">
+    <Breadcrumb items={crumbs} />
+    <h1>{strings.name}</h1>
+    <p class="lead">{strings.description}</p>
+    <CategoryPills />
+    <div class="tools">
+      <ToolGrid tools={tools} cardHeading="h2" />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 38rem;
+    margin: var(--space-sm) 0 var(--space-lg);
+    color: var(--color-text-muted);
+  }
+
+  .tools {
+    margin-top: var(--space-md);
+  }
+</style>

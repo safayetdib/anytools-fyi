@@ -1,0 +1,9 @@
+---
+interface Props {
+  data: object;
+}
+
+const json = JSON.stringify(Astro.props.data).replace(/</g, "\\u003c");
+---
+
+<script is:inline type="application/ld+json" set:html={json} />

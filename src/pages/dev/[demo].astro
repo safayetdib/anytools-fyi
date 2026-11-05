@@ -1,0 +1,42 @@
+---
+import ToolShell from "../../components/ToolShell.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { tool as fileDemo } from "../../tools/shell-demo/tool";
+import { tool as textDemo } from "../../tools/shell-demo-text/tool";
+
+// Built only for browser tests, so these pages never reach a deploy.
+export function getStaticPaths() {
+  if (!process.env.SHELL_DEMO) return [];
+  return [{ params: { demo: "shell-demo" } }, { params: { demo: "shell-demo-text" } }];
+}
+
+const isText = Astro.params.demo === "shell-demo-text";
+---
+
+<BaseLayout title="Tool shell demo" description="A test page for the shared tool shell.">
+  <div class="container" data-demo={isText ? "text" : "files"}>
+    <h1>{isText ? "Text shell demo" : "File shell demo"}</h1>
+    {
+      isText ? (
+        <ToolShell config={textDemo.config} runLabel="Make uppercase" />
+      ) : (
+        <ToolShell config={fileDemo.config} selectLabel="Select text files" runLabel="Join files">
+          <div class="shell-field" slot="options">
+            <label for="separator">Separator</label>
+            <input id="separator" name="separator" />
+          </div>
+        </ToolShell>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  import { mountToolShell } from "../../lib/shell/mount";
+  import { tool as fileDemo } from "../../tools/shell-demo/tool";
+  import { tool as textDemo } from "../../tools/shell-demo-text/tool";
+
+  const page = document.querySelector<HTMLElement>("[data-demo]");
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  if (page && root) mountToolShell(root, page.dataset.demo === "text" ? textDemo : fileDemo);
+</script>

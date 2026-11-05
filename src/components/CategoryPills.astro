@@ -1,0 +1,64 @@
+---
+import en from "../i18n/en.json";
+import { liveHubs } from "../lib/tools";
+
+const path = Astro.url.pathname;
+const pills = [
+  { href: "/", label: en.nav.all },
+  ...liveHubs().map((hub) => ({ href: `/${hub.slug}/`, label: en.hubs[hub.id].pill })),
+];
+---
+
+<nav aria-label={en.a11y.categories}>
+  <ul>
+    {
+      pills.map((pill) => (
+        <li>
+          <a href={pill.href} aria-current={path === pill.href ? "page" : undefined}>
+            {pill.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  a[aria-current="page"] {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  @media (hover: hover) {
+    a:not([aria-current="page"]):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+</style>

@@ -1,0 +1,62 @@
+---
+import Breadcrumb from "../components/Breadcrumb.astro";
+import JsonLd from "../components/JsonLd.astro";
+import ToolGrid from "../components/ToolGrid.astro";
+import en from "../i18n/en.json";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { breadcrumbSchema, collectionSchema } from "../lib/schema";
+import { HUBS, listedTools } from "../lib/tools";
+
+const site = Astro.site as URL;
+const path = "/tools/";
+const crumbs = [
+  { name: en.nav.home, path: "/" },
+  { name: en.allTools.heading, path },
+];
+const groups = HUBS.map((hub) => ({
+  hub,
+  tools: listedTools().filter((tool) => tool.hub === hub.id),
+})).filter((group) => group.tools.length > 0);
+const listed = listedTools().map((tool) => ({
+  name: (en.tools as Record<string, { name: string }>)[tool.slug].name,
+  path: `/${tool.slug}/`,
+}));
+---
+
+<BaseLayout title={en.allTools.title} description={en.allTools.description}>
+  <JsonLd
+    slot="head"
+    data={collectionSchema({ name: en.allTools.heading, description: en.allTools.description, path }, listed, site)}
+  />
+  <JsonLd slot="head" data={breadcrumbSchema(crumbs, site)} />
+  <div class="container">
+    <Breadcrumb items={crumbs} />
+    <h1>{en.allTools.heading}</h1>
+    <p class="lead">{en.allTools.description}</p>
+    {
+      groups.map((group) => (
+        <section>
+          <h2>{en.hubs[group.hub.id].name}</h2>
+          <ToolGrid tools={group.tools} />
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .lead {
+    max-width: 38rem;
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+  }
+
+  section {
+    margin-top: var(--space-xl);
+  }
+
+  h2 {
+    margin: 0 0 var(--space-md);
+    font-size: 1.375rem;
+  }
+</style>

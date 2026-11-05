@@ -1,0 +1,45 @@
+---
+import type { Tool } from "../lib/tools";
+import ToolCard from "./ToolCard.astro";
+
+interface Props {
+  tools: Tool[];
+  cardHeading?: "h2" | "h3";
+}
+
+const { tools, cardHeading } = Astro.props;
+---
+
+<ul class="grid">
+  {
+    tools.map((tool) => (
+      <li>
+        <ToolCard tool={tool} headingLevel={cardHeading} />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,204 @@
+{
+  "site": {
+    "name": "AnyTools.fyi",
+    "tagline": "Free everyday tools that run in your browser. No signup, no watermarks, and your files are not uploaded to our servers.",
+    "title": "AnyTools.fyi: Free Browser Tools, No Upload, No Signup"
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "mainNav": "Main",
+    "footerNav": "Site information",
+    "home": "AnyTools.fyi home",
+    "categories": "Categories",
+    "breadcrumb": "Breadcrumb"
+  },
+  "nav": {
+    "allTools": "All tools",
+    "home": "Home",
+    "all": "All"
+  },
+  "footer": {
+    "promise": "Your files are processed in your browser and are not uploaded to our servers.",
+    "howWeProtect": "How we protect your privacy",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "accessibility": "Accessibility"
+  },
+  "home": {
+    "heading": "Everyday tools that stay on your device",
+    "lead": "Free, with no signup. Your files are processed in your browser and are not uploaded to our servers.",
+    "toolsHeading": "Tools"
+  },
+  "allTools": {
+    "title": "All Tools: Free PDF, Image and Bangla Tools | AnyTools.fyi",
+    "heading": "All tools",
+    "description": "Every free AnyTools.fyi tool, grouped by category. Each one runs in your browser, with no signup and no file uploads."
+  },
+  "hubs": {
+    "pdf": {
+      "name": "PDF tools",
+      "pill": "PDF",
+      "title": "PDF Tools: Free, No Upload | AnyTools.fyi",
+      "description": "Merge, split and convert PDF files in your browser. Free, with no signup, and your files are not uploaded to our servers."
+    },
+    "image": {
+      "name": "Image tools",
+      "pill": "Image",
+      "title": "Image Tools: Free, No Upload | AnyTools.fyi",
+      "description": "Compress, resize and convert images in your browser. Free, with no signup, and your files are not uploaded to our servers."
+    },
+    "bangla": {
+      "name": "Bangla tools",
+      "pill": "Bangla",
+      "title": "Bangla Tools: Free and Private | AnyTools.fyi",
+      "description": "Free tools for Bangla text, numbers and dates that run in your browser, with no signup."
+    },
+    "developer": {
+      "name": "Developer tools",
+      "pill": "Developer",
+      "title": "Developer Tools: Free and Private | AnyTools.fyi",
+      "description": "Format JSON, encode Base64 and generate passwords in your browser. Free, with nothing sent to our servers."
+    },
+    "text": {
+      "name": "Text tools",
+      "pill": "Text",
+      "title": "Text Tools: Free and Private | AnyTools.fyi",
+      "description": "Free text tools that run in your browser, with no signup."
+    },
+    "calculators": {
+      "name": "Calculators",
+      "pill": "Calculators",
+      "title": "Free Calculators | AnyTools.fyi",
+      "description": "Free calculators that run in your browser, with no signup. For information only."
+    }
+  },
+  "tools": {
+    "merge-pdf": {
+      "name": "Merge PDF",
+      "description": "Combine several PDFs into one, in the order you choose."
+    },
+    "compress-image": {
+      "name": "Compress image",
+      "description": "Make photos smaller for email, forms and websites."
+    },
+    "split-pdf": {
+      "name": "Split PDF",
+      "description": "Pull out the pages you need, or break a PDF into parts."
+    },
+    "jpg-to-pdf": {
+      "name": "JPG to PDF",
+      "description": "Turn JPG and PNG images into a single PDF."
+    },
+    "pdf-to-jpg": {
+      "name": "PDF to JPG",
+      "description": "Save each PDF page as a separate image."
+    },
+    "number-to-bangla-words": {
+      "name": "Number to Bangla words",
+      "description": "Write any number or taka amount in Bangla words."
+    },
+    "resize-image": {
+      "name": "Resize image",
+      "description": "Change a photo's width and height in pixels."
+    },
+    "compress-image-to-20kb": {
+      "name": "Compress image to 20 KB",
+      "description": "Shrink a photo to fit a 20 KB upload limit."
+    },
+    "compress-image-to-50kb": {
+      "name": "Compress image to 50 KB",
+      "description": "Shrink a photo to fit a 50 KB upload limit."
+    },
+    "compress-image-to-100kb": {
+      "name": "Compress image to 100 KB",
+      "description": "Shrink a photo to fit a 100 KB upload limit."
+    },
+    "photo-signature-resizer": {
+      "name": "Photo and signature resizer",
+      "description": "Prepare photos and signatures for form uploads."
+    },
+    "convert-image": {
+      "name": "Convert image",
+      "description": "Switch images between PNG, JPG and WebP."
+    },
+    "heic-to-jpg": {
+      "name": "HEIC to JPG",
+      "description": "Convert iPhone photos so they work everywhere."
+    },
+    "remove-image-metadata": {
+      "name": "Remove image metadata",
+      "description": "Strip location and camera details from photos."
+    },
+    "qr-code-generator": {
+      "name": "QR code generator",
+      "description": "Create a QR code for a link or text."
+    },
+    "bijoy-to-unicode": {
+      "name": "Bijoy to Unicode",
+      "description": "Convert Bijoy Bangla text to standard Unicode."
+    },
+    "bangla-date-converter": {
+      "name": "Bangla date converter",
+      "description": "Convert dates between the Bangla and English calendars."
+    },
+    "json-formatter": {
+      "name": "JSON formatter",
+      "description": "Format JSON and find errors in it."
+    },
+    "base64-encode-decode": {
+      "name": "Base64 encode and decode",
+      "description": "Convert text to and from Base64, including Bangla."
+    },
+    "password-generator": {
+      "name": "Password generator",
+      "description": "Create strong random passwords on your device."
+    },
+    "word-counter": {
+      "name": "Word counter",
+      "description": "Count words and characters in Bangla and English."
+    },
+    "age-calculator": {
+      "name": "Age calculator",
+      "description": "Work out an age or the time between two dates."
+    }
+  },
+  "shell": {
+    "orDrop": "or drop files here",
+    "limits": "{accept}, up to {size} each.",
+    "arrangeHeading": "Arrange your files",
+    "addMore": "Add more files",
+    "runningHeading": "Working on it",
+    "progressLabel": "Progress",
+    "cancel": "Cancel",
+    "resultOne": "Your file is ready",
+    "resultMany": "Your files are ready",
+    "resultText": "Your result",
+    "download": "Download {name} ({size})",
+    "copy": "Copy",
+    "startOver": "Start over",
+    "editInput": "Edit input",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "remove": "Remove {name}",
+    "addedOne": "{name} added.",
+    "addedMany": "{count} files added.",
+    "removed": "{name} removed.",
+    "moved": "{name} moved to position {position}.",
+    "wrongType": "{name} can't be used here. Choose {accept}.",
+    "tooLarge": "{name} is larger than {limit}, the limit for this tool. Choose a smaller file.",
+    "empty": "{name} is empty. Choose another file.",
+    "largeWarning": "Large files can take a while, and may fail on phones with little memory.",
+    "tooFew": "Add at least {count} files to continue.",
+    "emptyText": "Enter something to continue.",
+    "failed": "This couldn't be finished, and nothing was changed. Try again, or try a smaller file.",
+    "memory": "Your device ran out of memory. Close other tabs or apps, or try fewer or smaller files.",
+    "working": "Working.",
+    "percent": "{percent}% done",
+    "cancelled": "Cancelled.",
+    "copied": "Copied.",
+    "copyFailed": "Couldn't copy. Select the text and copy it yourself.",
+    "noscript": "This tool runs in your browser and needs JavaScript. Turn it on and reload the page."
+  }
+}

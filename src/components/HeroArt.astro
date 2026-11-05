@@ -1,0 +1,45 @@
+<svg
+  class="art"
+  width="208"
+  height="160"
+  viewBox="0 0 104 80"
+  aria-hidden="true"
+  data-testid="hero-art"
+>
+  <circle cx="14" cy="24" r="5" fill="var(--color-pdf)"></circle>
+  <rect x="6" y="52" width="12" height="12" rx="3" fill="var(--color-image)"></rect>
+  <rect x="22" y="6" width="60" height="68" rx="8" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"></rect>
+  <rect x="32" y="18" width="30" height="4" rx="2" fill="var(--color-accent)"></rect>
+  <rect x="32" y="28" width="40" height="3" rx="1.5" fill="var(--color-border-subtle)"></rect>
+  <rect x="32" y="36" width="34" height="3" rx="1.5" fill="var(--color-border-subtle)"></rect>
+  <g class="lock">
+    <path d="M69 40v-6a8 8 0 0 1 16 0v6" fill="none" stroke="var(--color-accent)" stroke-width="3"></path>
+    <rect x="60" y="40" width="34" height="28" rx="7" fill="var(--color-accent)"></rect>
+    <circle cx="77" cy="54" r="3.5" fill="var(--color-on-accent)"></circle>
+  </g>
+</svg>
+
+<style>
+  .art {
+    display: none;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 600px) {
+    .art {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lock {
+      animation: settle 1.2s var(--ease-out) 2;
+    }
+
+    @keyframes settle {
+      50% {
+        transform: translateY(-3px);
+      }
+    }
+  }
+</style>

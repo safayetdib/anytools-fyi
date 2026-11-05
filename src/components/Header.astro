@@ -1,0 +1,109 @@
+---
+import en from "../i18n/en.json";
+import { liveHubs } from "../lib/tools";
+
+const links = [
+  { href: "/merge-pdf/", label: en.tools["merge-pdf"].name },
+  { href: "/split-pdf/", label: en.tools["split-pdf"].name },
+  { href: "/compress-image/", label: en.tools["compress-image"].name },
+  ...liveHubs().map((hub) => ({ href: `/${hub.slug}/`, label: en.hubs[hub.id].name })),
+  { href: "/tools/", label: en.nav.allTools },
+];
+const path = Astro.url.pathname;
+---
+
+<header class="header">
+  <div class="container row">
+    <a class="logo" href="/" aria-label={en.a11y.home}>
+      <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9" fill="var(--color-accent)"></rect>
+        <path
+          d="M10 7h8l5 5v13H10z"
+          fill="none"
+          stroke="var(--color-on-accent)"
+          stroke-width="2"
+          stroke-linejoin="round"></path>
+        <path
+          d="m13 18 2.5 2.5L20 16"
+          fill="none"
+          stroke="var(--color-on-accent)"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="wordmark">AnyTools<span class="tld">.fyi</span></span>
+    </a>
+    <nav aria-label={en.a11y.mainNav}>
+      <ul>
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} aria-current={path === link.href ? "page" : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-xl);
+    padding-block: var(--space-sm);
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .tld {
+    color: var(--color-accent);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-xs);
+    margin: 0 0 0 calc(var(--space-sm) * -1);
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-sm);
+    border-radius: var(--radius-button);
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  nav a:hover,
+  nav a[aria-current="page"] {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+</style>
