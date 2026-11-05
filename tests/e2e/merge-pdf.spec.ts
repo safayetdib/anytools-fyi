@@ -527,6 +527,7 @@ test("edit pages - undo puts order, rotation and size back", async ({ page }) =>
   await toolbar(page).locator("summary", { hasText: /^Page size/ }).click();
   await page.getByLabel("Page size").selectOption("letter-portrait");
   await page.getByRole("button", { name: "Undo changes" }).click();
+  await page.getByRole("button", { name: "Yes, undo changes" }).click();
   await expect(tiles(page)).toHaveCount(3);
   await expect(page.getByLabel("Page size")).toHaveValue("original");
   await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
@@ -576,3 +577,273 @@ for (const width of [320, 375, 768]) {
     await page.locator(".shell-preview").screenshot({ path: `${SCREENSHOT_DIR}/editor-${width}.png` });
   });
 }
+
+// --- Floating action bar ---
+
+async function manyFiles(page: Page, count: number) {
+  const files = [];
+  for (let i = 1; i <= count; i++) files.push(await pdf(`document-${i}.pdf`, [100 + i]));
+  await picker(page).setInputFiles(files);
+  await expect(page.getByTestId("shell-file")).toHaveCount(count);
+}
+
+for (const [width, height] of [
+  [1366, 800],
+  [375, 700],
+] as const) {
+  test(`floating bar - stays at the bottom of the screen with many files at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto(PAGE);
+    await manyFiles(page, 15);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const bar = page.getByTestId("shell-action-bar");
+    await expect(bar).toBeInViewport();
+    const box = await bar.boundingBox();
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(height);
+    expect(box?.height ?? 999).toBeLessThanOrEqual(width < 600 ? 140 : 100);
+    await expect(bar.getByRole("button", { name: "Merge PDF" })).toBeInViewport();
+    await expect(bar.getByLabel("Add more files")).toBeAttached();
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/floating-bar-${width}.png` });
+  });
+}
+
+test("floating bar - a focused row is never hidden behind the bar", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 800 });
+  await page.goto(PAGE);
+  await manyFiles(page, 15);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const remove = page.getByRole("button", { name: "Remove document-9.pdf" });
+  await remove.focus();
+  const button = await remove.boundingBox();
+  const bar = await page.getByTestId("shell-action-bar").boundingBox();
+  expect((button?.y ?? 0) + (button?.height ?? 0)).toBeLessThanOrEqual(bar?.y ?? 0);
+});
+
+test("floating bar - phones show Add more files as a labelled icon beside Merge", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto(PAGE);
+  await manyFiles(page, 3);
+  const add = await page.locator(".shell-add").boundingBox();
+  const run = await page.locator(".shell-run").boundingBox();
+  expect(Math.abs((add?.y ?? 0) - (run?.y ?? 0))).toBeLessThanOrEqual(2);
+  expect(add?.height ?? 0).toBeGreaterThanOrEqual(44);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+// --- Starting over before merging ---
+
+test("start over - asks first, and Keep files changes nothing", async ({ page }) => {
+  await page.goto(PAGE);
+  await manyFiles(page, 3);
+  await page.getByRole("button", { name: "Start over" }).click();
+  await expect(page.getByText("Remove all 3 files and start over?")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Keep files" })).toBeFocused();
+  await page.getByRole("button", { name: "Keep files" }).click();
+  await expect(page.getByText("Remove all 3 files and start over?")).toBeHidden();
+  await expect(page.getByTestId("shell-file")).toHaveCount(3);
+  await expect(page.getByRole("button", { name: "Start over" })).toBeFocused();
+});
+
+test("start over - removes every file and returns to the start", async ({ page }) => {
+  await page.goto(PAGE);
+  await manyFiles(page, 3);
+  await page.getByRole("button", { name: "Start over" }).click();
+  await page.getByRole("button", { name: "Yes, start over" }).click();
+  await expect(picker(page)).toBeFocused();
+  await expect(page.getByTestId("shell-file")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Arrange your files" })).toBeHidden();
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  await expect(page.getByTestId("shell-file")).toHaveCount(2);
+  await expect(page.getByText("Remove all")).toBeHidden();
+});
+
+for (const width of [320, 1366]) {
+  test(`start over - fits ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto(PAGE);
+    await manyFiles(page, 2);
+    await page.getByRole("button", { name: "Start over" }).click();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    for (const name of ["Start over", "Yes, start over", "Keep files"]) {
+      const box = await page.getByRole("button", { name, exact: true }).boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+    await page.locator('[data-screen="working"]').screenshot({ path: `${SCREENSHOT_DIR}/start-over-${width}.png` });
+  });
+}
+
+test("start over - the question card animates in to catch the eye", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto(PAGE);
+  await manyFiles(page, 2);
+  await page.getByRole("button", { name: "Start over" }).click();
+  const card = page.locator('[data-el="clear-confirm"]');
+  const names = await card.evaluate((el) => getComputedStyle(el).animationName);
+  expect(names).toContain("shell-confirm-in");
+  expect(names).toContain("shell-confirm-pulse");
+  const duration = await card.evaluate((el) => {
+    const style = getComputedStyle(el);
+    const seconds = (list: string) => list.split(",").map((v) => parseFloat(v) * (v.trim().endsWith("ms") ? 0.001 : 1));
+    const [durations, delays, counts] = [seconds(style.animationDuration), seconds(style.animationDelay), style.animationIterationCount.split(",").map(Number)];
+    return Math.max(...durations.map((d, i) => delays[i] + d * counts[i]));
+  });
+  expect(duration).toBeLessThanOrEqual(5);
+  await expect(card.locator("svg")).toBeVisible();
+});
+
+test("start over - the question card stays still for reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(PAGE);
+  await manyFiles(page, 2);
+  await page.getByRole("button", { name: "Start over" }).click();
+  expect(await page.locator('[data-el="clear-confirm"]').evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+});
+
+// --- Confirmations are consistent everywhere ---
+
+test("confirm - Start over after merging asks first, and keeping changes nothing", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await page.getByRole("button", { name: "Start over" }).click();
+  const card = page.getByRole("group", { name: /Start over\?/ });
+  await expect(card).toContainText("download it first");
+  await expect(page.getByRole("button", { name: "Keep my file" })).toBeFocused();
+  await page.getByRole("button", { name: "Keep my file" }).click();
+  await expect(card).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start over" })).toBeFocused();
+  await page.getByRole("button", { name: "Start over" }).click();
+  await page.getByRole("button", { name: "Yes, start over" }).click();
+  await expect(picker(page)).toBeFocused();
+});
+
+test("confirm - Undo changes asks first, and keeping keeps the edits", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 1).check();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: true }).click();
+  await page.getByRole("button", { name: "Undo changes" }).click();
+  await expect(page.getByRole("group", { name: "Undo all your page changes?" })).toBeVisible();
+  await page.getByRole("button", { name: "Keep changes" }).click();
+  await expect(tiles(page)).toHaveCount(2);
+  await expect(page.getByText("You've changed the pages.")).toBeVisible();
+});
+
+test("confirm - every question card looks and moves the same", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await mergeForEditing(page, [100], [200]);
+  await page.getByRole("button", { name: "Start over" }).click();
+  const card = page.locator('[data-el="result-confirm"]');
+  await expect(card).toHaveClass(/shell-confirm/);
+  expect(await card.evaluate((el) => getComputedStyle(el).animationName)).toContain("shell-confirm-in");
+  await expect(card.locator("svg")).toBeVisible();
+  expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+});
+
+// --- Larger view ---
+
+for (const [width, height] of [
+  [1366, 700],
+  [375, 667],
+] as const) {
+  test(`viewer - a tall page fits and every control stays on screen at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto(PAGE);
+    await picker(page).setInputFiles([
+      { name: "tall.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makePdf([300], 2000)) },
+      await pdf("b.pdf", [200]),
+    ]);
+    await mergeButton(page).click();
+    await page.getByRole("button", { name: "Open page 1 larger" }).click();
+    const viewer = page.getByRole("dialog");
+    await expect(viewer.locator("img")).toBeVisible();
+    await expect.poll(() => viewer.locator("img").evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    for (const name of ["Close", "Previous page", "Next page", "Rotate left", "Rotate right", "Move", "Remove this page"]) {
+      await expect(viewer.getByRole("button", { name, exact: true })).toBeInViewport();
+    }
+    await expect(viewer.getByLabel("Move to position")).toBeInViewport();
+    const image = await viewer.locator("img").boundingBox();
+    const tools = await viewer.getByTestId("viewer-tools").boundingBox();
+    expect((image?.y ?? 0) + (image?.height ?? 0)).toBeLessThanOrEqual((tools?.y ?? 0) + 1);
+    const overflow = await viewer.evaluate((el) => el.scrollHeight - el.clientHeight);
+    expect(overflow).toBeLessThanOrEqual(1);
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/viewer-${width}.png` });
+  });
+}
+
+test("viewer - buttons are in a set order with icons", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await page.getByRole("button", { name: "Open page 1 larger" }).click();
+  const names = await page.getByTestId("viewer-tools").getByRole("button").evaluateAll((buttons) =>
+    buttons.map((b) => b.textContent?.trim()),
+  );
+  expect(names).toEqual(["Rotate left", "Rotate right", "Move", "Remove this page"]);
+  expect(await page.getByTestId("viewer-tools").locator("button svg").count()).toBe(4);
+});
+
+// --- Leaving the page ---
+
+async function leaveAndCatchPrompt(page: Page) {
+  let prompted = false;
+  page.once("dialog", async (dialog) => {
+    prompted = dialog.type() === "beforeunload";
+    await dialog.accept();
+  });
+  await page.goto("/about/");
+  return prompted;
+}
+
+test("leaving - warns when files are chosen but not merged", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  await page.getByRole("heading", { name: "Arrange your files" }).click();
+  expect(await leaveAndCatchPrompt(page)).toBe(true);
+});
+
+test("leaving - warns when the merged file hasn't been downloaded", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  expect(await leaveAndCatchPrompt(page)).toBe(true);
+});
+
+test("leaving - no warning once the merged file is downloaded", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  const pending = page.waitForEvent("download");
+  await page.getByRole("link", { name: /^Download merged\.pdf/ }).click();
+  await pending;
+  expect(await leaveAndCatchPrompt(page)).toBe(false);
+});
+
+test("leaving - warns again when downloaded pages are changed but not applied", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  const pending = page.waitForEvent("download");
+  await page.getByRole("link", { name: /^Download merged\.pdf/ }).click();
+  await pending;
+  await toolbar(page).getByRole("button", { name: "Rotate all" }).click();
+  expect(await leaveAndCatchPrompt(page)).toBe(true);
+});
+
+test("leaving - no warning with nothing chosen", async ({ page }) => {
+  await page.goto(PAGE);
+  await page.locator("h1").click();
+  expect(await leaveAndCatchPrompt(page)).toBe(false);
+});
+
+test("leaving - files and results are wiped when the page is hidden", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true })));
+  await expect(page.getByRole("heading", { name: "Your file is ready" })).toBeHidden();
+  await expect(picker(page)).toBeAttached();
+  await expect(page.locator('.shell-pages img, [data-testid="shell-file"]')).toHaveCount(0);
+  expect(await page.locator('[data-el="downloads"] a').count()).toBe(0);
+});
+
+test("start over - the larger view's image is released", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await page.getByRole("button", { name: "Open page 1 larger" }).click();
+  await expect.poll(() => page.locator('[data-el="viewer-image"]').getAttribute("src")).toMatch(/^blob:/);
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Start over" }).click();
+  await page.getByRole("button", { name: "Yes, start over" }).click();
+  expect(await page.locator('[data-el="viewer-image"]').getAttribute("src")).toBeNull();
+});

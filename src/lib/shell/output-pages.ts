@@ -1,6 +1,7 @@
 import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
 import { isChanged, movePage, movePageTo, moveSelectedTo } from "./page-order";
+import type { ConfirmOptions } from "./confirm";
 import type { OutputPreview, PagePlan, PageSize, ToolDefinition, ToolOutput } from "./types";
 
 const t = en.shell;
@@ -9,6 +10,8 @@ const PAGE_THUMBNAIL_WIDTH = 288;
 
 interface Hooks {
   announce(message: string): void;
+  // Asks before throwing work away, and resolves true if the visitor agrees.
+  confirm(options: ConfirmOptions): Promise<boolean>;
   // Called when the page plan starts or stops differing from the result file.
   onChange(changed: boolean): void;
   // Called with the rebuilt result after the visitor applies their changes.
@@ -382,8 +385,10 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     }
   });
 
-  undo.addEventListener("click", () => {
+  undo.addEventListener("click", async () => {
     if (!preview) return;
+    const confirmed = await hooks.confirm({ question: t.undoQuestion, yes: t.undoYes, no: t.undoNo, returnFocus: undo });
+    if (!confirmed || !preview) return;
     rotations.clear();
     selected.clear();
     pageSize = "original";
@@ -392,6 +397,7 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
     shown = Math.min(Math.max(shown, PREVIEW_BATCH), order.length);
     renderGrid();
     hooks.announce(t.changesUndone);
+    root.querySelector<HTMLElement>('[data-el="downloads"] a')?.focus();
   });
 
   apply.addEventListener("click", async () => {
@@ -518,6 +524,8 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
       pageSizeSelect.value = "original";
       images.forEach(({ url }) => URL.revokeObjectURL(url));
       images.clear();
+      if (viewerImage.src) URL.revokeObjectURL(viewerImage.src);
+      viewerImage.removeAttribute("src");
       grid.replaceChildren();
       section.hidden = true;
       if (viewer.open) viewer.close();

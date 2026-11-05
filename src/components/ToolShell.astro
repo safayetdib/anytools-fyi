@@ -3,6 +3,7 @@ import en from "../i18n/en.json";
 import { fill } from "../i18n/format";
 import { formatSize } from "../lib/files";
 import type { ToolConfig } from "../lib/shell/types";
+import ShellConfirm from "./ShellConfirm.astro";
 
 interface Props {
   config: ToolConfig;
@@ -52,7 +53,22 @@ const limits = isFiles
   }
 
   <section data-screen="working" hidden={isFiles}>
-    {isFiles && <h2 class="shell-heading" tabindex="-1" data-el="working-heading">{t.arrangeHeading}</h2>}
+    {
+      isFiles && (
+        <div class="shell-working-head">
+          <h2 class="shell-heading" tabindex="-1" data-el="working-heading">
+            {t.arrangeHeading}
+          </h2>
+          <button class="shell-secondary" type="button" data-el="clear-files">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" /><path d="M3 21v-5h5" />
+            </svg>
+            {t.startOver}
+          </button>
+        </div>
+      )
+    }
+    {isFiles && <ShellConfirm name="clear-confirm" />}
     {isFiles && config.arrangeHint && <p class="shell-hint shell-arrange-hint">{config.arrangeHint}</p>}
     <form data-el="form" novalidate>
       {
@@ -78,7 +94,7 @@ const limits = isFiles
               <label class="shell-secondary shell-add">
                 <input class="sr-only" type="file" data-el="add-input" accept={config.accept} multiple />
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                {t.addMore}
+                <span class="shell-add-text">{t.addMore}</span>
               </label>
             )
           }
@@ -124,6 +140,7 @@ const limits = isFiles
         </button>
       </div>
     </div>
+    {isFiles && <ShellConfirm name="result-confirm" />}
     <section class="shell-preview" data-el="preview" aria-labelledby="shell-preview-heading" hidden>
       <h3 id="shell-preview-heading">{t.previewHeading}</h3>
       <p class="shell-hint" data-el="preview-note">{t.previewNote}</p>
@@ -191,28 +208,48 @@ const limits = isFiles
   </section>
 
   <dialog class="shell-viewer" data-el="viewer" aria-labelledby="shell-viewer-title">
-    <div class="shell-viewer-bar">
+    <div class="shell-viewer-head">
       <p class="shell-viewer-title" id="shell-viewer-title" data-el="viewer-title"></p>
       <button class="shell-icon-button" type="button" data-el="viewer-close" aria-label={t.close}>
-        <span aria-hidden="true">×</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12" /><path d="M18 6 6 18" /></svg>
       </button>
     </div>
-    <div class="shell-viewer-page">
+    <div class="shell-viewer-stage">
       <img data-el="viewer-image" alt="" />
+      <button class="shell-viewer-nav shell-viewer-prev" type="button" data-el="viewer-prev" aria-label={t.previous}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      </button>
+      <button class="shell-viewer-nav shell-viewer-next" type="button" data-el="viewer-next" aria-label={t.next}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+      </button>
     </div>
-    <div class="shell-viewer-bar">
-      <button class="shell-secondary" type="button" data-el="viewer-prev">{t.previous}</button>
-      <div class="shell-viewer-edit" data-el="viewer-edit" hidden>
+    <div class="shell-viewer-tools" data-el="viewer-edit" data-testid="viewer-tools" hidden>
+      <div class="shell-viewer-group">
+        <button class="shell-secondary" type="button" data-el="viewer-rotate-left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
+          {t.rotateLeft}
+        </button>
+        <button class="shell-secondary" type="button" data-el="viewer-rotate-right">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" /></svg>
+          {t.rotateRight}
+        </button>
+      </div>
+      <div class="shell-viewer-group">
         <label class="shell-viewer-position">
-          {t.moveTo}
+          <span>{t.moveToShort}<span class="shell-viewer-extra"> {t.positionWord}</span></span>
           <input type="number" min="1" inputmode="numeric" data-el="viewer-position" />
         </label>
-        <button class="shell-secondary" type="button" data-el="viewer-move">{t.moveButton}</button>
-        <button class="shell-secondary" type="button" data-el="viewer-rotate-left">{t.rotateLeft}</button>
-        <button class="shell-secondary" type="button" data-el="viewer-rotate-right">{t.rotateRight}</button>
-        <button class="shell-secondary" type="button" data-el="viewer-remove">{t.removeThis}</button>
+        <button class="shell-secondary" type="button" data-el="viewer-move">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 4-3 3 3 3" /><path d="M4 7h11" /><path d="m17 14 3 3-3 3" /><path d="M20 17H9" /></svg>
+          {t.moveButton}
+        </button>
       </div>
-      <button class="shell-secondary" type="button" data-el="viewer-next">{t.next}</button>
+      <div class="shell-viewer-group">
+        <button class="shell-secondary shell-danger" type="button" data-el="viewer-remove">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M6 7l1 13h10l1-13" /><path d="M9 7V4h6v3" /></svg>
+          {t.removeThis}
+        </button>
+      </div>
     </div>
   </dialog>
 </div>
@@ -414,6 +451,96 @@ const limits = isFiles
     border-width: 2px;
   }
 
+  .shell-working-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-sm);
+  }
+
+  .shell-working-head .shell-heading {
+    margin: 0;
+  }
+
+  .shell-confirm {
+    display: flex;
+    margin-top: var(--space-md);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
+  }
+
+  .shell-confirm p {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .shell-confirm-question {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .shell-confirm-icon {
+    flex-shrink: 0;
+    color: var(--color-danger);
+  }
+
+  /* Any card asking for a decision slides in, then pulses twice, so the eye goes straight to it. */
+  @media (prefers-reduced-motion: no-preference) {
+    .shell-confirm:not([hidden]) {
+      animation:
+        shell-confirm-in var(--dur-slow) var(--ease-out),
+        shell-confirm-pulse 1.3s var(--ease-out) var(--dur-slow) 2;
+    }
+
+    .shell-confirm:not([hidden]) .shell-confirm-icon {
+      animation: shell-confirm-nudge 0.5s var(--ease-out) var(--dur-slow) 2;
+    }
+
+    @keyframes shell-confirm-in {
+      from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+      }
+    }
+
+    @keyframes shell-confirm-pulse {
+      0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-danger) 40%, transparent);
+      }
+
+      70%,
+      100% {
+        box-shadow: 0 0 0 12px transparent;
+      }
+    }
+
+    @keyframes shell-confirm-nudge {
+      30% {
+        transform: rotate(-10deg) scale(1.12);
+      }
+
+      60% {
+        transform: rotate(8deg) scale(1.12);
+      }
+    }
+  }
+
+  .shell-confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
   .shell-arrange-hint {
     margin: 0 0 var(--space-lg);
   }
@@ -431,11 +558,83 @@ const limits = isFiles
     background: var(--color-surface);
   }
 
-  .shell-run-actions,
   .shell-actions {
     display: flex;
     flex-direction: column-reverse;
     gap: var(--space-sm);
+  }
+
+  .shell-run-actions {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  /* With a long file list, the bar floats at the bottom of the screen so Merge is always in reach. */
+  .shell-run-row {
+    position: sticky;
+    bottom: var(--space-sm);
+    z-index: 5;
+    gap: var(--space-sm);
+    padding: 0.75rem;
+    border: 2px solid var(--color-bar-border);
+    background: var(--color-bar);
+    color: var(--color-on-bar);
+    box-shadow: 0 -6px 24px -12px rgb(0 0 0 / 0.45);
+  }
+
+  /* In the coloured bar, buttons flip so they stand out against it. */
+  .shell-run-row .shell-run {
+    --pulse: var(--color-bar-action);
+    background: var(--color-bar-action);
+    color: var(--color-on-bar-action);
+  }
+
+  .shell-run-row .shell-add {
+    border-color: var(--color-on-bar);
+    background: transparent;
+    color: var(--color-on-bar);
+  }
+
+  .shell-run-row :focus-visible,
+  .shell-run-row .shell-add:focus-within {
+    outline-color: var(--color-on-bar);
+  }
+
+  @media (hover: hover) {
+    .shell-run-row .shell-add:hover {
+      border-color: var(--color-on-bar);
+      background: color-mix(in srgb, var(--color-on-bar) 12%, transparent);
+    }
+
+    .shell-run-row .shell-run:hover {
+      box-shadow: 0 8px 20px -10px rgb(0 0 0 / 0.5);
+    }
+  }
+
+  /* Rows and their buttons scroll clear of the floating bar when they get keyboard focus. */
+  .shell-files button {
+    scroll-margin-bottom: 9rem;
+  }
+
+  .shell-run-actions .shell-run {
+    flex: 1;
+  }
+
+  /* On narrow phones, Add more files shrinks to its icon. The text stays as its accessible name. */
+  @media (max-width: 479px) {
+    .shell-add {
+      width: var(--shell-button-height);
+      padding: 0;
+    }
+
+    .shell-add-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   .shell-total {
@@ -488,7 +687,7 @@ const limits = isFiles
     /* Both cues end within 4 seconds, so nothing keeps moving while the visitor reads. */
     @keyframes shell-call {
       0% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--pulse, var(--color-accent)) 45%, transparent);
       }
 
       70%,
@@ -766,35 +965,9 @@ const limits = isFiles
     font-weight: 700;
   }
 
-  .shell-viewer-edit {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-  }
 
-  .shell-viewer-position {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-weight: 600;
-  }
 
-  .shell-viewer-position input {
-    width: 5rem;
-    min-height: 44px;
-    padding: 0 var(--space-sm);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-button);
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: inherit;
-  }
 
-  .shell-viewer .shell-viewer-bar {
-    flex-wrap: wrap;
-  }
 
   .shell-page {
     display: grid;
@@ -841,45 +1014,11 @@ const limits = isFiles
     background: #ffffff;
   }
 
-  .shell-viewer {
-    width: min(56rem, calc(100vw - 2rem));
-    max-height: calc(100dvh - 2rem);
-    padding: var(--space-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    background: var(--color-surface);
-    color: var(--color-text);
-  }
 
-  .shell-viewer::backdrop {
-    background: rgb(0 0 0 / 0.6);
-  }
 
-  .shell-viewer-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-  }
 
-  .shell-viewer-title {
-    margin: 0;
-    font-weight: 700;
-  }
 
-  .shell-viewer-page {
-    display: flex;
-    justify-content: center;
-    margin-block: var(--space-sm);
-  }
 
-  .shell-viewer-page img {
-    max-width: 100%;
-    max-height: calc(100dvh - 12rem);
-    height: auto;
-    background: #ffffff;
-    border: 1px solid var(--color-border-subtle);
-  }
 
   .shell-notice {
     margin: 0 0 var(--space-md);
@@ -996,6 +1135,192 @@ const limits = isFiles
 
     .shell-pages {
       grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    }
+  }
+
+
+  /* The larger view fills the screen: page on top, fitted to the space, with every control always visible. */
+  .shell-viewer {
+    width: min(68rem, calc(100vw - 2rem));
+    height: calc(100dvh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .shell-viewer[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shell-viewer::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+
+  .shell-viewer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-lg);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .shell-viewer-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .shell-viewer-stage {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: var(--space-md) 4.5rem;
+    background: var(--color-bg);
+  }
+
+  .shell-viewer-stage img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.2);
+  }
+
+  .shell-viewer-nav {
+    position: absolute;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.4);
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  .shell-viewer-nav:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  @media (hover: hover) {
+    .shell-viewer-nav:not(:disabled):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  .shell-viewer-prev {
+    left: var(--space-md);
+  }
+
+  .shell-viewer-next {
+    right: var(--space-md);
+  }
+
+  .shell-viewer-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm) var(--space-lg);
+    padding: var(--space-md);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .shell-viewer-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+
+  .shell-viewer-position {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-weight: 600;
+  }
+
+  .shell-viewer-position input {
+    width: 4.5rem;
+    min-height: var(--shell-button-height);
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  /* On phones the page gets the room: arrows sit over its edges and the tools wrap tightly. */
+  @media (max-width: 599px) {
+    .shell-viewer {
+      width: calc(100vw - 1rem);
+      height: calc(100dvh - 1rem);
+      max-height: calc(100dvh - 1rem);
+    }
+
+    .shell-viewer-stage {
+      padding: var(--space-sm);
+    }
+
+    .shell-viewer-prev {
+      left: var(--space-xs);
+    }
+
+    .shell-viewer-next {
+      right: var(--space-xs);
+    }
+
+    /* Tools sit in a two-column grid so the page keeps most of the screen. */
+    .shell-viewer-tools {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-xs);
+      padding: var(--space-sm);
+    }
+
+    .shell-viewer-group {
+      display: contents;
+    }
+
+    .shell-viewer-tools .shell-secondary {
+      width: 100%;
+      padding: 0 var(--space-sm);
+    }
+
+    .shell-viewer-position input {
+      flex: 1;
+      width: auto;
+      min-width: 0;
+    }
+
+    .shell-viewer-tools [data-el="viewer-remove"] {
+      grid-column: 1 / -1;
+    }
+
+    .shell-viewer-extra {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   }
 

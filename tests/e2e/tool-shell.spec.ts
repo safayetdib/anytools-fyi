@@ -136,6 +136,10 @@ test("tool shell - completes the whole flow with only the keyboard", async ({ pa
   expect(await downloadText(await pending)).toBe("AAA\nBBB");
   await page.getByRole("button", { name: "Start over" }).focus();
   await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Keep my file" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "Yes, start over" })).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(filePicker(page)).toBeFocused();
   await expect(files(page)).toHaveCount(0);
 });
@@ -309,3 +313,10 @@ for (const screen of screens) {
     await page.screenshot({ path: `${SCREENSHOT_DIR}/${screen.name}-320.png`, fullPage: true });
   });
 }
+
+test("text tool - typed text is wiped when the page is hidden", async ({ page }) => {
+  await page.goto(TEXT_PAGE);
+  await page.getByLabel("Text to change").fill("private note");
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true })));
+  await expect(page.getByLabel("Text to change")).toHaveValue("");
+});

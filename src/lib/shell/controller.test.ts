@@ -274,3 +274,22 @@ it("swaps in a rebuilt result only while showing a result", async () => {
   expect(c.state.output).toBe(rebuilt);
   expect(c.state.announcement).toBe("Rebuilt.");
 });
+
+it("clears everything, including typed text, when the page is left", async () => {
+  const files = createToolController(fileTool());
+  files.addFiles([txt("a.txt")]);
+  await files.run();
+  files.clearAll();
+  expect(files.state.screen).toBe("select");
+  expect(files.state.files).toEqual([]);
+  expect(files.state.output).toBeNull();
+
+  const text = createToolController({
+    config: { mode: "text", inputLabel: "Number" },
+    run: async () => ({ text: "out", summary: "Done." }),
+  });
+  text.setText("private");
+  text.clearAll();
+  expect(text.state.text).toBe("");
+  expect(text.state.screen).toBe("working");
+});

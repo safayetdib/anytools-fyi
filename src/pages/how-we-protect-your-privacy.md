@@ -11,6 +11,12 @@ Your files are processed in your browser and are not uploaded to our servers.
 
 When you open a tool, your browser downloads the page and the code for that tool. When you choose a file, the tool reads it on your device, does the work there, and gives you the result to save. The file is never sent to us.
 
+## What happens to your files afterwards
+
+Your files are held only in this browser tab while you use a tool. When you start over, leave the page or close the tab, they're cleared, and pressing Back won't bring them back. Your original files are never changed.
+
+The only copy that stays is a file you choose to download. If you leave before downloading a result, your browser asks you first.
+
 ## Check it yourself
 
 You don't have to take our word for it. Try either of these:

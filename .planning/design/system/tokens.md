@@ -14,6 +14,8 @@ Status: approved. CSS source: `src/styles/tokens.css`.
 | Accent | --color-accent | #0A6B52 | #4FD1A5 | 6.03 on page / 9.55 on page |
 | Error text | --color-danger | #B42318 | #FF9B8F | 6.11 on page / 8.14 on card |
 | Warning text | --color-warning | #8A5300 | #F2B654 | 5.89 on page / 9.13 on card |
+| Floating bar | --color-bar | #0A6B52 | #1B5E4C | text 6.49 / 6.66 |
+| Floating bar action | --color-bar-action | #FFFFFF | #4FD1A5 | 6.49 / 4.00 against the bar |
 | Text on accent | --color-on-accent | #FFFFFF | #07241B | 6.49 / 8.61 |
 
 Category tiles use white icons in both themes: PDF #C2412D (5.14), Image #2563C9 (5.67), Bangla #0A6B52 (6.49), Developer #6D4AC7 (6.08), Text #A85F00 (4.88), Calculators #0E7490 (5.36).

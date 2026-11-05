@@ -185,6 +185,21 @@ export function createToolController(tool: ToolDefinition) {
       update({ screen: "working", progress: null, announcement: t.cancelled });
     },
 
+    // Wipes every file, result and typed text, for when the visitor leaves the page.
+    clearAll() {
+      if (state.screen === "running") this.cancel();
+      update({
+        screen: emptyScreen,
+        files: [],
+        text: "",
+        output: null,
+        error: null,
+        warning: null,
+        progress: null,
+        announcement: "",
+      });
+    },
+
     reset() {
       if (state.screen === "running") this.cancel();
       update({

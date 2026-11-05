@@ -1,0 +1,21 @@
+---
+// A question card that asks before anything is thrown away. Text and buttons are filled in when it's shown.
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+---
+
+<div class="shell-confirm" data-el={name} role="group" aria-labelledby={`${name}-question`} hidden>
+  <p class="shell-confirm-question">
+    <svg class="shell-confirm-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 3 2 20h20z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path>
+    </svg>
+    <span id={`${name}-question`} data-confirm-question></span>
+  </p>
+  <div class="shell-confirm-actions">
+    <button class="shell-secondary shell-danger" type="button" data-confirm="yes"></button>
+    <button class="shell-secondary" type="button" data-confirm="no"></button>
+  </div>
+</div>

@@ -2,6 +2,7 @@ import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
 import { formatSize, safeFileName } from "../files";
 import { createToolController, totalPages, type QueuedFile, type ShellState } from "./controller";
+import { createConfirm } from "./confirm";
 import { createOutputPages } from "./output-pages";
 import type { ToolDefinition } from "./types";
 
@@ -63,6 +64,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const output = el(root, "output");
   const copyButton = el<HTMLButtonElement>(root, "copy");
   const resetButton = el<HTMLButtonElement>(root, "reset");
+  const clearFiles = root.querySelector<HTMLButtonElement>('[data-el="clear-files"]');
   const changedNote = el(root, "changed");
   const applyButton = el<HTMLButtonElement>(root, "apply");
   const undoButton = el<HTMLButtonElement>(root, "undo");
@@ -205,11 +207,42 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     }
   }
 
+  // --- Leaving the page ---
+
+  let downloaded = false;
+  let pagesChanged = false;
+  let guarding = false;
+
+  // Work that would be lost: chosen files not yet merged, or a result not downloaded or with unapplied changes.
+  function hasUnsavedWork() {
+    if (isText) return false;
+    if (state.screen === "result") return !downloaded || pagesChanged;
+    return state.files.length > 0;
+  }
+
+  function warnBeforeLeaving(event: BeforeUnloadEvent) {
+    event.preventDefault();
+    // Older browsers only show the prompt when returnValue is set too.
+    event.returnValue = "";
+  }
+
+  // The listener is only added while there's work to lose, so it never slows down Back and Forward otherwise.
+  function syncLeaveGuard() {
+    const needed = hasUnsavedWork();
+    if (needed === guarding) return;
+    guarding = needed;
+    if (needed) window.addEventListener("beforeunload", warnBeforeLeaving);
+    else window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }
+
   // --- Result ---
 
   const outputPages = createOutputPages(root, tool, {
     announce,
+    confirm: (options) => resultConfirm?.ask(options) ?? Promise.resolve(true),
     onChange(changed) {
+      pagesChanged = changed;
+      syncLeaveGuard();
       downloads.hidden = changed || (state.output?.files ?? []).length === 0;
       changedNote.hidden = !changed;
       applyButton.hidden = !changed;
@@ -224,6 +257,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   function renderOutput() {
     if (state.output === renderedOutput) return;
     renderedOutput = state.output;
+    downloaded = false;
     outputPages.close();
     objectUrls.forEach((url) => URL.revokeObjectURL(url));
     objectUrls = [];
@@ -274,6 +308,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     renderFiles();
     renderOutput();
     announce(state.announcement);
+    syncLeaveGuard();
   }
 
   function afterFiles(from: "select" | "working") {
@@ -350,7 +385,41 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     focus(isText ? textInput : runButton);
   });
 
-  resetButton.addEventListener("click", () => {
+  // Anything that throws work away asks first, with the same card everywhere.
+  const clearCard = root.querySelector<HTMLElement>('[data-el="clear-confirm"]');
+  const resultCard = root.querySelector<HTMLElement>('[data-el="result-confirm"]');
+  const clearConfirm = clearCard ? createConfirm(clearCard) : null;
+  const resultConfirm = resultCard ? createConfirm(resultCard) : null;
+
+  controller.subscribe(() => {
+    if (state.screen !== "working") clearConfirm?.dismiss();
+    if (state.screen !== "result") resultConfirm?.dismiss();
+  });
+
+  clearFiles?.addEventListener("click", async () => {
+    const count = state.files.length;
+    const confirmed = await clearConfirm?.ask({
+      question: count === 1 ? t.clearQuestionOne : fill(t.clearQuestionMany, { count }),
+      yes: t.clearYes,
+      no: t.clearNo,
+      returnFocus: clearFiles,
+    });
+    if (!confirmed) return;
+    controller.reset();
+    focus(pickInput);
+  });
+
+  resetButton.addEventListener("click", async () => {
+    // Text tools keep what was typed, so going back loses nothing and needs no question.
+    if (!isText) {
+      const confirmed = await resultConfirm?.ask({
+        question: t.resetQuestion,
+        yes: t.clearYes,
+        no: t.resetNo,
+        returnFocus: resetButton,
+      });
+      if (!confirmed) return;
+    }
     controller.reset();
     focus(isText ? textInput : pickInput);
   });
@@ -381,6 +450,22 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   });
   zone?.addEventListener("dragover", () => zone.classList.add("is-dragging"));
   zone?.addEventListener("dragleave", () => zone.classList.remove("is-dragging"));
+
+  downloads.addEventListener("click", (event) => {
+    if (!(event.target as HTMLElement).closest("a")) return;
+    downloaded = true;
+    syncLeaveGuard();
+  });
+
+  // Leaving the page wipes everything, so Back never brings someone's files back into view.
+  window.addEventListener("pagehide", () => {
+    clearConfirm?.dismiss();
+    resultConfirm?.dismiss();
+    controller.clearAll();
+    if (textInput) textInput.value = "";
+    if (pickInput) pickInput.value = "";
+    if (addInput) addInput.value = "";
+  });
 
   root.dataset.ready = "true";
   return controller;
