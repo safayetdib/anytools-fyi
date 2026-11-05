@@ -28,7 +28,7 @@ test("merge pdf - page shows the working tool and its help text", async ({ page 
   await expect(page.getByRole("heading", { level: 1, name: "Merge PDF" })).toBeVisible();
   await expect(picker(page)).toBeAttached();
   await expect(page.getByText("This tool is being built")).toHaveCount(0);
-  for (const heading of ["How to merge PDF files", "Limits", "How merging works", "Before you merge", "Why your files stay private", "Questions"]) {
+  for (const heading of ["How to merge PDF files", "Limits", "How merging works", "Tips for a clean result", "Why your files stay private", "Questions"]) {
     await expect(page.getByRole("heading", { level: 2, name: heading })).toBeVisible();
   }
   await expect(page.locator("summary", { hasText: "Does this upload my files?" })).toBeVisible();
@@ -246,9 +246,9 @@ test("merge pdf - guidance shows limits as cards and steps in order", async ({ p
   await expect(page.getByTestId("limit-card").first()).toContainText("PDF");
   await expect(page.getByTestId("limit-card").nth(1)).toContainText("100 MB");
   const steps = page.getByTestId("step");
-  await expect(steps).toHaveCount(4);
+  await expect(steps).toHaveCount(5);
   await expect(steps.first()).toContainText("Select your PDFs");
-  await expect(page.getByTestId("tip-card")).toHaveCount(3);
+  await expect(page.getByTestId("tip-card")).toHaveCount(4);
 });
 
 test("merge pdf - the diagram shows how order changes the merged file", async ({ page }) => {
@@ -846,4 +846,12 @@ test("start over - the larger view's image is released", async ({ page }) => {
   await page.getByRole("button", { name: "Start over" }).click();
   await page.getByRole("button", { name: "Yes, start over" }).click();
   expect(await page.locator('[data-el="viewer-image"]').getAttribute("src")).toBeNull();
+});
+
+test("merge pdf - guidance covers editing pages and leaving the page", async ({ page }) => {
+  await page.goto(PAGE);
+  await expect(page.getByTestId("step").nth(3)).toContainText("Check and fix the pages");
+  await expect(page.getByTestId("tip-card").nth(1)).toContainText("Fix sideways scans");
+  await page.locator("summary", { hasText: "What happens to my files when I leave the page?" }).click();
+  await expect(page.getByText("pressing Back won't bring them back")).toBeVisible();
 });
