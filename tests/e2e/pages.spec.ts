@@ -20,7 +20,7 @@ async function jsonLdTypes(page: Page) {
 
 test("homepage - lists live tools with the most used first", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Everyday tools that stay on your device" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Everyday tools for PDFs, images and Bangla" })).toBeVisible();
   const cards = page.getByTestId("tool-card");
   await expect(cards).toHaveCount(19);
   await expect(cards.first()).toHaveAttribute("href", "/merge-pdf/");
@@ -116,4 +116,31 @@ for (const { name, path, schema } of PAGES) {
       await page.screenshot({ path: `${SCREENSHOT_DIR}/${name}-${width}.png`, fullPage: true });
     });
   }
+}
+
+// --- Privacy promise ---
+
+test("privacy - browser-only tools show the promise near the top", async ({ page }) => {
+  await page.goto("/merge-pdf/");
+  const badge = page.getByRole("complementary", { name: "Your files never leave your device" });
+  await expect(badge).toBeVisible();
+  await expect(badge.getByRole("link", { name: "How we protect your privacy" })).toHaveAttribute("href", "/how-we-protect-your-privacy/");
+  const badgeTop = (await badge.boundingBox())?.y ?? 0;
+  const toolTop = (await page.getByTestId("shell-zone").boundingBox())?.y ?? 0;
+  expect(badgeTop).toBeLessThan(toolTop);
+});
+
+test("privacy - text tools word the promise for typing", async ({ page }) => {
+  await page.goto("/json-formatter/");
+  await expect(page.getByRole("complementary", { name: "What you type stays on your device" })).toBeVisible();
+});
+
+for (const path of ["/", "/tools/", "/pdf-tools/", "/about/"]) {
+  test(`privacy - ${path} makes no upload promise`, async ({ page }) => {
+    await page.goto(path);
+    const text = (await page.locator("body").innerText()).toLowerCase();
+    for (const claim of ["not uploaded", "nothing is uploaded", "stay on your device", "stays on your device", "in your browser"]) {
+      expect(text, claim).not.toContain(claim);
+    }
+  });
 }

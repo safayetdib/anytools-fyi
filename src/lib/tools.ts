@@ -15,6 +15,8 @@ export interface Tool {
   aliases: string[];
   // True once the tool works. Launch waits until every tool is built.
   built: boolean;
+  // Where the work happens. Only "browser" tools may promise that files stay on the device.
+  runsIn: "browser" | "server";
   variantOf?: string;
 }
 
@@ -40,6 +42,7 @@ export const TOOLS: Tool[] = [
     related: ["split-pdf", "jpg-to-pdf", "pdf-to-jpg", "compress-image"],
     aliases: ["combine pdf", "join pdf", "pdf merger", "পিডিএফ যুক্ত করুন", "pdf jukto"],
     built: true,
+    runsIn: "browser",
   },
   {
     slug: "compress-image",
@@ -48,6 +51,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image-to-20kb", "resize-image", "convert-image", "jpg-to-pdf"],
     aliases: ["reduce image size", "shrink photo", "ছবির সাইজ কমান", "chobir size komano"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "split-pdf",
@@ -56,6 +60,7 @@ export const TOOLS: Tool[] = [
     related: ["merge-pdf", "pdf-to-jpg", "jpg-to-pdf", "compress-image"],
     aliases: ["extract pdf pages", "separate pdf", "পিডিএফ ভাগ করুন"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "jpg-to-pdf",
@@ -64,6 +69,7 @@ export const TOOLS: Tool[] = [
     related: ["pdf-to-jpg", "merge-pdf", "compress-image", "heic-to-jpg"],
     aliases: ["images to pdf", "png to pdf", "photo to pdf", "ছবি থেকে পিডিএফ"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "pdf-to-jpg",
@@ -72,6 +78,7 @@ export const TOOLS: Tool[] = [
     related: ["jpg-to-pdf", "split-pdf", "merge-pdf", "compress-image"],
     aliases: ["pdf to image", "pdf to png", "পিডিএফ থেকে ছবি"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "number-to-bangla-words",
@@ -80,6 +87,7 @@ export const TOOLS: Tool[] = [
     related: ["bijoy-to-unicode", "bangla-date-converter", "word-counter", "age-calculator"],
     aliases: ["amount in words bangla", "সংখ্যা থেকে কথায়", "taka in words", "টাকা কথায়", "shongkha kothay"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "resize-image",
@@ -88,6 +96,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image", "convert-image", "photo-signature-resizer", "remove-image-metadata"],
     aliases: ["change image dimensions", "scale photo", "ছবি রিসাইজ"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "compress-image-to-20kb",
@@ -96,6 +105,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image-to-50kb", "compress-image-to-100kb", "compress-image", "photo-signature-resizer"],
     aliases: ["20 kb photo", "ছবি ২০ কেবি"],
     built: false,
+    runsIn: "browser",
     variantOf: "compress-image",
   },
   {
@@ -105,6 +115,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image-to-20kb", "compress-image-to-100kb", "compress-image", "photo-signature-resizer"],
     aliases: ["50 kb photo", "ছবি ৫০ কেবি"],
     built: false,
+    runsIn: "browser",
     variantOf: "compress-image",
   },
   {
@@ -114,6 +125,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image-to-20kb", "compress-image-to-50kb", "compress-image", "photo-signature-resizer"],
     aliases: ["100 kb photo", "ছবি ১০০ কেবি"],
     built: false,
+    runsIn: "browser",
     variantOf: "compress-image",
   },
   {
@@ -124,6 +136,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image-to-20kb", "resize-image", "compress-image", "jpg-to-pdf"],
     aliases: ["job application photo", "form photo size", "ছবি ও স্বাক্ষর", "teletalk photo"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "convert-image",
@@ -132,6 +145,7 @@ export const TOOLS: Tool[] = [
     related: ["heic-to-jpg", "compress-image", "resize-image", "jpg-to-pdf"],
     aliases: ["png to jpg", "jpg to png", "webp to jpg", "image converter"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "heic-to-jpg",
@@ -140,6 +154,7 @@ export const TOOLS: Tool[] = [
     related: ["convert-image", "compress-image", "jpg-to-pdf", "remove-image-metadata"],
     aliases: ["iphone photo to jpg", "heif to jpg"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "remove-image-metadata",
@@ -148,6 +163,7 @@ export const TOOLS: Tool[] = [
     related: ["compress-image", "resize-image", "convert-image", "heic-to-jpg"],
     aliases: ["remove exif", "strip photo location", "exif remover"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "qr-code-generator",
@@ -156,6 +172,7 @@ export const TOOLS: Tool[] = [
     related: ["password-generator", "base64-encode-decode", "convert-image", "word-counter"],
     aliases: ["make qr code", "qr maker", "কিউআর কোড"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "bijoy-to-unicode",
@@ -164,6 +181,7 @@ export const TOOLS: Tool[] = [
     related: ["number-to-bangla-words", "bangla-date-converter", "word-counter", "photo-signature-resizer"],
     aliases: ["sutonnymj to unicode", "বিজয় থেকে ইউনিকোড", "bijoy converter", "ansi to unicode"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "bangla-date-converter",
@@ -172,6 +190,7 @@ export const TOOLS: Tool[] = [
     related: ["age-calculator", "number-to-bangla-words", "bijoy-to-unicode", "word-counter"],
     aliases: ["bengali calendar", "বাংলা তারিখ", "bangla tarikh"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "json-formatter",
@@ -180,6 +199,7 @@ export const TOOLS: Tool[] = [
     related: ["base64-encode-decode", "password-generator", "word-counter", "qr-code-generator"],
     aliases: ["json validator", "json beautifier", "pretty print json"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "base64-encode-decode",
@@ -188,6 +208,7 @@ export const TOOLS: Tool[] = [
     related: ["json-formatter", "password-generator", "qr-code-generator", "word-counter"],
     aliases: ["base64 encoder", "base64 decoder"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "password-generator",
@@ -196,6 +217,7 @@ export const TOOLS: Tool[] = [
     related: ["base64-encode-decode", "json-formatter", "qr-code-generator", "remove-image-metadata"],
     aliases: ["strong password", "random password", "পাসওয়ার্ড"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "word-counter",
@@ -205,6 +227,7 @@ export const TOOLS: Tool[] = [
     related: ["bijoy-to-unicode", "number-to-bangla-words", "json-formatter", "age-calculator"],
     aliases: ["character counter", "letter count", "শব্দ গণনা", "bangla word count"],
     built: false,
+    runsIn: "browser",
   },
   {
     slug: "age-calculator",
@@ -213,6 +236,7 @@ export const TOOLS: Tool[] = [
     related: ["bangla-date-converter", "word-counter", "number-to-bangla-words", "password-generator"],
     aliases: ["date difference", "date of birth calculator", "how old am i", "বয়স ক্যালকুলেটর", "boyosh"],
     built: false,
+    runsIn: "browser",
   },
 ];
 
@@ -241,6 +265,11 @@ validateRegistry(TOOLS);
 // Tools that get their own card. Variant pages are reached from their parent tool instead.
 export function listedTools(tools: Tool[] = TOOLS): Tool[] {
   return tools.filter((tool) => !tool.variantOf);
+}
+
+/** True when the tool does all its work in the browser, so files never leave the device. */
+export function staysOnDevice(tool: Tool): boolean {
+  return tool.runsIn === "browser";
 }
 
 export function toolBySlug(slug: string): Tool | undefined {

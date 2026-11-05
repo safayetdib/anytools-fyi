@@ -14,7 +14,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { getEntry, render } from "astro:content";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { breadcrumbSchema, faqSchema, webApplicationSchema } from "../lib/schema";
-import { TOOLS, hubFor, isHubLive, toolBySlug, variantsOf, type Tool } from "../lib/tools";
+import { TOOLS, hubFor, isHubLive, staysOnDevice, toolBySlug, variantsOf, type Tool } from "../lib/tools";
 
 const toolModules = import.meta.glob<AstroComponentFactory>("../tools/*/Tool.astro", { eager: true, import: "default" });
 const diagrams = import.meta.glob<AstroComponentFactory>("../tools/*/Diagram.astro", { eager: true, import: "default" });
@@ -44,8 +44,10 @@ const crumbs = [
 ];
 const sizes = variantsOf(parent ?? tool);
 const related = tool.related.map((slug) => toolBySlug(slug) as Tool);
-const title = fill(isText ? p.titleText : p.titleFiles, { name: strings.name });
-const description = `${strings.description} ${p.metaSuffix}`;
+// The privacy promise is made only by tools that do all their work in the browser.
+const local = staysOnDevice(tool);
+const title = fill(local ? (isText ? p.titleText : p.titleFiles) : p.titlePlain, { name: strings.name });
+const description = `${strings.description} ${local ? p.metaSuffix : p.metaSuffixPlain}`;
 const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`];
 const Diagram = diagrams[`../tools/${tool.slug}/Diagram.astro`];
 const help = await getEntry("tools", tool.slug);
@@ -68,6 +70,25 @@ const updatedLabel = help
       <h1>{strings.name}</h1>
     </div>
     <p class="lead">{strings.description} {isText ? p.leadText : p.leadFiles}</p>
+
+    {
+      local && (
+        <aside class="local" aria-labelledby="local-title">
+          <span class="local-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <span class="local-text">
+            <span class="local-title" id="local-title">{isText ? p.localTitleText : p.localTitleFiles}</span>
+            <span class="local-body">
+              {isText ? p.localBodyText : p.localBodyFiles} <a href="/how-we-protect-your-privacy/">{en.footer.howWeProtect}</a>
+            </span>
+          </span>
+        </aside>
+      )
+    }
 
     {
       sizes.length > 0 && (
@@ -103,11 +124,6 @@ const updatedLabel = help
       )
     }
 
-    <p class="trust">
-      <svg class="trust-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-      {isText ? p.trustText : p.trustFiles}
-      <a href="/how-we-protect-your-privacy/">{en.footer.howWeProtect}</a>
-    </p>
 
     {
       help && Explainer && (
@@ -137,7 +153,7 @@ const updatedLabel = help
             </section>
           )}
 
-          {!isText && (
+          {local && !isText && (
             <section aria-labelledby="privacy-heading" data-fold>
               <h2 id="privacy-heading">{en.help.privacyTitle}</h2>
               <PrivacyDiagram />
@@ -285,24 +301,49 @@ const updatedLabel = help
     color: var(--color-text-muted);
   }
 
-  .trust {
-    margin: var(--space-lg) 0 0;
-    font-weight: 600;
+  /* The privacy promise, shown only on tools that run entirely in the browser. */
+  .local {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    max-width: 42rem;
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
   }
 
-  .trust a {
+  .local-icon {
     display: inline-flex;
+    flex: none;
     align-items: center;
-    min-height: 44px;
-    margin-left: var(--space-xs);
-    font-weight: 400;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
   }
 
-  .trust-icon {
-    display: inline;
-    margin-right: var(--space-xs);
-    vertical-align: -2px;
-    color: var(--color-accent);
+  .local-text {
+    display: grid;
+    gap: 2px;
+  }
+
+  .local-title {
+    font-weight: 700;
+  }
+
+  .local-body {
+    color: var(--color-text-muted);
+  }
+
+  .local-body a {
+    display: inline-block;
+    padding-block: var(--space-xs);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   .related {
@@ -373,18 +414,21 @@ const updatedLabel = help
       font-size: 0.9375rem;
     }
 
-    .trust {
+    .local {
+      gap: var(--space-sm);
       margin-top: var(--space-md);
       padding: var(--space-sm) var(--space-md);
-      border-radius: var(--radius-button);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border-subtle);
       font-size: 0.875rem;
     }
 
-    .trust a {
-      min-height: 0;
-      padding-block: var(--space-xs);
+    .local-icon {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .local-icon svg {
+      width: 18px;
+      height: 18px;
     }
 
     .help {

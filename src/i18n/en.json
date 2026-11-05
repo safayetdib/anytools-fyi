@@ -1,8 +1,8 @@
 {
   "site": {
     "name": "AnyTools.fyi",
-    "tagline": "Free everyday tools that run in your browser. No signup, no watermarks, and your files are not uploaded to our servers.",
-    "title": "AnyTools.fyi: Free Browser Tools, No Upload, No Signup"
+    "tagline": "Free everyday tools for PDFs, images, Bangla text and more. No signup and no watermarks.",
+    "title": "AnyTools.fyi: Free Everyday Tools, No Signup"
   },
   "a11y": {
     "skipToContent": "Skip to main content",
@@ -31,7 +31,7 @@
     }
   },
   "footer": {
-    "promise": "Your files are processed in your browser and are not uploaded to our servers.",
+    "promise": "Free everyday tools for PDFs, images, Bangla text and more.",
     "tools": "Tools",
     "company": "Company",
     "legal": "Legal",
@@ -45,15 +45,15 @@
     "credits": "Credits"
   },
   "home": {
-    "heading": "Everyday tools that stay on your device",
-    "lead": "Free, with no signup. Your files are processed in your browser and are not uploaded to our servers.",
+    "heading": "Everyday tools for PDFs, images and Bangla",
+    "lead": "Free, with no signup and no watermarks. Made to work well on any phone or computer.",
     "toolsHeading": "Tools",
     "why": {
       "heading": "Why people use AnyTools",
       "items": [
         {
-          "title": "Files stay on your device",
-          "body": "Tools run in your browser, so your files are not uploaded to our servers."
+          "title": "Clear steps, no surprises",
+          "body": "Every tool shows how to use it and what its limits are, before you start."
         },
         {
           "title": "Free, with no signup",
@@ -74,44 +74,44 @@
   "allTools": {
     "title": "All Tools: Free PDF, Image and Bangla Tools | AnyTools.fyi",
     "heading": "All tools",
-    "description": "Every free AnyTools.fyi tool, grouped by category. Each one runs in your browser, with no signup and no file uploads."
+    "description": "Every free AnyTools.fyi tool, grouped by category. No signup and no watermarks."
   },
   "hubs": {
     "pdf": {
       "name": "PDF tools",
       "pill": "PDF",
-      "title": "PDF Tools: Free, No Upload | AnyTools.fyi",
-      "description": "Merge, split and convert PDF files in your browser. Free, with no signup, and your files are not uploaded to our servers."
+      "title": "PDF Tools: Free, No Signup | AnyTools.fyi",
+      "description": "Merge, split and convert PDF files. Free, with no signup."
     },
     "image": {
       "name": "Image tools",
       "pill": "Image",
-      "title": "Image Tools: Free, No Upload | AnyTools.fyi",
-      "description": "Compress, resize and convert images in your browser. Free, with no signup, and your files are not uploaded to our servers."
+      "title": "Image Tools: Free, No Signup | AnyTools.fyi",
+      "description": "Compress, resize and convert images. Free, with no signup."
     },
     "bangla": {
       "name": "Bangla tools",
       "pill": "Bangla",
-      "title": "Bangla Tools: Free and Private | AnyTools.fyi",
-      "description": "Free tools for Bangla text, numbers and dates that run in your browser, with no signup."
+      "title": "Bangla Tools: Free, No Signup | AnyTools.fyi",
+      "description": "Free tools for Bangla text, numbers and dates, with no signup."
     },
     "developer": {
       "name": "Developer tools",
       "pill": "Developer",
-      "title": "Developer Tools: Free and Private | AnyTools.fyi",
-      "description": "Format JSON, encode Base64 and generate passwords in your browser. Free, with nothing sent to our servers."
+      "title": "Developer Tools: Free, No Signup | AnyTools.fyi",
+      "description": "Format JSON, encode Base64 and generate passwords. Free, with no signup."
     },
     "text": {
       "name": "Text tools",
       "pill": "Text",
-      "title": "Text Tools: Free and Private | AnyTools.fyi",
-      "description": "Free text tools that run in your browser, with no signup."
+      "title": "Text Tools: Free, No Signup | AnyTools.fyi",
+      "description": "Free text tools, with no signup."
     },
     "calculators": {
       "name": "Calculators",
       "pill": "Calculators",
       "title": "Free Calculators | AnyTools.fyi",
-      "description": "Free calculators that run in your browser, with no signup. For information only."
+      "description": "Free calculators, with no signup. For information only."
     }
   },
   "tools": {
@@ -358,15 +358,19 @@
     "titleText": "{name}: Free and Private | AnyTools.fyi",
     "metaSuffix": "Free, runs in your browser, no signup.",
     "comingSoonTitle": "This tool is being built",
-    "comingSoonBody": "When it's ready, it will run here in your browser.",
-    "trustFiles": "Your files stay on your device. Nothing is uploaded.",
-    "trustText": "What you type stays on your device. Nothing is sent to our servers.",
+    "comingSoonBody": "When it's ready, you'll be able to use it right here.",
     "related": "Related tools",
     "sizes": "Choose a target size",
     "skip": "Skip to tool",
     "limits": "Limits",
     "questions": "Questions",
-    "updated": "Last updated"
+    "updated": "Last updated",
+    "titlePlain": "{name}: Free Online Tool | AnyTools.fyi",
+    "metaSuffixPlain": "Free, with no signup.",
+    "localTitleFiles": "Your files never leave your device",
+    "localBodyFiles": "This tool works inside your browser, so nothing is uploaded to a server.",
+    "localTitleText": "What you type stays on your device",
+    "localBodyText": "This tool works inside your browser, so nothing is sent to a server."
   },
   "notFound": {
     "title": "Page not found | AnyTools.fyi",

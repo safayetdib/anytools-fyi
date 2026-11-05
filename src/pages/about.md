@@ -1,11 +1,11 @@
 ---
 layout: ../layouts/InfoLayout.astro
 title: "About AnyTools.fyi"
-description: "Who runs AnyTools.fyi, and why the tools run in your browser."
+description: "Who runs AnyTools.fyi, and how we handle your files."
 updated: "2026-11-06"
 ---
 
-AnyTools.fyi is a set of free everyday tools for files, images, text and Bangla. Every tool runs inside your browser, so your files stay on your device.
+AnyTools.fyi is a set of free everyday tools for files, images, text and Bangla, with no signup and no watermarks.
 
 ## Why we built it
 
@@ -13,7 +13,7 @@ Many online tools upload your files to their servers, add watermarks or ask you 
 
 ## How it works
 
-When you open a tool, your browser downloads the page and the tool's code. After that, the work happens on your phone or computer. [See how we protect your privacy](/how-we-protect-your-privacy/).
+Where a job can be done on your phone or computer, the tool does it there, and its page says so near the top. [See how we protect your privacy](/how-we-protect-your-privacy/).
 
 ## Who it's for
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import en from "../i18n/en.json";
 import { iconFor } from "./icons";
 import { INDEXABLE } from "./site";
-import { HUBS, TOOLS, liveHubs, listedTools, toolsForHub, validateRegistry, variantsOf, type Tool } from "./tools";
+import { HUBS, TOOLS, liveHubs, listedTools, staysOnDevice, toolsForHub, validateRegistry, variantsOf, type Tool } from "./tools";
 
 function tool(slug: string, overrides: Partial<Tool> = {}): Tool {
   return {
@@ -12,6 +12,7 @@ function tool(slug: string, overrides: Partial<Tool> = {}): Tool {
     related: ["a-b", "c-d", "e-f", "g-h"],
     aliases: [],
     built: false,
+    runsIn: "browser",
     ...overrides,
   };
 }
@@ -85,5 +86,16 @@ describe("launch registry", () => {
 
   it("stays out of search until every tool is built", () => {
     if (INDEXABLE) expect(TOOLS.filter((t) => !t.built).map((t) => t.slug)).toEqual([]);
+  });
+});
+
+describe("staysOnDevice", () => {
+  it("is true only for tools that run entirely in the browser", () => {
+    expect(staysOnDevice(tool("a-b", { runsIn: "browser" }))).toBe(true);
+    expect(staysOnDevice(tool("a-b", { runsIn: "server" }))).toBe(false);
+  });
+
+  it("covers every built tool, so the privacy promise is never shown by accident", () => {
+    for (const t of TOOLS.filter((t) => t.built)) expect(["browser", "server"]).toContain(t.runsIn);
   });
 });
