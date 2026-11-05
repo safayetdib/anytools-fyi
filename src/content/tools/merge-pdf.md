@@ -13,7 +13,7 @@ steps:
     text: "Select Merge PDF. It runs in your browser."
   - icon: download
     title: "Check and download"
-    text: "Look over the pages, then download merged.pdf."
+    text: "Look over the pages. Move, turn or remove any you need to, then download merged.pdf."
 limits:
   - icon: file
     value: "PDF"
@@ -57,6 +57,8 @@ faq:
     answer: "There's no set limit on the number of files. Each file can be up to 100 MB. The real limit is your device's memory, so very large jobs work best on a computer."
   - question: "Can I merge password-protected PDFs?"
     answer: "Not yet. Remove the password in the app that created the file, then merge it here."
+  - question: "Can I turn, move or remove pages after merging?"
+    answer: "Yes. Under the preview, each page has buttons to turn it, move it or remove it, and you can drag pages on a computer. You can also make every page A4 or Letter size. Select Apply changes, then download the updated file."
   - question: "Will bookmarks, links and form fields be kept?"
     answer: "The pages, text and images are kept exactly. Bookmarks, and some links and form fields, may not carry over into the merged file."
 ---

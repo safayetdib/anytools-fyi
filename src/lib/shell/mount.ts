@@ -2,11 +2,10 @@ import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
 import { formatSize, safeFileName } from "../files";
 import { createToolController, totalPages, type QueuedFile, type ShellState } from "./controller";
-import type { OutputPreview, ToolDefinition } from "./types";
+import { createOutputPages } from "./output-pages";
+import type { ToolDefinition } from "./types";
 
 const t = en.shell;
-const PREVIEW_BATCH = 12;
-const PAGE_THUMBNAIL_WIDTH = 288;
 const DOWNLOAD_ICON =
   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>';
 
@@ -64,15 +63,9 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const output = el(root, "output");
   const copyButton = el<HTMLButtonElement>(root, "copy");
   const resetButton = el<HTMLButtonElement>(root, "reset");
-  const previewSection = el(root, "preview");
-  const pages = el<HTMLOListElement>(root, "pages");
-  const previewCount = el(root, "preview-count");
-  const moreButton = el<HTMLButtonElement>(root, "more");
-  const viewer = el<HTMLDialogElement>(root, "viewer");
-  const viewerTitle = el(root, "viewer-title");
-  const viewerImage = el<HTMLImageElement>(root, "viewer-image");
-  const viewerPrev = el<HTMLButtonElement>(root, "viewer-prev");
-  const viewerNext = el<HTMLButtonElement>(root, "viewer-next");
+  const changedNote = el(root, "changed");
+  const applyButton = el<HTMLButtonElement>(root, "apply");
+  const undoButton = el<HTMLButtonElement>(root, "undo");
   const screens = root.querySelectorAll<HTMLElement>("[data-screen]");
 
   let lastAnnouncement = "";
@@ -212,114 +205,26 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     }
   }
 
-  // --- Result and its preview ---
+  // --- Result ---
 
-  let outputPreview: OutputPreview | null = null;
-  let previewToken = 0;
-  let shownPages = 0;
-  const pageUrls: string[] = [];
-  let viewerPage = 1;
-  let viewerToken = 0;
-
-  function closeOutputPreview() {
-    previewToken++;
-    outputPreview?.close();
-    outputPreview = null;
-    shownPages = 0;
-    pageUrls.splice(0).forEach((url) => URL.revokeObjectURL(url));
-    pages.replaceChildren();
-    previewSection.hidden = true;
-    if (viewer.open) viewer.close();
-  }
-
-  function updatePreviewCount() {
-    const count = outputPreview?.pageCount ?? 0;
-    previewCount.textContent = count > shownPages ? fill(t.showing, { shown: shownPages, total: count }) : "";
-    moreButton.hidden = count <= shownPages;
-  }
-
-  async function showMorePages() {
-    const preview = outputPreview;
-    if (!preview) return;
-    const token = previewToken;
-    const start = shownPages + 1;
-    const end = Math.min(preview.pageCount, shownPages + PREVIEW_BATCH);
-    const slots: { pageNumber: number; holder: HTMLElement }[] = [];
-    for (let pageNumber = start; pageNumber <= end; pageNumber++) {
-      const item = document.createElement("li");
-      const open = document.createElement("button");
-      open.type = "button";
-      open.className = "shell-page";
-      open.dataset.page = String(pageNumber);
-      open.setAttribute("aria-label", fill(t.openPage, { page: pageNumber }));
-      const holder = document.createElement("span");
-      holder.className = "shell-page-blank";
-      const caption = document.createElement("span");
-      caption.setAttribute("aria-hidden", "true");
-      caption.textContent = fill(t.pageLabel, { page: pageNumber });
-      open.append(holder, caption);
-      item.append(open);
-      pages.append(item);
-      slots.push({ pageNumber, holder });
-    }
-    shownPages = end;
-    updatePreviewCount();
-    for (const { pageNumber, holder } of slots) {
-      try {
-        const { blob } = await preview.renderPage(pageNumber, PAGE_THUMBNAIL_WIDTH);
-        if (token !== previewToken) return;
-        const url = URL.createObjectURL(blob);
-        pageUrls.push(url);
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = "";
-        holder.replaceWith(img);
-      } catch {
-        if (token !== previewToken) return;
-      }
-    }
-  }
-
-  async function startOutputPreview(blob: Blob) {
-    const token = previewToken;
-    try {
-      const preview = await tool.previewOutput?.(blob);
-      if (!preview) return;
-      if (token !== previewToken) return preview.close();
-      outputPreview = preview;
-      previewSection.hidden = false;
-      await showMorePages();
-    } catch {
-      if (token === previewToken) summary.textContent = `${summary.textContent} ${t.previewFailed}`;
-    }
-  }
-
-  async function showViewerPage(pageNumber: number) {
-    const preview = outputPreview;
-    if (!preview) return;
-    viewerPage = pageNumber;
-    const token = ++viewerToken;
-    viewerTitle.textContent = fill(t.pageOf, { page: pageNumber, total: preview.pageCount });
-    viewerPrev.disabled = pageNumber <= 1;
-    viewerNext.disabled = pageNumber >= preview.pageCount;
-    // A disabled button drops keyboard focus, so hand it to the button that still works.
-    if (viewerPrev.disabled && document.activeElement === viewerPrev) focus(viewerNext);
-    if (viewerNext.disabled && document.activeElement === viewerNext) focus(viewerPrev);
-    const width = Math.min(1400, Math.round(window.innerWidth * Math.min(window.devicePixelRatio || 1, 2)));
-    try {
-      const { blob } = await preview.renderPage(pageNumber, width);
-      if (token !== viewerToken) return;
-      if (viewerImage.src) URL.revokeObjectURL(viewerImage.src);
-      viewerImage.src = URL.createObjectURL(blob);
-    } catch {
-      // The thumbnail is still there to look at, so a failed large render needs no message.
-    }
-  }
+  const outputPages = createOutputPages(root, tool, {
+    announce,
+    onChange(changed) {
+      downloads.hidden = changed || (state.output?.files ?? []).length === 0;
+      changedNote.hidden = !changed;
+      applyButton.hidden = !changed;
+      undoButton.hidden = !changed;
+    },
+    onApplied(applied) {
+      controller.replaceOutput(applied);
+      focus(downloads.querySelector("a"));
+    },
+  });
 
   function renderOutput() {
     if (state.output === renderedOutput) return;
     renderedOutput = state.output;
-    closeOutputPreview();
+    outputPages.close();
     objectUrls.forEach((url) => URL.revokeObjectURL(url));
     objectUrls = [];
     const files = state.output?.files ?? [];
@@ -347,7 +252,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     summary.textContent = state.output?.summary ?? "";
     resultHeading.textContent =
       text !== undefined ? t.resultText : files.length > 1 ? t.resultMany : t.resultOne;
-    if (files.length === 1 && tool.previewOutput) void startOutputPreview(files[0].blob);
+    if (files.length === 1 && tool.previewOutput) void outputPages.load(files[0]);
   }
 
   function render() {
@@ -457,30 +362,6 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     } catch {
       announce(t.copyFailed);
     }
-  });
-
-  moreButton.addEventListener("click", () => void showMorePages());
-
-  pages.addEventListener("click", (event) => {
-    const target = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-page]");
-    if (!target) return;
-    viewer.showModal();
-    void showViewerPage(Number(target.dataset.page));
-  });
-  viewerPrev.addEventListener("click", () => void showViewerPage(viewerPage - 1));
-  viewerNext.addEventListener("click", () => void showViewerPage(viewerPage + 1));
-  el(root, "viewer-close").addEventListener("click", () => viewer.close());
-  document.addEventListener("keydown", (event) => {
-    if (!viewer.open) return;
-    if (event.key === "ArrowLeft" && viewerPage > 1) void showViewerPage(viewerPage - 1);
-    if (event.key === "ArrowRight" && viewerPage < (outputPreview?.pageCount ?? 0)) void showViewerPage(viewerPage + 1);
-  });
-  viewer.addEventListener("click", (event) => {
-    if (event.target === viewer) viewer.close();
-  });
-  viewer.addEventListener("close", () => {
-    viewerToken++;
-    focus(pages.querySelector<HTMLButtonElement>(`button[data-page="${viewerPage}"]`));
   });
 
   // Dropping anywhere on the page adds files, so a missed drop never navigates away.

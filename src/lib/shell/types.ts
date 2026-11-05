@@ -50,8 +50,24 @@ export interface RenderedPage {
 
 export interface OutputPreview {
   pageCount: number;
-  renderPage(pageNumber: number, width: number): Promise<RenderedPage>;
+  // Rotation is extra clockwise turning, on top of the page's own, so previews match unapplied changes.
+  renderPage(pageNumber: number, width: number, rotation?: number): Promise<RenderedPage>;
   close(): void;
+}
+
+export type PageSize =
+  | "original"
+  | "a4-portrait"
+  | "a4-landscape"
+  | "a4-auto"
+  | "letter-portrait"
+  | "letter-landscape"
+  | "letter-auto";
+
+// How to rebuild a result: which pages to keep, in order, how far to turn each one clockwise, and the sheet size.
+export interface PagePlan {
+  pages: { page: number; rotate: 0 | 90 | 180 | 270 }[];
+  pageSize: PageSize;
 }
 
 // The shell only knows this contract, so a tool can run in a worker, or later on a server, without shell changes.
@@ -62,6 +78,8 @@ export interface ToolDefinition {
   // Optional previews: a thumbnail for each chosen file, and the pages of the result before download.
   previewFile?(file: File): Promise<FilePreview>;
   previewOutput?(blob: Blob): Promise<OutputPreview>;
+  // Rebuilds the result from a page plan: new order, removed pages, rotation and sheet size.
+  rearrangeOutput?(file: { name: string; blob: Blob }, plan: PagePlan, context: RunContext): Promise<ToolOutput>;
   run(input: ToolInput, options: ToolOptions, context: RunContext): Promise<ToolOutput>;
 }
 

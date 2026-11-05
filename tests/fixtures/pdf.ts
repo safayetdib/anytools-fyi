@@ -1,10 +1,13 @@
 import { createHash } from "node:crypto";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 
 // A PDF whose pages have the given widths, so tests can check page order.
-export async function makePdf(widths: number[]): Promise<Uint8Array> {
+export async function makePdf(widths: number[], height = 300): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  for (const width of widths) doc.addPage([width, 300]);
+  for (const width of widths) {
+    // A small mark in the top-left corner gives each page content, like a real document.
+    doc.addPage([width, height]).drawRectangle({ x: 4, y: height - 24, width: 20, height: 20, color: rgb(0.8, 0.25, 0.2) });
+  }
   return doc.save({ useObjectStreams: false });
 }
 
@@ -64,4 +67,14 @@ export async function makeEncryptedPdf(userPassword = "secret"): Promise<Uint8Ar
 export async function pageWidths(bytes: Uint8Array | Buffer): Promise<number[]> {
   const doc = await PDFDocument.load(bytes);
   return doc.getPages().map((page) => Math.round(page.getWidth()));
+}
+
+export async function pageRotations(bytes: Uint8Array | Buffer): Promise<number[]> {
+  const doc = await PDFDocument.load(bytes);
+  return doc.getPages().map((page) => page.getRotation().angle);
+}
+
+export async function pageSizes(bytes: Uint8Array | Buffer): Promise<[number, number][]> {
+  const doc = await PDFDocument.load(bytes);
+  return doc.getPages().map((page) => [Math.round(page.getWidth()), Math.round(page.getHeight())]);
 }

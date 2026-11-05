@@ -256,7 +256,50 @@
     "next": "Next page",
     "close": "Close",
     "viewerLabel": "Page preview",
-    "previewFailed": "The preview couldn't be shown, but your file is ready to download."
+    "previewFailed": "The preview couldn't be shown, but your file is ready to download.",
+    "previewNoteEditable": "Check the pages before you download. Select pages to change them, or select a page image to see it larger.",
+    "changedNote": "You've changed the pages. Apply the changes to update your download.",
+    "apply": "Apply changes",
+    "applying": "Applying changes…",
+    "undo": "Undo changes",
+    "pageMoved": "Page moved to position {position}.",
+    "lastPage": "A PDF needs at least one page, so this page stays.",
+    "changesUndone": "Changes undone.",
+    "moveTo": "Move to position",
+    "moveButton": "Move",
+    "removeThis": "Remove this page",
+    "applyFailed": "The changes couldn't be applied. Your earlier file is still ready to download.",
+    "rotateAll": "Rotate all pages",
+    "rotateLeft": "Rotate left",
+    "rotateRight": "Rotate right",
+    "pageRotated": "Page {page} turned to {angle}°.",
+    "allRotated": "All pages turned clockwise.",
+    "pageSize": "Page size",
+    "pageSizeNote": "Pages are scaled to fit and centred, with a small margin. You'll see the new size after you apply the changes.",
+    "pageSizes": {
+      "original": "Keep original sizes",
+      "a4-portrait": "A4, portrait",
+      "a4-landscape": "A4, landscape",
+      "a4-auto": "A4, match each page",
+      "letter-portrait": "Letter, portrait",
+      "letter-landscape": "Letter, landscape",
+      "letter-auto": "Letter, match each page"
+    },
+    "selectPrompt": "Select pages to rotate, move or remove them.",
+    "pageTip": "Tip: drag pages to reorder them, or focus a page and press Alt with an arrow key.",
+    "selectedOne": "1 page selected",
+    "selectedMany": "{count} pages selected",
+    "selectPage": "Select page {page}",
+    "selectAll": "Select all",
+    "rotateAllShort": "Rotate all",
+    "rotateSelected": "Rotate",
+    "moveMenu": "Move to…",
+    "removeSelected": "Remove",
+    "clearSelection": "Clear",
+    "rotatedOne": "1 page turned clockwise.",
+    "rotatedMany": "{count} pages turned clockwise.",
+    "selectionMoved": "Moved to position {position}.",
+    "pagesRemoved": "Removed. {count} pages left."
   },
   "toolPage": {
     "leadFiles": "Free, with no signup. Your files stay on your device.",
@@ -316,7 +359,8 @@
       "captionA": "certificate.pdf comes first, so its pages start merged.pdf. Swap the order to see the result change.",
       "captionB": "transcript.pdf comes first, so its pages start merged.pdf. Swap again to put certificate.pdf back on top.",
       "pages": "{count} pages"
-    }
+    },
+    "editedSummary": "Done. {name} now has {pages} pages ({size})."
   },
   "theme": {
     "label": "Dark theme"

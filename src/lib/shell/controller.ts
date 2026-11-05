@@ -132,6 +132,12 @@ export function createToolController(tool: ToolDefinition) {
       update({ files, announcement });
     },
 
+    // Swaps in a rebuilt result, such as the same file with its pages rearranged.
+    replaceOutput(output: ToolOutput) {
+      if (state.screen !== "result") return;
+      update({ output, announcement: output.summary });
+    },
+
     setText(text: string) {
       update({ text, error: null });
     },

@@ -262,3 +262,15 @@ describe("previews", () => {
     expect(totalPages(c.state.files)).toBe(5);
   });
 });
+
+it("swaps in a rebuilt result only while showing a result", async () => {
+  const c = createToolController(fileTool());
+  const rebuilt: ToolOutput = { files: [{ name: "out.txt", blob: new Blob(["new"]) }], summary: "Rebuilt." };
+  c.replaceOutput(rebuilt);
+  expect(c.state.output).toBeNull();
+  c.addFiles([txt("a.txt")]);
+  await c.run();
+  c.replaceOutput(rebuilt);
+  expect(c.state.output).toBe(rebuilt);
+  expect(c.state.announcement).toBe("Rebuilt.");
+});

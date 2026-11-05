@@ -29,11 +29,18 @@ async function openPdf(bytes: Uint8Array): Promise<{ doc: PdfDocument; close: ()
   }
 }
 
-export async function renderPage(doc: PdfDocument, pageNumber: number, width: number): Promise<RenderedPage> {
+// Extra rotation turns the page further clockwise, on top of its own rotation.
+export async function renderPage(
+  doc: PdfDocument,
+  pageNumber: number,
+  width: number,
+  rotation = 0,
+): Promise<RenderedPage> {
   const page = await doc.getPage(pageNumber);
   try {
-    const base = page.getViewport({ scale: 1 });
-    const viewport = page.getViewport({ scale: width / base.width });
+    const turn = (page.rotate + rotation) % 360;
+    const base = page.getViewport({ scale: 1, rotation: turn });
+    const viewport = page.getViewport({ scale: width / base.width, rotation: turn });
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(viewport.width);
     canvas.height = Math.round(viewport.height);
@@ -68,7 +75,7 @@ export async function previewPdfOutput(blob: Blob): Promise<OutputPreview> {
   const { doc, close } = await openPdf(new Uint8Array(await blob.arrayBuffer()));
   return {
     pageCount: doc.numPages,
-    renderPage: (pageNumber, width) => renderPage(doc, pageNumber, width),
+    renderPage: (pageNumber, width, rotation) => renderPage(doc, pageNumber, width, rotation),
     close,
   };
 }

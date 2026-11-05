@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { makeEncryptedPdf, makePdf, pageWidths } from "../fixtures/pdf";
+import { makeEncryptedPdf, makePdf, pageRotations, pageSizes, pageWidths } from "../fixtures/pdf";
 
 const SCREENSHOT_DIR = "test-results/screenshots/merge-pdf";
 const PAGE = "/merge-pdf/";
@@ -360,5 +360,219 @@ for (const width of [375, 1366]) {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.locator('[data-screen="result"]').screenshot({ path: `${SCREENSHOT_DIR}/result-bar-${width}.png` });
+  });
+}
+
+// --- Editing the merged pages ---
+
+async function mergeForEditing(page: Page, first: number[], second: number[]) {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", first), await pdf("b.pdf", second)]);
+  await mergeButton(page).click();
+  await expect(page.getByRole("heading", { name: "Your file is ready" })).toBeVisible();
+}
+
+async function applyAndLoad(page: Page) {
+  await page.getByRole("button", { name: "Apply changes" }).click();
+  const link = page.getByRole("link", { name: /^Download merged\.pdf/ });
+  await expect(link).toBeVisible();
+  const pending = page.waitForEvent("download");
+  await link.click();
+  return readFile(await (await pending).path());
+}
+
+const toolbar = (page: Page) => page.getByTestId("page-toolbar");
+const select = (page: Page, n: number) => page.getByRole("checkbox", { name: `Select page ${n}` });
+const tiles = (page: Page) => page.getByRole("button", { name: /^Open page \d+ larger$/ });
+
+async function moveSelectedTo(page: Page, position: number) {
+  await toolbar(page).getByText("Move to…").click();
+  await toolbar(page).getByLabel("Move to position").fill(String(position));
+  await toolbar(page).getByRole("button", { name: "Move", exact: true }).click();
+}
+
+test("edit pages - the toolbar explains what to do before anything is selected", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  const bar = toolbar(page);
+  await expect(bar).toContainText("Select pages to rotate, move or remove them");
+  await expect(bar.getByRole("button", { name: "Select all" })).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Rotate all" })).toBeVisible();
+  await expect(bar.locator("summary", { hasText: /^Page size/ })).toBeVisible();
+  await expect(page.locator(".shell-page-item button[data-move], .shell-page-item button[data-remove]")).toHaveCount(0);
+});
+
+test("edit pages - selecting pages switches the toolbar to page actions", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 2).check();
+  await expect(toolbar(page)).toContainText("1 page selected");
+  await select(page, 3).check();
+  await expect(toolbar(page)).toContainText("2 pages selected");
+  for (const name of ["Rotate", "Remove", "Clear"]) {
+    await expect(toolbar(page).getByRole("button", { name, exact: true })).toBeVisible();
+  }
+  await expect(toolbar(page).getByText("Move to…")).toBeVisible();
+  await toolbar(page).getByRole("button", { name: "Clear", exact: true }).click();
+  await expect(toolbar(page)).toContainText("Select pages to rotate");
+});
+
+test("edit pages - clicking the page number selects it too", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await page.locator(".shell-page-check", { hasText: "Page 2" }).click();
+  await expect(select(page, 2)).toBeChecked();
+});
+
+test("edit pages - shift-click selects a range", async ({ page }) => {
+  await mergeForEditing(page, [100, 100], [200, 210]);
+  await select(page, 1).click();
+  await select(page, 3).click({ modifiers: ["Shift"] });
+  await expect(toolbar(page)).toContainText("3 pages selected");
+});
+
+test("edit pages - move selected pages to a position, then apply", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 3).check();
+  await moveSelectedTo(page, 1);
+  await expect(page.getByTestId("shell-live")).toContainText("position 1");
+  await expect(page.getByText("You've changed the pages.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeHidden();
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([210, 100, 200]);
+});
+
+test("edit pages - remove selected pages, then apply", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 1).check();
+  await select(page, 3).check();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(tiles(page)).toHaveCount(1);
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([200]);
+});
+
+test("edit pages - every page can't be removed", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  await toolbar(page).getByRole("button", { name: "Select all" }).click();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(tiles(page)).toHaveCount(2);
+  await expect(page.getByTestId("shell-live")).toContainText("needs at least one page");
+});
+
+test("edit pages - rotate selected pages and see them turn", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  const thumb = () => page.locator('.shell-page-item[data-page="2"] img');
+  await expect.poll(() => thumb().evaluate((img) => (img as HTMLImageElement).naturalHeight > (img as HTMLImageElement).naturalWidth)).toBe(true);
+  await select(page, 2).check();
+  await toolbar(page).getByRole("button", { name: "Rotate", exact: true }).click();
+  await expect.poll(() => thumb().evaluate((img) => (img as HTMLImageElement).naturalWidth > (img as HTMLImageElement).naturalHeight)).toBe(true);
+  expect(await pageRotations(await applyAndLoad(page))).toEqual([0, 90, 0]);
+});
+
+test("edit pages - rotate all pages at once", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await toolbar(page).getByRole("button", { name: "Rotate all" }).click();
+  await expect(page.getByTestId("shell-live")).toContainText("All pages turned");
+  expect(await pageRotations(await applyAndLoad(page))).toEqual([90, 90, 90]);
+});
+
+test("edit pages - Alt and an arrow key move the focused page", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 3).focus();
+  await page.keyboard.press("Alt+ArrowLeft");
+  await expect(select(page, 2)).toBeFocused();
+  await page.keyboard.press("Alt+ArrowLeft");
+  await expect(select(page, 1)).toBeFocused();
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([210, 100, 200]);
+});
+
+test("edit pages - drag a page to a new place", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await mergeForEditing(page, [100], [200, 210]);
+  await page.locator('.shell-page-item[data-page="3"]').dragTo(page.locator('.shell-page-item[data-page="1"]'));
+  await expect(page.getByText("You've changed the pages.")).toBeVisible();
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([210, 100, 200]);
+});
+
+test("edit pages - the larger view can move, turn and remove a page", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await page.getByRole("button", { name: "Open page 3 larger" }).click();
+  const viewer = page.getByRole("dialog");
+  await viewer.getByLabel("Move to position").fill("1");
+  await viewer.getByRole("button", { name: "Move", exact: true }).click();
+  await expect(viewer).toContainText("Page 1 of 3");
+  await viewer.getByRole("button", { name: "Rotate left" }).click();
+  await viewer.getByRole("button", { name: "Next page" }).click();
+  await viewer.getByRole("button", { name: "Remove this page" }).click();
+  await expect(viewer).toContainText("of 2");
+  await page.keyboard.press("Escape");
+  const bytes = await applyAndLoad(page);
+  expect(await pageWidths(bytes)).toEqual([210, 200]);
+  expect(await pageRotations(bytes)).toEqual([270, 0]);
+});
+
+test("edit pages - page size lives in its own menu", async ({ page }) => {
+  await mergeForEditing(page, [100], [500, 210]);
+  await toolbar(page).locator("summary", { hasText: /^Page size/ }).click();
+  await page.getByLabel("Page size").selectOption("a4-auto");
+  await expect(toolbar(page).locator("summary", { hasText: /^Page size/ })).toContainText("A4, match each page");
+  expect(await pageSizes(await applyAndLoad(page))).toEqual([
+    [595, 842],
+    [842, 595],
+    [595, 842],
+  ]);
+});
+
+test("edit pages - undo puts order, rotation and size back", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 1).check();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: true }).click();
+  await toolbar(page).getByRole("button", { name: "Rotate all" }).click();
+  await toolbar(page).locator("summary", { hasText: /^Page size/ }).click();
+  await page.getByLabel("Page size").selectOption("letter-portrait");
+  await page.getByRole("button", { name: "Undo changes" }).click();
+  await expect(tiles(page)).toHaveCount(3);
+  await expect(page.getByLabel("Page size")).toHaveValue("original");
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+  await expect(page.getByText("You've changed the pages.")).toBeHidden();
+});
+
+test("edit pages - edited results can be edited again", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 1).check();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: true }).click();
+  await applyAndLoad(page);
+  await select(page, 2).check();
+  await moveSelectedTo(page, 1);
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([210, 200]);
+});
+
+test("edit pages - the toolbar stays in view while scrolling pages", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 700 });
+  await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+  await page.locator(".shell-page-item").last().scrollIntoViewIfNeeded();
+  await expect(toolbar(page)).toBeInViewport();
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`edit pages - cards and toolbar have no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await mergeForEditing(page, [100], [200, 210]);
+    await page.locator(".shell-preview").screenshot({ path: `${SCREENSHOT_DIR}/editor-idle-${colorScheme}.png` });
+    await select(page, 2).check();
+    await toolbar(page).getByText("Move to…").click();
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
+    await page.locator(".shell-preview").screenshot({ path: `${SCREENSHOT_DIR}/editor-selected-${colorScheme}.png` });
+  });
+}
+
+for (const width of [320, 375, 768]) {
+  test(`edit pages - toolbar and cards fit ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await mergeForEditing(page, [100, 100], [200, 210]);
+    await select(page, 2).check();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    const controls = page.locator('[data-testid="page-toolbar"] button:visible, [data-testid="page-toolbar"] summary:visible, .shell-page-check');
+    for (let i = 0; i < (await controls.count()); i++) {
+      expect((await controls.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+    await page.locator(".shell-preview").screenshot({ path: `${SCREENSHOT_DIR}/editor-${width}.png` });
   });
 }
