@@ -13,7 +13,18 @@ const tools = defineCollection({
     updated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     howToTitle: z.string(),
     steps: z.array(card).min(3).max(5),
-    limits: z.array(z.object({ icon, label: z.string(), value: z.string() })).min(1),
+    // Each limit is a stat: a short headline value, what it measures, and an optional one-line note.
+    limits: z
+      .array(
+        z.object({
+          icon,
+          value: z.string().max(14),
+          label: z.string(),
+          note: z.string().optional(),
+          tone: z.enum(["default", "warn"]).default("default"),
+        }),
+      )
+      .min(1),
     diagramTitle: z.string().optional(),
     tipsTitle: z.string().optional(),
     tips: z.array(card).max(4).default([]),

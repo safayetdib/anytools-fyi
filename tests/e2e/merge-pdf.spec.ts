@@ -243,7 +243,8 @@ for (const colorScheme of ["light", "dark"] as const) {
 test("merge pdf - guidance shows limits as cards and steps in order", async ({ page }) => {
   await page.goto(PAGE);
   await expect(page.getByTestId("limit-card")).toHaveCount(5);
-  await expect(page.getByTestId("limit-card").first()).toContainText("PDF files only");
+  await expect(page.getByTestId("limit-card").first()).toContainText("PDF");
+  await expect(page.getByTestId("limit-card").nth(1)).toContainText("100 MB");
   const steps = page.getByTestId("step");
   await expect(steps).toHaveCount(4);
   await expect(steps.first()).toContainText("Select your PDFs");
@@ -301,5 +302,63 @@ for (const colorScheme of ["light", "dark"] as const) {
     await page.locator("summary").first().click();
     expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => v.id)).toEqual([]);
     await page.locator(".help").screenshot({ path: `${SCREENSHOT_DIR}/guidance-${colorScheme}.png` });
+  });
+}
+
+// --- Action layout ---
+
+const box = async (page: Page, selector: string) => (await page.locator(selector).first().boundingBox()) as { x: number; y: number; width: number; height: number };
+
+test("merge pdf - the main actions sit together in one bar with the totals", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  const bar = page.getByTestId("shell-action-bar");
+  await expect(bar).toBeVisible();
+  await expect(bar.getByTestId("shell-total")).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Merge PDF" })).toBeVisible();
+  await expect(bar.getByText("Add more files")).toBeVisible();
+  const add = await box(page, ".shell-add");
+  const run = await box(page, ".shell-run");
+  expect(run.x - (add.x + add.width)).toBeLessThanOrEqual(24);
+  expect(run.height).toBeGreaterThanOrEqual(52);
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/action-bar-1366.png` });
+});
+
+test("merge pdf - download and start over sit together", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  await mergeButton(page).click();
+  const bar = page.getByTestId("shell-result-bar");
+  await expect(bar.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Start over" })).toBeVisible();
+  const download = await box(page, ".shell-downloads a");
+  const reset = await box(page, '[data-el="reset"]');
+  expect(Math.abs(download.y + download.height / 2 - (reset.y + reset.height / 2))).toBeLessThanOrEqual(4);
+});
+
+test("merge pdf - the page count and Show more have room between them", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", Array.from({ length: 20 }, () => 100)), await pdf("b.pdf", [200])]);
+  await mergeButton(page).click();
+  await expect(page.getByRole("button", { name: "Show more pages" })).toBeVisible();
+  const count = await box(page, '[data-el="preview-count"]');
+  const more = await box(page, '[data-el="more"]');
+  const gap = Math.max(more.x - (count.x + count.width), more.y - (count.y + count.height));
+  expect(gap).toBeGreaterThanOrEqual(16);
+});
+
+for (const width of [375, 1366]) {
+  test(`merge pdf - action bars fit ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(PAGE);
+    await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", Array.from({ length: 14 }, () => 200))]);
+    await page.getByTestId("shell-action-bar").screenshot({ path: `${SCREENSHOT_DIR}/actions-${width}.png` });
+    await mergeButton(page).click();
+    await expect(page.getByRole("button", { name: "Show more pages" })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    await page.locator('[data-screen="result"]').screenshot({ path: `${SCREENSHOT_DIR}/result-bar-${width}.png` });
   });
 }

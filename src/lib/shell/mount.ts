@@ -7,6 +7,8 @@ import type { OutputPreview, ToolDefinition } from "./types";
 const t = en.shell;
 const PREVIEW_BATCH = 12;
 const PAGE_THUMBNAIL_WIDTH = 288;
+const DOWNLOAD_ICON =
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>';
 
 function el<T extends HTMLElement>(root: HTMLElement, name: string): T {
   return root.querySelector(`[data-el="${name}"]`) as T;
@@ -332,6 +334,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
         link.href = url;
         link.download = safeName;
         link.textContent = fill(t.download, { name: safeName, size: formatSize(blob.size) });
+        link.insertAdjacentHTML("afterbegin", DOWNLOAD_ICON);
         const item = document.createElement("li");
         item.append(link);
         return item;

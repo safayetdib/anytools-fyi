@@ -56,7 +56,6 @@ const limits = isFiles
         isFiles ? (
           <>
             <ol class="shell-files" data-el="list" />
-            <p class="shell-total" data-el="total" data-testid="shell-total" />
           </>
         ) : (
           <div class="shell-field">
@@ -68,16 +67,23 @@ const limits = isFiles
       <slot name="options" />
       <p class="shell-notice shell-warning" data-el="warning" data-testid="shell-warning" hidden></p>
       <p class="shell-notice shell-error" id="shell-error" data-el="error" data-testid="shell-error" hidden></p>
-      <div class="shell-run-row">
-        {
-          isFiles && config.multiple && (
-            <label class="shell-secondary shell-add">
-              <input class="sr-only" type="file" data-el="add-input" accept={config.accept} multiple />
-              {t.addMore}
-            </label>
-          )
-        }
-        <button class="shell-primary shell-run" type="submit" data-el="run">{runLabel}</button>
+      <div class="shell-run-row" data-testid="shell-action-bar">
+        {isFiles && <p class="shell-total" data-el="total" data-testid="shell-total" />}
+        <div class="shell-run-actions">
+          {
+            isFiles && config.multiple && (
+              <label class="shell-secondary shell-add">
+                <input class="sr-only" type="file" data-el="add-input" accept={config.accept} multiple />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                {t.addMore}
+              </label>
+            )
+          }
+          <button class="shell-primary shell-run" type="submit" data-el="run">
+            {runLabel}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+          </button>
+        </div>
       </div>
     </form>
   </section>
@@ -98,18 +104,28 @@ const limits = isFiles
       <h2 class="shell-heading" tabindex="-1" data-el="result-heading">{t.resultOne}</h2>
     </div>
     <p class="shell-summary" data-el="summary"></p>
-    <ul class="shell-downloads" data-el="downloads"></ul>
     <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
-    <div class="shell-actions">
-      <button class="shell-secondary" type="button" data-el="copy" hidden>{t.copy}</button>
-      <button class="shell-secondary" type="button" data-el="reset">{isFiles ? t.startOver : t.editInput}</button>
+    <div class="shell-result-bar" data-testid="shell-result-bar">
+      <ul class="shell-downloads" data-el="downloads"></ul>
+      <div class="shell-actions">
+        <button class="shell-secondary" type="button" data-el="copy" hidden>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
+          {t.copy}
+        </button>
+        <button class="shell-secondary" type="button" data-el="reset">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" /><path d="M3 21v-5h5" /></svg>
+          {isFiles ? t.startOver : t.editInput}
+        </button>
+      </div>
     </div>
     <section class="shell-preview" data-el="preview" aria-labelledby="shell-preview-heading" hidden>
       <h3 id="shell-preview-heading">{t.previewHeading}</h3>
       <p class="shell-hint">{t.previewNote}</p>
       <ol class="shell-pages" data-el="pages"></ol>
-      <p class="shell-hint" data-el="preview-count" aria-live="polite"></p>
-      <button class="shell-secondary" type="button" data-el="more" hidden>{t.showMore}</button>
+      <div class="shell-preview-more">
+        <p class="shell-hint" data-el="preview-count" aria-live="polite"></p>
+        <button class="shell-secondary" type="button" data-el="more" hidden>{t.showMore}</button>
+      </div>
     </section>
   </section>
 
@@ -318,20 +334,56 @@ const limits = isFiles
     margin: 0 0 var(--space-lg);
   }
 
-  .shell-run-row {
+  /* One bar holds the totals and every action, so the next step is always in the same place. */
+  .shell-run-row,
+  .shell-result-bar {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: var(--space-md);
     margin-top: var(--space-lg);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .shell-run-actions,
+  .shell-actions {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-sm);
   }
 
   .shell-total {
-    margin: 0 0 var(--space-md);
-    font-weight: 600;
+    margin: 0;
+    font-weight: 700;
   }
 
   .shell-total:empty {
     display: none;
+  }
+
+  .shell-run,
+  .shell-downloads a {
+    gap: var(--space-sm);
+    min-height: 56px;
+    font-size: 1.0625rem;
+  }
+
+  .shell-secondary {
+    gap: var(--space-sm);
+  }
+
+  .shell-preview-more {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md) var(--space-lg);
+    margin-top: var(--space-lg);
+  }
+
+  .shell-preview-more p {
+    margin: 0;
   }
 
   .shell-file-order {
@@ -403,7 +455,7 @@ const limits = isFiles
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
     gap: var(--space-md);
-    margin: var(--space-md) 0;
+    margin: var(--space-lg) 0 0;
     padding: 0;
     list-style: none;
   }
@@ -525,7 +577,7 @@ const limits = isFiles
   .shell-downloads {
     display: grid;
     gap: var(--space-sm);
-    margin: 0 0 var(--space-md);
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -546,11 +598,6 @@ const limits = isFiles
     overflow-wrap: anywhere;
   }
 
-  .shell-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-  }
 
   .shell-message {
     padding: var(--space-md);
@@ -568,10 +615,33 @@ const limits = isFiles
       width: auto;
     }
 
-    .shell-run-row {
+    .shell-run-row,
+    .shell-result-bar {
       flex-direction: row;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .shell-run-actions,
+    .shell-actions {
+      flex-direction: row;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .shell-run {
+      min-width: 12rem;
+    }
+
+    /* After a result, the download and its follow-up actions sit side by side. */
+    .shell-result-bar {
+      justify-content: flex-start;
+    }
+
+    .shell-result-bar .shell-actions {
+      margin-left: 0;
     }
 
     .shell-pages {

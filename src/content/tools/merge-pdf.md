@@ -16,20 +16,26 @@ steps:
     text: "Look over the pages, then download merged.pdf."
 limits:
   - icon: file
-    label: "Files"
-    value: "PDF files only"
+    value: "PDF"
+    label: "File type"
+    note: "Other file types can't be merged."
   - icon: size
-    label: "Size"
-    value: "Up to 100 MB per file. Very large files may fail on phones with little memory."
+    value: "100 MB"
+    label: "Per file"
+    note: "Very large files may fail on phones with little memory."
   - icon: stack
-    label: "Number of files"
-    value: "2 or more, with no set maximum"
+    value: "2+"
+    label: "Files"
+    note: "No set maximum."
   - icon: lock
+    value: "Not yet"
     label: "Password-protected PDFs"
-    value: "Not supported. Remove the password first."
+    note: "Remove the password first."
+    tone: warn
   - icon: browser
-    label: "Browsers"
-    value: "Recent Chrome, Edge, Firefox and Safari, on phones and computers"
+    value: "Any"
+    label: "Modern browser"
+    note: "Chrome, Edge, Firefox and Safari, on phones and computers."
 diagramTitle: "How merging works"
 tipsTitle: "Before you merge"
 tips:
