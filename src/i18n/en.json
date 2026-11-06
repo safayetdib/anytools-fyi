@@ -445,5 +445,13 @@
   },
   "card": {
     "comingSoon": "Coming soon"
+  },
+  "consent": {
+    "title": "Help us improve AnyTools",
+    "body": "With your OK, we use Google Analytics cookies to count visits and see which tools people use. Your files and anything you type are never included.",
+    "more": "About cookies",
+    "accept": "Accept",
+    "decline": "Decline",
+    "settings": "Cookie settings"
   }
 }

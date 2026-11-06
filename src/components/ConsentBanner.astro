@@ -1,0 +1,202 @@
+---
+import en from "../i18n/en.json";
+
+const c = en.consent;
+---
+
+<section class="consent" aria-labelledby="consent-title" data-consent hidden>
+  <p class="consent-title" id="consent-title">{c.title}</p>
+  <p class="consent-body">
+    {c.body} <a href="/cookies/">{c.more}</a>
+  </p>
+  <div class="consent-actions">
+    <button class="consent-button" type="button" data-consent-choice="denied">{c.decline}</button>
+    <button class="consent-button consent-accept" type="button" data-consent-choice="granted">{c.accept}</button>
+  </div>
+</section>
+
+<script>
+  import {
+    MEASUREMENT_ID,
+    analyticsCookies,
+    readConsent,
+    saveConsent,
+    shouldLoadAnalytics,
+    type Consent,
+  } from "../lib/consent";
+
+  type Gtag = (...args: unknown[]) => void;
+  const page = window as unknown as { dataLayer?: unknown[]; gtag?: Gtag };
+
+  const storage = {
+    getItem: (key: string) => {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    setItem: (key: string, value: string) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Blocked storage: the choice lasts for this page only.
+      }
+    },
+  };
+
+  // Google Analytics is added only after the visitor accepts, so nothing reaches Google before that.
+  function loadAnalytics() {
+    if (page.gtag || !shouldLoadAnalytics(location.hostname, readConsent(storage))) return;
+    page.dataLayer = page.dataLayer ?? [];
+    page.gtag = function gtag() {
+      // gtag.js reads the arguments object itself, so it is pushed as is.
+      // eslint-disable-next-line prefer-rest-params
+      page.dataLayer?.push(arguments);
+    };
+    page.gtag("consent", "default", {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "granted",
+    });
+    page.gtag("js", new Date());
+    page.gtag("config", MEASUREMENT_ID, { allow_google_signals: false, allow_ad_personalization_signals: false });
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
+    document.head.append(script);
+  }
+
+  function forgetAnalytics() {
+    page.gtag?.("consent", "update", { analytics_storage: "denied" });
+    const domain = location.hostname;
+    for (const name of analyticsCookies(document.cookie)) {
+      document.cookie = `${name}=; Max-Age=0; path=/`;
+      document.cookie = `${name}=; Max-Age=0; path=/; domain=.${domain}`;
+    }
+  }
+
+  // Waits until the page has loaded and the browser is idle, so analytics never slows the first view.
+  function whenIdle(task: () => void) {
+    const run = () => ("requestIdleCallback" in window ? requestIdleCallback(task, { timeout: 3000 }) : setTimeout(task, 1));
+    if (document.readyState === "complete") run();
+    else addEventListener("load", run, { once: true });
+  }
+
+  const banner = document.querySelector<HTMLElement>("[data-consent]");
+
+  function choose(consent: Consent) {
+    saveConsent(storage, consent);
+    if (banner) banner.hidden = true;
+    if (consent === "granted") loadAnalytics();
+    else forgetAnalytics();
+  }
+
+  if (banner) {
+    banner.hidden = readConsent(storage) !== null;
+    banner.addEventListener("click", (event) => {
+      const choice = (event.target as HTMLElement).closest<HTMLElement>("[data-consent-choice]")?.dataset.consentChoice;
+      if (choice === "granted" || choice === "denied") choose(choice);
+    });
+  }
+
+  // "Cookie settings" in the footer brings the choice back.
+  document.querySelectorAll("[data-consent-open]").forEach((button) =>
+    button.addEventListener("click", () => {
+      if (!banner) return;
+      banner.hidden = false;
+      banner.querySelector<HTMLButtonElement>("[data-consent-choice]")?.focus();
+    }),
+  );
+
+  // Tools announce when they finish. Only the page address is sent, never file names or contents.
+  document.addEventListener("anytools:tool-done", () => page.gtag?.("event", "tool_complete", { tool_path: location.pathname }));
+
+  whenIdle(loadAnalytics);
+</script>
+
+<style>
+  .consent {
+    position: fixed;
+    right: var(--space-md);
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+    z-index: 45;
+    display: grid;
+    gap: var(--space-sm);
+    width: min(26rem, calc(100vw - 2 * var(--space-md)));
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 16px 40px -16px rgb(0 0 0 / 0.45);
+  }
+
+  .consent[hidden] {
+    display: none;
+  }
+
+  .consent-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .consent-body {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .consent-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+    margin-top: var(--space-xs);
+  }
+
+  /* Accept and Decline are equally easy to see and tap. */
+  .consent-button {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-accent);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .consent-accept {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  /* Phones: above the tab bar, edge to edge. */
+  @media (max-width: 599px) {
+    .consent {
+      right: var(--space-sm);
+      bottom: calc(4.25rem + env(safe-area-inset-bottom));
+      left: var(--space-sm);
+      width: auto;
+    }
+
+    :global(:root:has([data-tool-shell][data-task])) .consent {
+      bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .consent:not([hidden]) {
+      animation: consent-in var(--dur-slow) var(--ease-out);
+    }
+
+    @keyframes consent-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+    }
+  }
+</style>

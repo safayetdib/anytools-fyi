@@ -312,8 +312,15 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const steps = root.querySelector<HTMLElement>('[data-el="steps-text"]');
   const STEP_NAMES = [t.stepSelect, t.stepArrange, t.stepDone];
 
+  let shownScreen = "";
+
   function render() {
     screens.forEach((screen) => (screen.hidden = screen.dataset.screen !== state.screen));
+    // Lets the page count finished jobs. Nothing about the files goes with it.
+    if (state.screen === "result" && shownScreen !== "result") {
+      root.dispatchEvent(new CustomEvent("anytools:tool-done", { bubbles: true }));
+    }
+    shownScreen = state.screen;
     // Phones show a step bar and give the tool the bottom of the screen while it's in use.
     if (!isText) {
       const step = state.screen === "select" ? 1 : state.screen === "result" ? 3 : 2;
