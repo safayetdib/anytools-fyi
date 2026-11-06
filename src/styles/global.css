@@ -92,6 +92,75 @@ svg {
   line-height: 1.7;
 }
 
+/* Tables: a bordered card with a tinted header row and striped rows. Words never split; on a narrow
+   screen a wide table scrolls sideways inside its own box instead of widening the page. */
+.prose table {
+  width: 100%;
+  margin: var(--space-md) 0 var(--space-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--color-surface);
+  font-size: 0.9375rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.75rem var(--space-md);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.prose th {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.prose tbody tr:nth-child(even) td {
+  background: var(--color-bg);
+}
+
+.prose tbody tr + tr td {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.prose td code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--color-bg);
+  font-size: 0.875em;
+  white-space: nowrap;
+}
+
+.prose tbody tr:nth-child(even) td code {
+  background: var(--color-surface);
+}
+
+@media (max-width: 599px) {
+  /* As a block, the table keeps its columns lined up and can scroll within the card. */
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .prose td {
+    min-width: 7rem;
+  }
+
+  .prose th,
+  .prose td {
+    padding: 0.625rem;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @view-transition {
     navigation: auto;

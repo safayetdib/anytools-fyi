@@ -145,3 +145,23 @@ for (const path of ["/", "/tools/", "/pdf-tools/", "/about/"]) {
     }
   });
 }
+
+// --- Tables ---
+
+for (const width of [320, 375, 1280]) {
+  test(`tables - have a header row, borders and stay inside the page at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/cookies/");
+    const table = page.locator(".prose table").first();
+    await expect(table.locator("th").first()).toHaveText("Name");
+    expect(await table.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("solid");
+    const headerBg = await table.locator("th").first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    const cellBg = await table.locator("tbody td").first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(headerBg).not.toBe(cellBg);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+    // Names are never split across lines.
+    const code = table.locator("td code").last();
+    const box = await code.boundingBox();
+    expect(box?.height ?? 0).toBeLessThan(30);
+  });
+}
