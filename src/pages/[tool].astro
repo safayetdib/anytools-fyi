@@ -191,6 +191,50 @@ const updatedLabel = help
       )
     }
 
+    <script is:inline>
+      // Runs as soon as the guide is parsed, so phones see it folded from the first paint with no jump.
+      (() => {
+        // On phones the guide folds: each heading becomes a button, so the tool stays near the top.
+        const phone = matchMedia("(max-width: 599px)");
+        const CHEVRON =
+          '<svg class="fold-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+
+        function setUpFolds() {
+          document.querySelectorAll("[data-fold]").forEach((section) => {
+            const heading = section.querySelector("h2");
+            if (!heading) return;
+            const toggle = heading.querySelector(".fold-toggle");
+            if (phone.matches && !toggle) {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "fold-toggle";
+              button.setAttribute("aria-expanded", "false");
+              const label = document.createElement("span");
+              label.append(...Array.from(heading.childNodes));
+              button.append(label);
+              button.insertAdjacentHTML("beforeend", CHEVRON);
+              heading.append(button);
+              section.toggleAttribute("data-folded", true);
+            } else if (!phone.matches && toggle) {
+              heading.replaceChildren(...Array.from(toggle.firstElementChild?.childNodes ?? []));
+              section.removeAttribute("data-folded");
+            }
+          });
+        }
+
+        document.addEventListener("click", (event) => {
+          const button = event.target.closest(".fold-toggle");
+          const section = button?.closest("[data-fold]");
+          if (!button || !section) return;
+          const open = button.getAttribute("aria-expanded") !== "true";
+          button.setAttribute("aria-expanded", String(open));
+          section.toggleAttribute("data-folded", !open);
+        });
+        phone.addEventListener("change", setUpFolds);
+        setUpFolds();
+      })();
+    </script>
+
     <section class="related" aria-labelledby="related-heading">
       <h2 id="related-heading">{p.related}</h2>
       <ToolGrid tools={related} />
@@ -206,46 +250,6 @@ const updatedLabel = help
   </div>
 </BaseLayout>
 
-<script>
-  // On phones the guide folds: each heading becomes a button, so the tool stays near the top.
-  const phone = matchMedia("(max-width: 599px)");
-  const CHEVRON =
-    '<svg class="fold-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
-
-  function setUpFolds() {
-    document.querySelectorAll<HTMLElement>("[data-fold]").forEach((section) => {
-      const heading = section.querySelector("h2");
-      if (!heading) return;
-      const toggle = heading.querySelector<HTMLButtonElement>(".fold-toggle");
-      if (phone.matches && !toggle) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "fold-toggle";
-        button.setAttribute("aria-expanded", "false");
-        const label = document.createElement("span");
-        label.append(...Array.from(heading.childNodes));
-        button.append(label);
-        button.insertAdjacentHTML("beforeend", CHEVRON);
-        heading.append(button);
-        section.toggleAttribute("data-folded", true);
-      } else if (!phone.matches && toggle) {
-        heading.replaceChildren(...Array.from(toggle.firstElementChild?.childNodes ?? []));
-        section.removeAttribute("data-folded");
-      }
-    });
-  }
-
-  document.addEventListener("click", (event) => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(".fold-toggle");
-    const section = button?.closest<HTMLElement>("[data-fold]");
-    if (!button || !section) return;
-    const open = button.getAttribute("aria-expanded") !== "true";
-    button.setAttribute("aria-expanded", String(open));
-    section.toggleAttribute("data-folded", !open);
-  });
-  phone.addEventListener("change", setUpFolds);
-  setUpFolds();
-</script>
 
 <style>
   .title-row {
