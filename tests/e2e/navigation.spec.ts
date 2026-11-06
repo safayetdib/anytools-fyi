@@ -15,7 +15,7 @@ test("navbar - desktop shows quick links and an All tools menu", async ({ page }
   await expect(menuButton(page)).toHaveText(/All tools/);
   await menuButton(page).click();
   await expect(panel(page)).toBeVisible();
-  await expect(panel(page).locator(".tool-link")).toHaveCount(19);
+  await expect(panel(page).locator(".tool-link")).toHaveCount(10);
   await expect(panel(page).getByRole("link", { name: "PDF tools" })).toHaveAttribute("href", "/pdf-tools/");
   await expect(panel(page).getByRole("link", { name: "See all tools" })).toBeVisible();
   await page.waitForTimeout(400);
@@ -28,7 +28,7 @@ test("navbar - phones open the menu from the Menu tab instead of quick links", a
   await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Merge PDF" })).toBeHidden();
   await expect(menuButton(page)).toBeHidden();
   await page.getByRole("navigation", { name: "Quick links" }).getByRole("button", { name: "Menu" }).click();
-  await expect(panel(page).getByRole("link", { name: "Word counter" })).toBeVisible();
+  await expect(panel(page).getByRole("link", { name: "Add watermark" })).toBeVisible();
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${SCREENSHOT_DIR}/menu-375.png` });
 });
@@ -57,7 +57,7 @@ test("navbar - menu works with JavaScript turned off", async ({ browser }) => {
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4329/");
   await menuButton(page).click();
-  await expect(panel(page).locator(".tool-link")).toHaveCount(19);
+  await expect(panel(page).locator(".tool-link")).toHaveCount(10);
   await context.close();
 });
 
@@ -80,28 +80,6 @@ test("tool page - an unbuilt tool goes through its hub and says it's being built
   await expect(page.getByRole("heading", { level: 1, name: "Split PDF" })).toBeVisible();
   await expect(page.getByTestId("tool-area")).toBeVisible();
   await expect(page.getByRole("region", { name: "Related tools" }).getByTestId("tool-card")).toHaveCount(4);
-});
-
-test("tool page - a tool without a live hub links straight home", async ({ page }) => {
-  await page.goto("/word-counter/");
-  await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link")).toHaveText(["Home"]);
-});
-
-test("sub route - target sizes link between each other and back to the parent", async ({ page }) => {
-  await page.goto("/compress-image/");
-  const sizes = page.getByRole("navigation", { name: "Choose a target size" });
-  await expect(sizes.getByRole("link")).toHaveText(["20 KB", "50 KB", "100 KB"]);
-  await sizes.getByRole("link", { name: "50 KB" }).click();
-  await expect(page).toHaveURL(/\/compress-image-to-50kb\/$/);
-  await expect(page.getByRole("navigation", { name: "Choose a target size" }).getByRole("link", { name: "50 KB" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
-  await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link")).toHaveText([
-    "Home",
-    "Image tools",
-    "Compress image",
-  ]);
 });
 
 test("404 - unknown pages return 404 with a way back", async ({ page }) => {
@@ -129,10 +107,11 @@ test("routes - every internal link leads to a working page", async ({ request })
       }
     }
   }
-  expect(seen.size).toBeGreaterThanOrEqual(1 + 22 + 4 + 1 + 8);
+  // Home, 10 PDF tools, the PDF hub, All tools and the 8 info pages.
+  expect(seen.size).toBeGreaterThanOrEqual(1 + 10 + 1 + 1 + 8);
 });
 
-const ROUTES = ["/", "/pdf-tools/", "/tools/", "/merge-pdf/", "/compress-image-to-20kb/", "/about/", "/no-such-page/"];
+const ROUTES = ["/", "/pdf-tools/", "/tools/", "/merge-pdf/", "/split-pdf/", "/about/", "/no-such-page/"];
 const WIDTHS = [320, 375, 414, 768, 1024, 1366, 1920, 2560];
 
 for (const path of ROUTES) {

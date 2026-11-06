@@ -69,9 +69,10 @@ function toolArt(tool) {
 }
 
 const siteArt = `<svg width="340" height="400" viewBox="0 0 340 400">
-  ${["pdf", "image", "developer", "calculators"]
-    .map((hub, i) => {
-      const tool = TOOLS.find((t) => t.hub === hub);
+  ${["merge-pdf", "split-pdf", "organize-pdf", "jpg-to-pdf"]
+    .map((slug, i) => {
+      const tool = TOOLS.find((t) => t.slug === slug);
+      const hub = tool.hub;
       const x = 30 + (i % 2) * 160;
       const y = 50 + Math.floor(i / 2) * 160;
       return `<rect x="${x}" y="${y}" width="136" height="136" rx="34" fill="${COLORS[hub]}"/>
@@ -94,9 +95,9 @@ const shoot = async (file, html) => {
 await shoot(
   "site",
   page({
-    eyebrow: "Free online tools",
-    title: "Everyday jobs, done in seconds",
-    body: "Merge PDFs, shrink photos, format code and more, on any phone or computer.",
+    eyebrow: "Free online PDF tools",
+    title: "PDF jobs, done in seconds",
+    body: "Merge, split, organize and convert PDFs on any phone or computer.",
     art: siteArt,
     tags: ["Free", "No signup", "No watermark"],
   }),

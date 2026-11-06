@@ -11,23 +11,17 @@ const BANGLA_DIGITS = "০১২৩৪৫৬৭৮৯";
 // Words that mean the same thing for finding a tool, mapped to one shared word.
 const SYNONYMS: Record<string, string[]> = {
   merge: ["combine", "join", "merger", "unite", "concatenate", "append", "jukto"],
-  split: ["separate", "divide", "splitter", "extract"],
-  compress: ["reduce", "shrink", "smaller", "minimize", "minimise", "optimize", "optimise", "compressor", "decrease", "komano"],
-  image: ["photo", "picture", "pic", "img", "ছবি", "chobi", "foto"],
+  split: ["separate", "divide", "splitter", "break", "ভাগ"],
+  extract: ["pull", "copy", "take"],
+  organize: ["organise", "rearrange", "reorder", "arrange", "sort", "order", "move"],
+  rotate: ["turn", "flip", "spin", "sideways", "upside"],
+  remove: ["delete", "erase", "drop", "discard"],
+  watermark: ["stamp", "confidential", "draft"],
+  number: ["numbering", "numbers", "paginate", "pagination"],
+  page: ["pages", "sheet"],
+  image: ["photo", "picture", "pic", "img", "ছবি", "chobi", "foto", "png", "scan"],
   jpg: ["jpeg"],
-  metadata: ["exif", "location", "gps", "meta"],
-  resize: ["resizer", "rescale", "scale"],
-  count: ["counter", "counting", "গণনা"],
-  word: ["শব্দ"],
-  number: ["amount", "taka", "টাকা", "digit", "সংখ্যা", "numeral"],
-  bangla: ["bengali", "bangali", "বাংলা"],
-  date: ["তারিখ", "tarikh"],
-  age: ["বয়স", "boyosh"],
-  kb: ["কেবি", "kilobyte"],
-  password: ["passcode", "পাসওয়ার্ড"],
-  qr: ["কিউআর", "qrcode"],
-  remove: ["delete", "strip", "erase", "clear"],
-  signature: ["sign", "স্বাক্ষর"],
+  pdf: ["পিডিএফ"],
 };
 
 // Ignored when matching, but kept for phrase order, so "pdf to jpg" differs from "jpg to pdf".

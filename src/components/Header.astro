@@ -15,7 +15,7 @@ const groups = HUBS.map((hub) => ({
   hub,
   live: isHubLive(hub.id),
   tools: listedTools().filter((tool) => tool.hub === hub.id),
-}));
+})).filter((group) => group.tools.length > 0);
 ---
 
 <header class="header">
@@ -415,6 +415,16 @@ const groups = HUBS.map((hub) => ({
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
     gap: var(--space-lg) var(--space-xl);
+  }
+
+  /* With a single category, its tools spread across the menu instead of sitting in one narrow column. */
+  .group:only-child {
+    grid-column: 1 / -1;
+  }
+
+  .group:only-child ul {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    column-gap: var(--space-xl);
   }
 
   .group ul {

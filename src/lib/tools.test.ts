@@ -54,25 +54,27 @@ describe("liveHubs", () => {
 });
 
 describe("launch registry", () => {
-  it("matches the blueprint route map", () => {
-    // The blueprint's 20 tools: 19 with one page each, and target-size compression with three.
-    expect(TOOLS).toHaveLength(22);
-    expect(listedTools()).toHaveLength(19);
-    expect(variantsOf(TOOLS.find((t) => t.slug === "compress-image") as Tool)).toHaveLength(3);
-    expect(HUBS.map((h) => h.slug)).toEqual([
-      "pdf-tools",
-      "image-tools",
-      "bangla-tools",
-      "developer-tools",
-      "text-tools",
-      "calculators",
+  // The site offers PDF tools only, launched one at a time. Other categories come back when they're built.
+  it("offers the ten browser-based PDF tools, with Merge PDF live", () => {
+    expect(listedTools().map((t) => t.slug)).toEqual([
+      "merge-pdf",
+      "split-pdf",
+      "jpg-to-pdf",
+      "pdf-to-jpg",
+      "organize-pdf",
+      "rotate-pdf",
+      "remove-pdf-pages",
+      "extract-pdf-pages",
+      "add-page-numbers",
+      "add-watermark",
     ]);
+    expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
+    expect(TOOLS.filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf"]);
   });
 
-  it("publishes the four hubs with at least three tools", () => {
-    expect(liveHubs().map((h) => h.slug)).toEqual(["pdf-tools", "image-tools", "bangla-tools", "developer-tools"]);
-    expect(toolsForHub("pdf").map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "jpg-to-pdf", "pdf-to-jpg"]);
-    expect(toolsForHub("bangla").map((t) => t.slug)).toContain("word-counter");
+  it("publishes only the PDF hub", () => {
+    expect(liveHubs().map((h) => h.slug)).toEqual(["pdf-tools"]);
+    expect(toolsForHub("pdf")).toHaveLength(10);
   });
 
   it("has strings and an icon for every tool", () => {

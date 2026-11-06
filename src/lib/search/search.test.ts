@@ -8,13 +8,13 @@ const slugs = (query: string) => search(query).map((r) => r.slug);
 
 describe("normalize", () => {
   it("lowercases, strips punctuation and splits letters from numbers", () => {
-    expect(normalize("Compress-Image to 20KB!")).toBe("compress image to 20 kb");
+    expect(normalize("Merge-PDF to 20KB!")).toBe("merge pdf to 20 kb");
     expect(normalize("base64")).toBe("base 64");
   });
 
   it("keeps Bangla letters and vowel signs, and reads Bangla digits", () => {
     expect(normalize("ছবি ২০ কেবি")).toBe("ছবি 20 কেবি");
-    expect(normalize("বিজয়")).toBe("বিজয়");
+    expect(normalize("পিডিএফ")).toBe("পিডিএফ");
   });
 });
 
@@ -27,74 +27,63 @@ describe("finds the closest tool", () => {
     ["mrege pdf", "merge-pdf"],
     ["marge", "merge-pdf"],
     ["mer", "merge-pdf"],
+    ["পিডিএফ যুক্ত", "merge-pdf"],
     ["split", "split-pdf"],
-    ["extract pages", "split-pdf"],
+    ["split pdf", "split-pdf"],
+    ["separate pdf", "split-pdf"],
+    ["divide a pdf", "split-pdf"],
+    ["splt pdf", "split-pdf"],
     ["jpg to pdf", "jpg-to-pdf"],
     ["jpeg to pdf", "jpg-to-pdf"],
     ["png to pdf", "jpg-to-pdf"],
     ["pictures to pdf", "jpg-to-pdf"],
+    ["photo to pdf", "jpg-to-pdf"],
+    ["scan to pdf", "jpg-to-pdf"],
     ["pdf to jpg", "pdf-to-jpg"],
     ["pdf to png", "pdf-to-jpg"],
     ["pdf to image", "pdf-to-jpg"],
-    ["compress", "compress-image"],
-    ["reduce photo size", "compress-image"],
-    ["shrink picture", "compress-image"],
-    ["compres image", "compress-image"],
-    ["20kb", "compress-image-to-20kb"],
-    ["photo 50 kb", "compress-image-to-50kb"],
-    ["compress image to 100kb", "compress-image-to-100kb"],
-    ["ছবি ২০ কেবি", "compress-image-to-20kb"],
-    ["resize", "resize-image"],
-    ["change image dimensions", "resize-image"],
-    ["signature", "photo-signature-resizer"],
-    ["job application photo", "photo-signature-resizer"],
-    ["teletalk", "photo-signature-resizer"],
-    ["png to jpg", "convert-image"],
-    ["webp", "convert-image"],
-    ["heic", "heic-to-jpg"],
-    ["iphone photo", "heic-to-jpg"],
-    ["exif", "remove-image-metadata"],
-    ["remove location from photo", "remove-image-metadata"],
-    ["qr", "qr-code-generator"],
-    ["qr code maker", "qr-code-generator"],
-    ["bijoy", "bijoy-to-unicode"],
-    ["sutonny", "bijoy-to-unicode"],
-    ["বিজয়", "bijoy-to-unicode"],
-    ["ansi to unicode", "bijoy-to-unicode"],
-    ["number to words", "number-to-bangla-words"],
-    ["taka in words", "number-to-bangla-words"],
-    ["টাকা কথায়", "number-to-bangla-words"],
-    ["bangla date", "bangla-date-converter"],
-    ["bengali calendar", "bangla-date-converter"],
-    ["json", "json-formatter"],
-    ["pretty print json", "json-formatter"],
-    ["base 64", "base64-encode-decode"],
-    ["decode", "base64-encode-decode"],
-    ["password", "password-generator"],
-    ["pasword", "password-generator"],
-    ["random password generator", "password-generator"],
-    ["word count", "word-counter"],
-    ["character counter", "word-counter"],
-    ["শব্দ গণনা", "word-counter"],
-    ["age", "age-calculator"],
-    ["date of birth", "age-calculator"],
-    ["how old am i", "age-calculator"],
+    ["save pdf as picture", "pdf-to-jpg"],
+    ["organize", "organize-pdf"],
+    ["organise pdf", "organize-pdf"],
+    ["reorder pages", "organize-pdf"],
+    ["rearrange pdf", "organize-pdf"],
+    ["rotate", "rotate-pdf"],
+    ["rotate pdf", "rotate-pdf"],
+    ["turn pdf pages", "rotate-pdf"],
+    ["sideways pdf", "rotate-pdf"],
+    ["rotat pdf", "rotate-pdf"],
+    ["remove pages", "remove-pdf-pages"],
+    ["delete pdf pages", "remove-pdf-pages"],
+    ["delete page from pdf", "remove-pdf-pages"],
+    ["extract pages", "extract-pdf-pages"],
+    ["extract pdf pages", "extract-pdf-pages"],
+    ["pull pages out", "extract-pdf-pages"],
+    ["page numbers", "add-page-numbers"],
+    ["number pdf pages", "add-page-numbers"],
+    ["paginate", "add-page-numbers"],
+    ["watermark", "add-watermark"],
+    ["watermark pdf", "add-watermark"],
+    ["stamp confidential", "add-watermark"],
+    ["watermrk", "add-watermark"],
   ])("%s finds %s", (query, slug) => {
     expect(top(query)).toBe(slug);
   });
 });
 
 describe("result lists", () => {
-  it("lists every PDF tool for a category word", () => {
-    expect(slugs("pdf").slice(0, 4).sort()).toEqual(["jpg-to-pdf", "merge-pdf", "pdf-to-jpg", "split-pdf"]);
+  it("lists every PDF tool for the category word", () => {
+    const all = search("pdf", 20).map((r) => r.slug);
+    expect(all).toHaveLength(10);
+    expect(all[0]).toBe("merge-pdf");
   });
 
-  it("puts the parent tool before its size pages", () => {
-    expect(slugs("compress image").slice(0, 2)).toEqual(["compress-image", "compress-image-to-20kb"]);
+  it("keeps phrase order, so the two conversions don't swap", () => {
+    expect(top("jpg to pdf")).toBe("jpg-to-pdf");
+    expect(top("pdf to jpg")).toBe("pdf-to-jpg");
   });
 
   it("falls back to the closest tools when nothing matches every word", () => {
-    expect(slugs("rotate pdf")).toContain("merge-pdf");
+    expect(slugs("merge and rotate pdf")).toEqual(expect.arrayContaining(["merge-pdf", "rotate-pdf"]));
   });
 
   it("returns nothing for gibberish or an empty query", () => {
@@ -103,6 +92,6 @@ describe("result lists", () => {
   });
 
   it("limits the number of results", () => {
-    expect(search("image", 5)).toHaveLength(5);
+    expect(search("pdf", 5)).toHaveLength(5);
   });
 });

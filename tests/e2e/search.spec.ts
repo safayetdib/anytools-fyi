@@ -20,10 +20,10 @@ test("search - finds the closest tool and Enter opens it", async ({ page }) => {
 
 test("search - handles typos and Bangla", async ({ page }) => {
   await page.goto("/");
-  await heroSearch(page).fill("pasword");
-  await expect(options(page).first()).toContainText("Password generator");
-  await heroSearch(page).fill("বিজয়");
-  await expect(options(page).first()).toContainText("Bijoy to Unicode");
+  await heroSearch(page).fill("watermrk");
+  await expect(options(page).first()).toContainText("Add watermark");
+  await heroSearch(page).fill("পিডিএফ যুক্ত");
+  await expect(options(page).first()).toContainText("Merge PDF");
 });
 
 test("search - arrow keys choose a result and Escape closes the list", async ({ page }) => {
@@ -42,9 +42,9 @@ test("search - arrow keys choose a result and Escape closes the list", async ({ 
 
 test("search - clicking a result opens it", async ({ page }) => {
   await page.goto("/");
-  await heroSearch(page).fill("qr");
+  await heroSearch(page).fill("rotate");
   await options(page).first().click();
-  await expect(page).toHaveURL(/\/qr-code-generator\/$/);
+  await expect(page).toHaveURL(/\/rotate-pdf\/$/);
 });
 
 test("search - says when nothing matches and announces counts", async ({ page }) => {
@@ -61,8 +61,8 @@ test("search - the header box works on every page and / focuses it", async ({ pa
   await page.goto("/about/");
   await page.keyboard.press("/");
   await expect(headerSearch(page)).toBeFocused();
-  await page.keyboard.type("heic");
-  await expect(page.locator('#header-search-list [role="option"]').first()).toContainText("HEIC to JPG");
+  await page.keyboard.type("jpg to pdf");
+  await expect(page.locator('#header-search-list [role="option"]').first()).toContainText("JPG to PDF");
 });
 
 test("search - phones open search from a header button", async ({ page }) => {
@@ -71,8 +71,8 @@ test("search - phones open search from a header button", async ({ page }) => {
   await expect(headerSearch(page)).toBeHidden();
   await page.getByRole("button", { name: "Search" }).click();
   await expect(headerSearch(page)).toBeFocused();
-  await page.keyboard.type("age");
-  await expect(page.locator('#header-search-list [role="option"]').first()).toContainText("Age calculator");
+  await page.keyboard.type("split");
+  await expect(page.locator('#header-search-list [role="option"]').first()).toContainText("Split PDF");
   await page.screenshot({ path: `${SCREENSHOT_DIR}/phone-results.png` });
 });
 
