@@ -17,6 +17,8 @@
     // Matches Astro's trailingSlash: "always", so /merge-pdf redirects to /merge-pdf/.
     "html_handling": "force-trailing-slash"
   },
+  // Once a day (UTC), rebuild the site if anyone rated, so new scores reach the pages.
+  "triggers": { "crons": ["0 0 * * *"] },
   // Ratings are stored in D1. The salt for their hashes is the secret RATING_SALT.
   "d1_databases": [
     {
