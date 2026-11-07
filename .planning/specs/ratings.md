@@ -33,3 +33,8 @@ Collect honest 1–5 star ratings from people who used a tool, show the average 
 
 ## Not in scope
 - Written reviews, ratings on tool cards, or ratings for tools that aren't built.
+
+## Databases
+- Live: D1 `anytools-ratings`. Secret `RATING_SALT` set on the Worker.
+- Branch previews: D1 `anytools-ratings-preview` (the `previews` block in `wrangler.jsonc`), with a plain preview-only salt, so test ratings never reach the live scores.
+- A new migration must be applied to both databases. Wrangler only finds the preview database by name through a config that lists it at the top level, so apply it from a temporary config that does.

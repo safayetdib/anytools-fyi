@@ -25,5 +25,18 @@
       "database_id": "06333976-4e38-47ec-aa5a-f41d0310b801",
       "migrations_dir": "migrations"
     }
-  ]
+  ],
+  // Branch previews get their own database, so test ratings never count on the live site.
+  // Its salt is a plain setting because preview ratings are throwaway test data.
+  "previews": {
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "anytools-ratings-preview",
+        "database_id": "8897c60c-ca1c-40eb-99a3-9209b4b26a94",
+        "migrations_dir": "migrations"
+      }
+    ],
+    "vars": { "RATING_SALT": "preview-only" }
+  }
 }
