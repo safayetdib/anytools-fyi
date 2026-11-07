@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import en from "../i18n/en.json";
 import { iconFor } from "./icons";
 import { INDEXABLE } from "./site";
-import { HUBS, TOOLS, liveHubs, listedTools, staysOnDevice, toolsForHub, validateRegistry, variantsOf, type Tool } from "./tools";
+import { TOOLS, liveHubs, listedTools, staysOnDevice, toolsForHub, validateRegistry, type Tool } from "./tools";
 
 function tool(slug: string, overrides: Partial<Tool> = {}): Tool {
   return {
