@@ -372,13 +372,13 @@ async function mergeForEditing(page: Page, first: number[], second: number[]) {
   await expect(page.getByRole("heading", { name: "Your file is ready" })).toBeVisible();
 }
 
+// One click applies the page changes and downloads the result.
 async function applyAndLoad(page: Page) {
-  await page.getByRole("button", { name: "Apply changes" }).click();
-  const link = page.getByRole("link", { name: /^Download merged\.pdf/ });
-  await expect(link).toBeVisible();
   const pending = page.waitForEvent("download");
-  await link.click();
-  return readFile(await (await pending).path());
+  await page.getByTestId("shell-result-card").getByRole("button", { name: "Download with changes" }).click();
+  const bytes = await readFile(await (await pending).path());
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+  return bytes;
 }
 
 const toolbar = (page: Page) => page.getByTestId("page-toolbar");
@@ -1257,5 +1257,64 @@ for (const width of [375, 768]) {
     // On phones the docked bar steps aside while the question is open.
     if (width < 600) await expect(page.getByTestId("shell-result-bar")).toBeHidden();
     await expect(confirm.getByRole("button", { name: "Keep my file" })).toBeInViewport();
+  });
+}
+
+// --- Unsaved page changes ---
+
+test("changes - Download with changes takes the place of Download, and one click gets the edited file", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 1).check();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: false }).first().click();
+  const card = page.getByTestId("shell-result-card");
+  await expect(card.getByRole("button", { name: "Download with changes" })).toBeVisible();
+  await expect(card.getByText("Your download will include them.")).toBeVisible();
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([200, 210]);
+  await expect(page.getByTestId("shell-live")).toContainText("Downloading merged.pdf with your changes.");
+  await expect(card.getByRole("button", { name: "Download with changes" })).toBeHidden();
+});
+
+test("changes - a floating bar keeps the download in reach while scrolling the pages", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+  const bar = page.getByTestId("changes-bar");
+  await select(page, 2).check();
+  await page.getByTestId("page-toolbar").getByRole("button", { name: /Rotate/ }).first().click();
+  // While the result card is on screen, its own buttons are enough.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(bar).toBeHidden();
+  await page.locator(".shell-pages li").last().scrollIntoViewIfNeeded();
+  await expect(bar).toBeVisible();
+  await expect(bar).toBeInViewport();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/changes-bar.png` });
+  const pending = page.waitForEvent("download");
+  await bar.getByRole("button", { name: "Download with changes" }).click();
+  await pending;
+  await expect(bar).toBeHidden();
+});
+
+test("changes - the floating bar's Undo asks first, like the card's", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+  await select(page, 2).check();
+  await page.getByTestId("page-toolbar").getByRole("button", { name: /Rotate/ }).first().click();
+  await page.locator(".shell-pages li").last().scrollIntoViewIfNeeded();
+  await page.getByTestId("changes-bar").getByRole("button", { name: "Undo changes" }).click();
+  await page.getByRole("button", { name: "Yes, undo changes" }).click();
+  await expect(page.getByTestId("changes-bar")).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`changes - the floating bar has no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+    await select(page, 2).check();
+    await page.getByTestId("page-toolbar").getByRole("button", { name: /Rotate/ }).first().click();
+    await page.locator(".shell-pages li").last().scrollIntoViewIfNeeded();
+    await expect(page.getByTestId("changes-bar")).toBeVisible();
+    const { violations } = await new AxeBuilder({ page }).analyze();
+    expect(violations.map((v) => v.id)).toEqual([]);
   });
 }

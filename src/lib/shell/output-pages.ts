@@ -15,7 +15,7 @@ interface Hooks {
   confirm(options: ConfirmOptions): Promise<boolean>;
   // Called when the page plan starts or stops differing from the result file.
   onChange(changed: boolean): void;
-  // Called with the rebuilt result after the visitor applies their changes.
+  // Called with the rebuilt result after the visitor applies their changes, which then downloads it.
   onApplied(output: ToolOutput): void;
 }
 
@@ -466,7 +466,8 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
   apply.addEventListener("click", async () => {
     if (!tool.rearrangeOutput || !file || applying) return;
     applying = true;
-    apply.textContent = t.applying;
+    const label = el(root, "apply-label");
+    label.textContent = t.applying;
     apply.setAttribute("aria-busy", "true");
     try {
       const output = await tool.rearrangeOutput(file, plan(), {
@@ -478,7 +479,7 @@ export function createOutputPages(root: HTMLElement, tool: ToolDefinition, hooks
       hooks.announce(t.applyFailed);
     } finally {
       applying = false;
-      apply.textContent = t.apply;
+      el(root, "apply-label").textContent = t.apply;
       apply.removeAttribute("aria-busy");
     }
   });

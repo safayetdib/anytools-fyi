@@ -234,10 +234,8 @@ test("mobile - page view tools sit in one row, and Move opens the position box",
   await expect(page.getByRole("dialog").getByText("Page 3 of 3")).toBeVisible();
   await expect(tools.getByLabel("Move to position")).toBeHidden();
   await page.getByRole("button", { name: "Close" }).click();
-  await page.getByRole("button", { name: "Apply changes" }).click();
-  const link = page.getByRole("link", { name: /^Download merged\.pdf/ });
   const download = page.waitForEvent("download");
-  await link.click();
+  await page.getByRole("button", { name: "Download with changes" }).click();
   const bytes = await (await download).path().then((p) => import("node:fs/promises").then((fs) => fs.readFile(p)));
   expect(await pageWidths(bytes)).toEqual([200, 300, 100]);
 });

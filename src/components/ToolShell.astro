@@ -149,7 +149,10 @@ const limits = isFiles
         <p class="shell-changed" data-el="changed" hidden>{t.changedNote}</p>
         <ul class="shell-downloads" data-el="downloads"></ul>
         <div class="shell-actions">
-          <button class="shell-primary shell-apply" type="button" data-el="apply" hidden>{t.apply}</button>
+          <button class="shell-primary shell-apply" type="button" data-el="apply" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="m7 10 5 5 5-5" /><path d="M4 20h16" /></svg>
+            <span data-el="apply-label">{t.apply}</span>
+          </button>
           <button class="shell-secondary" type="button" data-el="undo" hidden>{t.undo}</button>
           <button class="shell-secondary" type="button" data-el="copy" hidden>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
@@ -164,6 +167,22 @@ const limits = isFiles
     </div>
     <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
     {isFiles && <ShellConfirm name="result-confirm" />}
+    {
+      isFiles && (
+        <div class="shell-changes-bar" role="region" aria-label={t.changesBarLabel} data-el="changes-bar" data-testid="changes-bar" hidden>
+          <p class="shell-changes-text">{t.changesBar}</p>
+          <div class="shell-changes-actions">
+            <button class="shell-secondary" type="button" data-el="undo-float">
+              {t.undo}
+            </button>
+            <button class="shell-primary" type="button" data-el="apply-float">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="m7 10 5 5 5-5" /><path d="M4 20h16" /></svg>
+              {t.apply}
+            </button>
+          </div>
+        </div>
+      )
+    }
     <section class="shell-preview" data-el="preview" aria-labelledby="shell-preview-heading" hidden>
       <h3 id="shell-preview-heading">{t.previewHeading}</h3>
       <p class="shell-hint" data-el="preview-note">{t.previewNote}</p>
@@ -1818,6 +1837,74 @@ const limits = isFiles
       font-size: 1.25rem;
     }
   }
+  /* Unsaved page changes: a floating bar, styled like the Merge bar, keeps the download in reach while the
+     result card is scrolled away. Phones already dock these buttons, so they don't get it. */
+  .shell-changes-bar {
+    position: fixed;
+    bottom: var(--space-md);
+    left: 50%;
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-lg);
+    width: min(76rem, calc(100% - 2 * var(--space-lg)));
+    padding: 0.75rem var(--space-md) 0.75rem var(--space-lg);
+    border: 2px solid var(--color-bar-border);
+    border-radius: var(--radius-card);
+    background: var(--color-bar);
+    color: var(--color-on-bar);
+    box-shadow: 0 -6px 24px -12px rgb(0 0 0 / 0.45);
+    transform: translateX(-50%);
+  }
+
+  .shell-changes-text {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .shell-changes-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-left: auto;
+  }
+
+  .shell-changes-bar .shell-primary {
+    background: var(--color-bar-action);
+    color: var(--color-on-bar-action);
+  }
+
+  .shell-changes-bar .shell-secondary {
+    border-color: var(--color-on-bar);
+    background: transparent;
+    color: var(--color-on-bar);
+  }
+
+  .shell-changes-bar :focus-visible {
+    outline-color: var(--color-on-bar);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shell-changes-bar:not([hidden]) {
+      animation: shell-changes-in var(--dur-slow) var(--ease-out);
+    }
+
+    @keyframes shell-changes-in {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 12px);
+      }
+    }
+  }
+
+  @media (max-width: 599px) {
+    .shell-changes-bar {
+      display: none !important;
+    }
+  }
+
   /* --- Phone app layout. Wider screens keep the layout above. --- */
 
   .shell-steps,

@@ -217,9 +217,9 @@
     "viewerLabel": "Page preview",
     "previewFailed": "The preview couldn't be shown, but your file is ready to download.",
     "previewNoteEditable": "Check the pages before you download. Select pages to change them, or select a page image to see it larger.",
-    "changedNote": "You've changed the pages. Apply the changes to update your download.",
-    "apply": "Apply changes",
-    "applying": "Applying changes…",
+    "changedNote": "You've changed the pages. Your download will include them.",
+    "apply": "Download with changes",
+    "applying": "Preparing your download…",
     "undo": "Undo changes",
     "pageMoved": "Page moved to position {position}.",
     "lastPage": "A PDF needs at least one page, so this page stays.",
@@ -303,7 +303,10 @@
     "swipeHint": "Swipe for the next page",
     "rotateLeftShort": "Left",
     "rotateRightShort": "Right",
-    "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first."
+    "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first.",
+    "changesBar": "You've changed the pages",
+    "changesBarLabel": "Page changes",
+    "downloadingChanges": "Downloading {name} with your changes."
   },
   "toolPage": {
     "leadFiles": "Free, with no signup and no watermarks.",

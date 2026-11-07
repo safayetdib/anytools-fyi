@@ -267,12 +267,34 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       changedNote.hidden = !changed;
       applyButton.hidden = !changed;
       undoButton.hidden = !changed;
+      syncChangesBar();
     },
+    // Changes are applied by downloading them, so there's no separate step to miss.
     onApplied(applied) {
       controller.replaceOutput(applied);
-      focus(downloads.querySelector("a"));
+      const link = downloads.querySelector("a");
+      if (!link) return;
+      link.click();
+      announce(fill(t.downloadingChanges, { name: link.download }));
+      focus(link);
     },
   });
+
+  // While there are changes to download and the result card has scrolled away, a bar keeps the download in reach.
+  const changesBar = root.querySelector<HTMLElement>('[data-el="changes-bar"]');
+  const resultSummaryCard = root.querySelector<HTMLElement>(".shell-result-card");
+  let cardInView = true;
+  function syncChangesBar() {
+    if (changesBar) changesBar.hidden = !pagesChanged || cardInView;
+  }
+  if (changesBar && resultSummaryCard && "IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      cardInView = entry.isIntersecting;
+      syncChangesBar();
+    }).observe(resultSummaryCard);
+    el(changesBar, "apply-float").addEventListener("click", () => applyButton.click());
+    el(changesBar, "undo-float").addEventListener("click", () => undoButton.click());
+  }
 
   function renderOutput() {
     if (state.output === renderedOutput) return;
