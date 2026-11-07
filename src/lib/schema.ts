@@ -27,6 +27,12 @@ export function organizationSchema(site: URL) {
     alternateName: en.site.name,
     url: absolute("/", site),
     logo: { "@type": "ImageObject", url: absolute("/icon-512.png", site), width: 512, height: 512 },
+    founder: {
+      "@type": "Person",
+      name: en.site.founder.name,
+      url: en.site.founder.website,
+      sameAs: [en.site.founder.website, en.site.founder.linkedin],
+    },
   };
 }
 

@@ -159,3 +159,15 @@ for (const width of [320, 375, 1280]) {
     expect(box?.height ?? 0).toBeLessThan(30);
   });
 }
+
+test("pages - contact gives an email address and the maker's website", async ({ page }) => {
+  await page.goto("/contact/");
+  await expect(page.getByRole("link", { name: "safayetdib@gmail.com" })).toHaveAttribute("href", "mailto:safayetdib@gmail.com");
+  await expect(page.getByRole("link", { name: "safayetadib.com" })).toHaveAttribute("href", "https://safayetadib.com/");
+});
+
+test("pages - about says who makes the site", async ({ page }) => {
+  await page.goto("/about/");
+  await expect(page.getByRole("heading", { name: "Who makes it" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "LinkedIn" })).toHaveAttribute("href", "https://www.linkedin.com/in/safayetdib/");
+});

@@ -2,6 +2,11 @@
   "site": {
     "brand": "AnyTools",
     "name": "AnyTools.fyi",
+    "founder": {
+      "name": "Safayet Adib",
+      "website": "https://safayetadib.com/",
+      "linkedin": "https://www.linkedin.com/in/safayetdib/"
+    },
     "tagline": "Free online PDF tools for everyday jobs: merge, split, organize and convert PDFs on any phone or computer. No signup, no watermarks.",
     "title": "AnyTools.fyi: Free Online PDF Tools, No Signup"
   },

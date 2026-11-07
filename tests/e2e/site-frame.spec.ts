@@ -121,9 +121,10 @@ test("site frame - logo and theme switch share one row on a small phone", async 
 
 test("site frame - icons and manifest are served", async ({ page, request }) => {
   await page.goto("/");
-  for (const selector of ['link[rel="icon"][type="image/svg+xml"]', 'link[rel="icon"][sizes]', 'link[rel="apple-touch-icon"]', 'link[rel="manifest"]']) {
-    const href = await page.locator(selector).getAttribute("href");
-    expect((await request.get(href ?? "")).ok(), selector).toBe(true);
+  const links = page.locator('link[rel="icon"], link[rel="apple-touch-icon"], link[rel="manifest"]');
+  expect(await links.count()).toBe(5);
+  for (const href of await links.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href") ?? ""))) {
+    expect((await request.get(href)).ok(), href).toBe(true);
   }
   const manifest = await (await request.get("/site.webmanifest")).json();
   for (const icon of manifest.icons) expect((await request.get(icon.src)).ok(), icon.src).toBe(true);
