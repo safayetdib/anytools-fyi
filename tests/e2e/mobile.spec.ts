@@ -234,10 +234,8 @@ test("mobile - page view tools sit in one row, and Move opens the position box",
   await expect(page.getByRole("dialog").getByText("Page 3 of 3")).toBeVisible();
   await expect(tools.getByLabel("Move to position")).toBeHidden();
   await page.getByRole("button", { name: "Close" }).click();
-  await page.getByRole("button", { name: "Apply changes" }).click();
-  const link = page.getByRole("link", { name: /^Download merged\.pdf/ });
   const download = page.waitForEvent("download");
-  await link.click();
+  await page.getByRole("button", { name: "Download with changes" }).click();
   const bytes = await (await download).path().then((p) => import("node:fs/promises").then((fs) => fs.readFile(p)));
   expect(await pageWidths(bytes)).toEqual([200, 300, 100]);
 });
@@ -272,3 +270,21 @@ for (const width of [320, 360, 375, 414]) {
     expect(await overflow()).toBeLessThanOrEqual(0);
   });
 }
+
+test("mobile - tapping a file's picture previews it full screen, and swiping turns pages", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100, 110, 120]), await pdf("b.pdf", [200])]);
+  await page.getByRole("button", { name: "Preview a.pdf" }).tap();
+  const viewer = page.getByRole("dialog", { name: "a.pdf" });
+  await expect(viewer.getByText("Page 1 of 3")).toBeVisible();
+  expect(await viewer.boundingBox()).toMatchObject({ x: 0, y: 0, width: 375 });
+  await page.locator('[data-el="fv-scroll"]').evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const init = { pointerType: "touch", pointerId: 9, bubbles: true, isPrimary: true, clientY: box.top + 200 };
+    el.dispatchEvent(new PointerEvent("pointerdown", { ...init, clientX: box.left + 250 }));
+    el.dispatchEvent(new PointerEvent("pointerup", { ...init, clientX: box.left + 100 }));
+  });
+  await expect(viewer.getByText("Page 2 of 3")).toBeVisible();
+  await viewer.getByRole("button", { name: "Close" }).click();
+  await expect(viewer).toBeHidden();
+});

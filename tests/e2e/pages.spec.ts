@@ -8,8 +8,7 @@ const PAGES = [
   { name: "all-tools", path: "/tools/", schema: "CollectionPage" },
   { name: "tool", path: "/merge-pdf/", schema: "WebApplication" },
   // Coming-soon tools carry only their breadcrumb until they work.
-  { name: "text-tool", path: "/word-counter/", schema: "BreadcrumbList" },
-  { name: "variant", path: "/compress-image-to-20kb/", schema: "BreadcrumbList" },
+  { name: "coming-soon", path: "/split-pdf/", schema: "BreadcrumbList" },
 ];
 
 async function jsonLdTypes(page: Page) {
@@ -19,28 +18,33 @@ async function jsonLdTypes(page: Page) {
 
 // --- Homepage ---
 
-test("homepage - lists live tools with the most used first", async ({ page }) => {
+test("homepage - lists the PDF tools with the most used first", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Free tools that get everyday jobs done in seconds" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Free PDF tools that get the job done in seconds" })).toBeVisible();
   const cards = page.getByTestId("tool-card");
-  await expect(cards).toHaveCount(19);
+  await expect(cards).toHaveCount(10);
   await expect(cards.first()).toHaveAttribute("href", "/merge-pdf/");
   await expect(cards.first()).toContainText("Merge PDF");
 });
 
-test("homepage - category pills are real links", async ({ page }) => {
+// Pills return once a second category is live; with PDF only there's nothing to filter.
+test("homepage - shows no category pills while there's one category", async ({ page }) => {
   await page.goto("/");
-  const pills = page.getByRole("navigation", { name: "Categories" });
-  await expect(pills.getByRole("link", { name: "All" })).toHaveAttribute("aria-current", "page");
-  await pills.getByRole("link", { name: "PDF" }).click();
-  await expect(page).toHaveURL(/\/pdf-tools\/$/);
+  await expect(page.getByRole("navigation", { name: "Categories" })).toHaveCount(0);
+});
+
+test("homepage - only PDF tools are offered", async ({ page }) => {
+  await page.goto("/");
+  for (const name of await page.getByTestId("tool-card").locator(".name").allTextContents()) {
+    expect(name, name).toMatch(/PDF|JPG|page numbers|watermark/i);
+  }
 });
 
 test("homepage - works with JavaScript turned off and ships no scripts", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4329/");
-  await expect(page.getByTestId("tool-card")).toHaveCount(19);
+  await expect(page.getByTestId("tool-card")).toHaveCount(10);
   await expect(page.locator("script[src]:not([type='module'])")).toHaveCount(0);
   await context.close();
 });
@@ -59,17 +63,13 @@ test("homepage - hero illustration is decorative and under 4 KB", async ({ page 
 test("pdf hub - lists its tools with a breadcrumb", async ({ page }) => {
   await page.goto("/pdf-tools/");
   await expect(page.getByRole("heading", { level: 1, name: "PDF tools" })).toBeVisible();
-  await expect(page.getByTestId("tool-card")).toHaveCount(4);
+  await expect(page.getByTestId("tool-card")).toHaveCount(10);
   const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
   await expect(crumbs.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
-  await expect(page.getByRole("navigation", { name: "Categories" }).getByRole("link", { name: "PDF" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
 });
 
-test("hubs below three tools are not published", async ({ page }) => {
-  for (const path of ["/text-tools/", "/calculators/"]) {
+test("removed categories and tools are not published", async ({ page }) => {
+  for (const path of ["/image-tools/", "/bangla-tools/", "/text-tools/", "/calculators/", "/compress-image/", "/word-counter/"]) {
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(404);
   }
@@ -77,10 +77,9 @@ test("hubs below three tools are not published", async ({ page }) => {
 
 test("all tools - groups every tool by category", async ({ page }) => {
   await page.goto("/tools/");
-  await expect(page.getByTestId("tool-card")).toHaveCount(19);
-  for (const name of ["PDF tools", "Image tools", "Bangla tools", "Developer tools", "Text tools", "Calculators"]) {
-    await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
-  }
+  await expect(page.getByTestId("tool-card")).toHaveCount(10);
+  await expect(page.getByRole("heading", { level: 2 }).filter({ hasText: "PDF tools" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Image tools" })).toHaveCount(0);
 });
 
 // --- Every page ---
@@ -129,11 +128,6 @@ test("privacy - browser-only tools show the promise near the top", async ({ page
   const badgeTop = (await badge.boundingBox())?.y ?? 0;
   const toolTop = (await page.getByTestId("shell-zone").boundingBox())?.y ?? 0;
   expect(badgeTop).toBeLessThan(toolTop);
-});
-
-test("privacy - text tools word the promise for typing", async ({ page }) => {
-  await page.goto("/json-formatter/");
-  await expect(page.getByRole("complementary", { name: "What you type stays on your device" })).toBeVisible();
 });
 
 for (const path of ["/", "/tools/", "/pdf-tools/", "/about/"]) {

@@ -2,8 +2,7 @@
 layout: ../layouts/InfoLayout.astro
 title: "Privacy policy"
 description: "What AnyTools collects, what it never collects, and how your files and data are handled when you use our tools."
-draft: true
-updated: "2026-11-06"
+updated: "2026-11-07"
 ---
 
 ## Your files

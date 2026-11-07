@@ -51,6 +51,16 @@ test("seo - the sitemap lists only indexable pages", async ({ request }) => {
   expect(xml).not.toContain("split-pdf");
   expect(xml).not.toContain("image-tools");
   expect(xml).not.toContain("/terms/");
+  expect(xml).toContain("<loc>https://anytools.fyi/cookies/</loc>");
+  expect(xml).toContain("<loc>https://anytools.fyi/privacy/</loc>");
+});
+
+test("seo - the cookies and privacy pages are published", async ({ page }) => {
+  for (const path of ["/cookies/", "/privacy/"]) {
+    await page.goto(path);
+    expect(await meta(page, "robots"), path).toContain("index, follow");
+    await expect(page.getByText(/^Draft:/), path).toHaveCount(0);
+  }
 });
 
 test("seo - robots.txt and llms.txt are served for crawlers", async ({ request }) => {

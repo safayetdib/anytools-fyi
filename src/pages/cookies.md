@@ -2,8 +2,7 @@
 layout: ../layouts/InfoLayout.astro
 title: "Cookies"
 description: "How AnyTools uses cookies and browser storage, what each one is for, and how you can clear them at any time."
-draft: true
-updated: "2026-11-06"
+updated: "2026-11-07"
 ---
 
 The tools themselves don't need cookies. We only set cookies if you choose **Accept** in the cookie banner, and only for Google Analytics, which tells us how many people visit and which tools they use.

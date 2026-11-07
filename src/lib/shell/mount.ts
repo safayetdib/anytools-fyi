@@ -3,6 +3,7 @@ import { fill } from "../../i18n/format";
 import { formatSize, safeFileName } from "../files";
 import { createToolController, totalPages, type QueuedFile, type ShellState } from "./controller";
 import { createConfirm } from "./confirm";
+import { createFilePreview } from "./file-preview";
 import { createOutputPages } from "./output-pages";
 import type { ToolDefinition } from "./types";
 
@@ -14,6 +15,8 @@ const DRAG_SCROLL_EDGE = 96;
 const DRAG_SCROLL_STEP = 14;
 const MORE_ICON =
   '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+const EYE_ICON =
+  '<span class="shell-thumb-eye" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>';
 const DOWNLOAD_ICON =
   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>';
 
@@ -51,6 +54,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const { state } = controller;
   const isText = tool.config.mode === "text";
   const hasFilePreviews = Boolean(tool.previewFile);
+  const canPreviewFiles = hasFilePreviews && Boolean(tool.previewOutput);
 
   const live = el(root, "live");
   const error = el(root, "error");
@@ -111,9 +115,17 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     const order = document.createElement("span");
     order.className = "shell-file-order";
     order.setAttribute("aria-hidden", "true");
-    const thumb = document.createElement("span");
+    // The thumbnail opens a preview of the whole file, when the tool can show one.
+    const thumb = document.createElement(canPreviewFiles ? "button" : "span");
     thumb.className = "shell-thumb";
     thumb.hidden = !hasFilePreviews;
+    if (thumb instanceof HTMLButtonElement) {
+      thumb.type = "button";
+      thumb.dataset.action = "preview";
+      thumb.dataset.id = queued.id;
+      thumb.setAttribute("aria-label", fill(t.previewFile, { name: queued.file.name }));
+      thumb.insertAdjacentHTML("beforeend", EYE_ICON);
+    }
     const info = document.createElement("span");
     info.className = "shell-file-info";
     const name = document.createElement("span");
@@ -138,13 +150,18 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
 
     const image = queued.preview?.image;
     thumb.classList.toggle("is-loading", hasFilePreviews && !queued.preview);
+    // Locked or unreadable files have nothing to show.
+    if (thumb instanceof HTMLButtonElement) {
+      thumb.disabled = queued.preview?.status === "locked" || queued.preview?.status === "unreadable";
+    }
     if (image && !thumbnailUrls.has(queued.id)) {
       const url = URL.createObjectURL(image);
       thumbnailUrls.set(queued.id, url);
       const img = document.createElement("img");
       img.src = url;
       img.alt = "";
-      thumb.replaceChildren(img);
+      thumb.querySelector("img")?.remove();
+      thumb.prepend(img);
     }
 
     const { id, file } = queued;
@@ -267,12 +284,34 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       changedNote.hidden = !changed;
       applyButton.hidden = !changed;
       undoButton.hidden = !changed;
+      syncChangesBar();
     },
+    // Changes are applied by downloading them, so there's no separate step to miss.
     onApplied(applied) {
       controller.replaceOutput(applied);
-      focus(downloads.querySelector("a"));
+      const link = downloads.querySelector("a");
+      if (!link) return;
+      link.click();
+      announce(fill(t.downloadingChanges, { name: link.download }));
+      focus(link);
     },
   });
+
+  // While there are changes to download and the result card has scrolled away, a bar keeps the download in reach.
+  const changesBar = root.querySelector<HTMLElement>('[data-el="changes-bar"]');
+  const resultSummaryCard = root.querySelector<HTMLElement>(".shell-result-card");
+  let cardInView = true;
+  function syncChangesBar() {
+    if (changesBar) changesBar.hidden = !pagesChanged || cardInView;
+  }
+  if (changesBar && resultSummaryCard && "IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      cardInView = entry.isIntersecting;
+      syncChangesBar();
+    }).observe(resultSummaryCard);
+    el(changesBar, "apply-float").addEventListener("click", () => applyButton.click());
+    el(changesBar, "undo-float").addEventListener("click", () => undoButton.click());
+  }
 
   function renderOutput() {
     if (state.output === renderedOutput) return;
@@ -396,6 +435,11 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       openFileSheet(id);
       return;
     }
+    if (action === "preview") {
+      const queued = state.files.find((f) => f.id === id);
+      if (queued) void filePreview?.open(queued.file, target);
+      return;
+    }
     if (action === "remove") {
       const index = state.files.findIndex((f) => f.id === id);
       controller.removeFile(id);
@@ -410,6 +454,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     );
     focus(same ?? other);
   });
+
+  const filePreview = createFilePreview(root, tool);
 
   // --- A file's actions in a bottom sheet, on phones ---
 

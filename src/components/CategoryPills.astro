@@ -3,25 +3,32 @@ import en from "../i18n/en.json";
 import { liveHubs } from "../lib/tools";
 
 const path = Astro.url.pathname;
+const hubs = liveHubs();
 const pills = [
   { href: "/", label: en.nav.all },
-  ...liveHubs().map((hub) => ({ href: `/${hub.slug}/`, label: en.hubs[hub.id].pill })),
+  ...hubs.map((hub) => ({ href: `/${hub.slug}/`, label: en.hubs[hub.id].pill })),
 ];
+// With a single category there's nothing to filter, so the pills only appear once a second category is live.
+const show = hubs.length > 1;
 ---
 
-<nav aria-label={en.a11y.categories}>
-  <ul>
-    {
-      pills.map((pill) => (
-        <li>
-          <a href={pill.href} aria-current={path === pill.href ? "page" : undefined}>
-            {pill.label}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
-</nav>
+{
+  show && (
+    <nav aria-label={en.a11y.categories}>
+      <ul>
+        {
+          pills.map((pill) => (
+            <li>
+              <a href={pill.href} aria-current={path === pill.href ? "page" : undefined}>
+                {pill.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  )
+}
 
 <style>
   ul {

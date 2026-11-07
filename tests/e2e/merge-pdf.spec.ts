@@ -372,13 +372,13 @@ async function mergeForEditing(page: Page, first: number[], second: number[]) {
   await expect(page.getByRole("heading", { name: "Your file is ready" })).toBeVisible();
 }
 
+// One click applies the page changes and downloads the result.
 async function applyAndLoad(page: Page) {
-  await page.getByRole("button", { name: "Apply changes" }).click();
-  const link = page.getByRole("link", { name: /^Download merged\.pdf/ });
-  await expect(link).toBeVisible();
   const pending = page.waitForEvent("download");
-  await link.click();
-  return readFile(await (await pending).path());
+  await page.getByTestId("shell-result-card").getByRole("button", { name: "Download with changes" }).click();
+  const bytes = await readFile(await (await pending).path());
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+  return bytes;
 }
 
 const toolbar = (page: Page) => page.getByTestId("page-toolbar");
@@ -1219,3 +1219,161 @@ test("crop - crop mode fits a phone", async ({ page }) => {
   for (const name of ["Cancel", "Apply crop"]) await expect(viewer.getByRole("button", { name })).toBeInViewport();
   await page.screenshot({ path: `${SCREENSHOT_DIR}/crop-375.png` });
 });
+
+// --- Result layout ---
+
+test("result - one card holds the result on the left and the download on the right", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await mergeForEditing(page, [100], [200]);
+  const card = page.getByTestId("shell-result-card");
+  const heading = await card.getByRole("heading", { name: "Your file is ready" }).boundingBox();
+  const download = await card.getByRole("link", { name: /^Download merged\.pdf/ }).boundingBox();
+  expect(download?.x ?? 0).toBeGreaterThan((heading?.x ?? 0) + (heading?.width ?? 0));
+  const cardBox = await card.boundingBox();
+  const startOver = await card.getByRole("button", { name: "Start over" }).boundingBox();
+  expect((cardBox?.x ?? 0) + (cardBox?.width ?? 0) - ((startOver?.x ?? 0) + (startOver?.width ?? 0))).toBeLessThan(40);
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/result-card.png` });
+});
+
+test("result - lines separate the preview from the result and the guide", async ({ page }) => {
+  await mergeForEditing(page, [100], [200]);
+  const preview = page.locator(".shell-preview");
+  await expect(preview).toBeVisible();
+  const borders = await preview.evaluate((el) => [getComputedStyle(el).borderTopStyle, getComputedStyle(el).borderBottomStyle]);
+  expect(borders).toEqual(["solid", "solid"]);
+});
+
+for (const width of [375, 768]) {
+  test(`result - Start over answers are right-aligned at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mergeForEditing(page, [100], [200]);
+    await page.getByTestId("shell-result-bar").getByRole("button", { name: "Start over" }).click();
+    const confirm = page.locator('[data-el="result-confirm"]');
+    const box = await confirm.boundingBox();
+    const keep = await confirm.getByRole("button", { name: "Keep my file" }).boundingBox();
+    const yes = await confirm.getByRole("button", { name: "Yes, start over" }).boundingBox();
+    expect((box?.x ?? 0) + (box?.width ?? 0) - ((keep?.x ?? 0) + (keep?.width ?? 0))).toBeLessThan(24);
+    expect(Math.abs((yes?.y ?? 0) - (keep?.y ?? 0))).toBeLessThan(2);
+    // On phones the docked bar steps aside while the question is open.
+    if (width < 600) await expect(page.getByTestId("shell-result-bar")).toBeHidden();
+    await expect(confirm.getByRole("button", { name: "Keep my file" })).toBeInViewport();
+  });
+}
+
+// --- Unsaved page changes ---
+
+test("changes - Download with changes takes the place of Download, and one click gets the edited file", async ({ page }) => {
+  await mergeForEditing(page, [100], [200, 210]);
+  await select(page, 1).check();
+  await toolbar(page).getByRole("button", { name: "Remove", exact: false }).first().click();
+  const card = page.getByTestId("shell-result-card");
+  await expect(card.getByRole("button", { name: "Download with changes" })).toBeVisible();
+  await expect(card.getByText("Your download will include them.")).toBeVisible();
+  expect(await pageWidths(await applyAndLoad(page))).toEqual([200, 210]);
+  await expect(page.getByTestId("shell-live")).toContainText("Downloading merged.pdf with your changes.");
+  await expect(card.getByRole("button", { name: "Download with changes" })).toBeHidden();
+});
+
+test("changes - a floating bar keeps the download in reach while scrolling the pages", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+  const bar = page.getByTestId("changes-bar");
+  await select(page, 2).check();
+  await page.getByTestId("page-toolbar").getByRole("button", { name: /Rotate/ }).first().click();
+  // While the result card is on screen, its own buttons are enough.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(bar).toBeHidden();
+  await page.locator(".shell-pages li").last().scrollIntoViewIfNeeded();
+  await expect(bar).toBeVisible();
+  await expect(bar).toBeInViewport();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/changes-bar.png` });
+  const pending = page.waitForEvent("download");
+  await bar.getByRole("button", { name: "Download with changes" }).click();
+  await pending;
+  await expect(bar).toBeHidden();
+});
+
+test("changes - the floating bar's Undo asks first, like the card's", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 700 });
+  await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+  await select(page, 2).check();
+  await page.getByTestId("page-toolbar").getByRole("button", { name: /Rotate/ }).first().click();
+  await page.locator(".shell-pages li").last().scrollIntoViewIfNeeded();
+  await page.getByTestId("changes-bar").getByRole("button", { name: "Undo changes" }).click();
+  await page.getByRole("button", { name: "Yes, undo changes" }).click();
+  await expect(page.getByTestId("changes-bar")).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Download merged\.pdf/ })).toBeVisible();
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`changes - the floating bar has no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await mergeForEditing(page, Array.from({ length: 12 }, () => 100), [200]);
+    await select(page, 2).check();
+    await page.getByTestId("page-toolbar").getByRole("button", { name: /Rotate/ }).first().click();
+    await page.locator(".shell-pages li").last().scrollIntoViewIfNeeded();
+    await expect(page.getByTestId("changes-bar")).toBeVisible();
+    const { violations } = await new AxeBuilder({ page }).analyze();
+    expect(violations.map((v) => v.id)).toEqual([]);
+  });
+}
+
+// --- Previewing a chosen file ---
+
+test("file preview - the thumbnail opens the file page by page, and Escape returns to it", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200, 210])]);
+  const thumb = page.getByRole("button", { name: "Preview b.pdf" });
+  await expect(thumb.locator("img")).toBeVisible();
+  await thumb.click();
+  const viewer = page.getByRole("dialog", { name: "b.pdf" });
+  await expect(viewer).toBeVisible();
+  await expect(viewer.getByText("Page 1 of 2")).toBeVisible();
+  await expect.poll(() => viewer.locator("img").evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await expect(viewer.getByRole("button", { name: "Previous page" })).toBeDisabled();
+  await viewer.getByRole("button", { name: "Next page" }).click();
+  await expect(viewer.getByText("Page 2 of 2")).toBeVisible();
+  await page.keyboard.press("ArrowLeft");
+  await expect(viewer.getByText("Page 1 of 2")).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/file-preview.png` });
+  await page.keyboard.press("Escape");
+  await expect(viewer).toBeHidden();
+  await expect(thumb).toBeFocused();
+  // Previewing changes nothing in the list.
+  await expect(page.getByTestId("shell-file")).toHaveCount(2);
+});
+
+test("file preview - pointing at a thumbnail shows an eye", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  const thumb = page.getByRole("button", { name: "Preview a.pdf" });
+  const eye = thumb.locator(".shell-thumb-eye");
+  await expect(eye).toHaveCSS("opacity", "0");
+  await thumb.hover();
+  await expect(eye).toHaveCSS("opacity", "1");
+  expect(await thumb.evaluate((el) => getComputedStyle(el).cursor)).toBe("zoom-in");
+});
+
+test("file preview - a password-protected file can't be opened", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([
+    { name: "locked.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makeEncryptedPdf()) },
+    await pdf("b.pdf", [200]),
+  ]);
+  await expect(page.getByTestId("shell-file").first()).toContainText("Has a password");
+  await expect(page.getByRole("button", { name: "Preview locked.pdf" })).toBeDisabled();
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`file preview - has no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.goto(PAGE);
+    await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+    await page.getByRole("button", { name: "Preview a.pdf" }).click();
+    await expect(page.getByRole("dialog", { name: "a.pdf" }).getByText("Page 1 of 1")).toBeVisible();
+    const { violations } = await new AxeBuilder({ page }).analyze();
+    expect(violations.map((v) => v.id)).toEqual([]);
+  });
+}

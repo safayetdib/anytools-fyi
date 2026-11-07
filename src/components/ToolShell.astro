@@ -134,32 +134,55 @@ const limits = isFiles
   </section>
 
   <section data-screen="result" hidden>
-    <div class="shell-done">
-      <svg class="shell-tick" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-        <circle cx="20" cy="20" r="18" fill="var(--color-accent)" />
-        <path d="m12 20.5 5.5 5.5L28 15" fill="none" stroke="var(--color-on-accent)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-      <h2 class="shell-heading" tabindex="-1" data-el="result-heading">{t.resultOne}</h2>
-    </div>
-    <p class="shell-summary" data-el="summary"></p>
-    <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
-    <div class="shell-result-bar" data-testid="shell-result-bar">
-      <p class="shell-changed" data-el="changed" hidden>{t.changedNote}</p>
-      <ul class="shell-downloads" data-el="downloads"></ul>
-      <div class="shell-actions">
-        <button class="shell-primary shell-apply" type="button" data-el="apply" hidden>{t.apply}</button>
-        <button class="shell-secondary" type="button" data-el="undo" hidden>{t.undo}</button>
-        <button class="shell-secondary" type="button" data-el="copy" hidden>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
-          {t.copy}
-        </button>
-        <button class="shell-secondary" type="button" data-el="reset">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" /><path d="M3 21v-5h5" /></svg>
-          {isFiles ? t.startOver : t.editInput}
-        </button>
+    <div class="shell-result-card" data-testid="shell-result-card">
+      <div class="shell-result-head">
+        <div class="shell-done">
+          <svg class="shell-tick" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="20" r="18" fill="var(--color-accent)" />
+            <path d="m12 20.5 5.5 5.5L28 15" fill="none" stroke="var(--color-on-accent)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <h2 class="shell-heading" tabindex="-1" data-el="result-heading">{t.resultOne}</h2>
+        </div>
+        <p class="shell-summary" data-el="summary"></p>
+      </div>
+      <div class="shell-result-bar" data-testid="shell-result-bar">
+        <p class="shell-changed" data-el="changed" hidden>{t.changedNote}</p>
+        <ul class="shell-downloads" data-el="downloads"></ul>
+        <div class="shell-actions">
+          <button class="shell-primary shell-apply" type="button" data-el="apply" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="m7 10 5 5 5-5" /><path d="M4 20h16" /></svg>
+            <span data-el="apply-label">{t.apply}</span>
+          </button>
+          <button class="shell-secondary" type="button" data-el="undo" hidden>{t.undo}</button>
+          <button class="shell-secondary" type="button" data-el="copy" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
+            {t.copy}
+          </button>
+          <button class="shell-secondary" type="button" data-el="reset">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" /><path d="M3 21v-5h5" /></svg>
+            {isFiles ? t.startOver : t.editInput}
+          </button>
+        </div>
       </div>
     </div>
+    <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
     {isFiles && <ShellConfirm name="result-confirm" />}
+    {
+      isFiles && (
+        <div class="shell-changes-bar" role="region" aria-label={t.changesBarLabel} data-el="changes-bar" data-testid="changes-bar" hidden>
+          <p class="shell-changes-text">{t.changesBar}</p>
+          <div class="shell-changes-actions">
+            <button class="shell-secondary" type="button" data-el="undo-float">
+              {t.undo}
+            </button>
+            <button class="shell-primary" type="button" data-el="apply-float">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="m7 10 5 5 5-5" /><path d="M4 20h16" /></svg>
+              {t.apply}
+            </button>
+          </div>
+        </div>
+      )
+    }
     <section class="shell-preview" data-el="preview" aria-labelledby="shell-preview-heading" hidden>
       <h3 id="shell-preview-heading">{t.previewHeading}</h3>
       <p class="shell-hint" data-el="preview-note">{t.previewNote}</p>
@@ -260,6 +283,34 @@ const limits = isFiles
           {t.sheetRemove}
         </button>
         <button class="shell-secondary shell-sheet-cancel" type="button" data-sheet="cancel">{t.sheetCancel}</button>
+      </dialog>
+    )
+  }
+
+  {
+    isFiles && (
+      <dialog class="shell-viewer shell-file-viewer" data-el="file-viewer" aria-labelledby="shell-fv-name">
+        <div class="shell-viewer-head">
+          <div class="shell-fv-heading">
+            <p class="shell-viewer-title shell-fv-name" id="shell-fv-name" data-el="fv-name" />
+            <p class="shell-fv-page" data-el="fv-page" aria-live="polite" />
+          </div>
+          <button class="shell-icon-button" type="button" data-el="fv-close" aria-label={t.close}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12" /><path d="M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div class="shell-viewer-stage">
+          <div class="shell-fv-scroll" data-el="fv-scroll">
+            <img class="shell-fv-image" data-el="fv-image" alt="" />
+            <p class="shell-fv-status" data-el="fv-status" hidden />
+          </div>
+          <button class="shell-viewer-nav shell-viewer-prev" type="button" data-el="fv-prev" aria-label={t.previous}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <button class="shell-viewer-nav shell-viewer-next" type="button" data-el="fv-next" aria-label={t.next}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
       </dialog>
     )
   }
@@ -636,9 +687,12 @@ const limits = isFiles
     }
   }
 
+  /* The answers sit on the right, and stay there when the card wraps onto two lines. */
   .shell-confirm-actions {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: var(--space-sm);
   }
 
@@ -885,6 +939,113 @@ const limits = isFiles
     background: var(--color-bg);
   }
 
+  /* A thumbnail that opens the file's preview: a darker veil and an eye show it can be opened. */
+  button.shell-thumb {
+    position: relative;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    cursor: zoom-in;
+  }
+
+  button.shell-thumb:disabled {
+    cursor: default;
+  }
+
+  /* A slightly larger tap area than the small picture, for fingers. */
+  button.shell-thumb::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  .shell-thumb-eye {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(7 36 27 / 0.55);
+    color: #ffffff;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .shell-thumb-eye svg {
+    transform: scale(0.8);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  button.shell-thumb:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  button.shell-thumb:not(:disabled):focus-visible .shell-thumb-eye {
+    opacity: 1;
+  }
+
+  button.shell-thumb:not(:disabled):focus-visible .shell-thumb-eye svg {
+    transform: scale(1);
+  }
+
+  @media (hover: hover) {
+    button.shell-thumb:not(:disabled):hover .shell-thumb-eye {
+      opacity: 1;
+    }
+
+    button.shell-thumb:not(:disabled):hover .shell-thumb-eye svg {
+      transform: scale(1);
+    }
+  }
+
+  /* The file preview: the page fits the space, with arrows over its sides. */
+  .shell-fv-heading {
+    display: grid;
+    min-width: 0;
+  }
+
+  .shell-fv-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shell-fv-page {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .shell-fv-scroll {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: var(--space-md);
+    touch-action: pan-y;
+  }
+
+  .shell-fv-image {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    background: #ffffff;
+    box-shadow: 0 6px 24px -10px rgb(0 0 0 / 0.5);
+  }
+
+  .shell-fv-image:not([src]) {
+    display: none;
+  }
+
+  .shell-fv-status {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-align: center;
+  }
+
   .shell-thumb img {
     width: 100%;
     height: 100%;
@@ -917,8 +1078,12 @@ const limits = isFiles
     color: var(--color-text-muted);
   }
 
+  /* Lines above and below the preview split the page into result, preview and guide. */
   .shell-preview {
     margin-top: var(--space-2xl);
+    padding-block: var(--space-2xl);
+    border-top: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   .shell-preview h3 {
@@ -1342,9 +1507,37 @@ const limits = isFiles
       min-width: 12rem;
     }
 
-    /* After a result, the download and its follow-up actions sit side by side. */
-    .shell-result-bar {
-      justify-content: flex-start;
+    /* The result is one card: what was made on the left, the download and next steps on the right. */
+    .shell-result-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md) var(--space-xl);
+      padding: var(--space-lg);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      background: var(--color-surface);
+    }
+
+    .shell-result-head {
+      min-width: 0;
+    }
+
+    .shell-result-head .shell-summary {
+      margin: 0;
+    }
+
+    .shell-result-card .shell-result-bar {
+      justify-content: flex-end;
+      margin: 0 0 0 auto;
+      padding: 0;
+      border: 0;
+      background: none;
+    }
+
+    .shell-result-card .shell-changed {
+      text-align: right;
     }
 
     .shell-result-bar .shell-actions {
@@ -1779,6 +1972,74 @@ const limits = isFiles
       font-size: 1.25rem;
     }
   }
+  /* Unsaved page changes: a floating bar, styled like the Merge bar, keeps the download in reach while the
+     result card is scrolled away. Phones already dock these buttons, so they don't get it. */
+  .shell-changes-bar {
+    position: fixed;
+    bottom: var(--space-md);
+    left: 50%;
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-lg);
+    width: min(76rem, calc(100% - 2 * var(--space-lg)));
+    padding: 0.75rem var(--space-md) 0.75rem var(--space-lg);
+    border: 2px solid var(--color-bar-border);
+    border-radius: var(--radius-card);
+    background: var(--color-bar);
+    color: var(--color-on-bar);
+    box-shadow: 0 -6px 24px -12px rgb(0 0 0 / 0.45);
+    transform: translateX(-50%);
+  }
+
+  .shell-changes-text {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .shell-changes-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-left: auto;
+  }
+
+  .shell-changes-bar .shell-primary {
+    background: var(--color-bar-action);
+    color: var(--color-on-bar-action);
+  }
+
+  .shell-changes-bar .shell-secondary {
+    border-color: var(--color-on-bar);
+    background: transparent;
+    color: var(--color-on-bar);
+  }
+
+  .shell-changes-bar :focus-visible {
+    outline-color: var(--color-on-bar);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shell-changes-bar:not([hidden]) {
+      animation: shell-changes-in var(--dur-slow) var(--ease-out);
+    }
+
+    @keyframes shell-changes-in {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 12px);
+      }
+    }
+  }
+
+  @media (max-width: 599px) {
+    .shell-changes-bar {
+      display: none !important;
+    }
+  }
+
   /* --- Phone app layout. Wider screens keep the layout above. --- */
 
   .shell-steps,
@@ -2034,6 +2295,17 @@ const limits = isFiles
       font-size: 0.9375rem;
     }
 
+    /* While a "Start over?" question is open, it's the only decision on screen, so the docked bar steps aside. */
+    .shell:has([data-el="clear-confirm"]:not([hidden])) .shell-run-row,
+    .shell:has([data-el="result-confirm"]:not([hidden])) .shell-result-bar {
+      display: none;
+    }
+
+    .shell-confirm-actions .shell-secondary {
+      padding-inline: var(--space-md);
+      font-size: 0.9375rem;
+    }
+
     /* While pages are selected, their tools take the bottom of the screen. */
     .shell:has([data-el="selection-actions"]:not([hidden])) .shell-result-bar {
       display: none;
@@ -2108,6 +2380,10 @@ const limits = isFiles
 
     .shell-viewer-stage {
       background: var(--color-stage);
+    }
+
+    .shell-fv-status {
+      color: var(--color-on-bar);
     }
 
     .shell-viewer-scroll {

@@ -1,11 +1,11 @@
 ---
 layout: ../layouts/InfoLayout.astro
 title: "About AnyTools"
-description: "Who runs AnyTools, why we build free everyday tools for PDFs, images and text, and how we handle your files."
+description: "Who runs AnyTools, why we build free tools for everyday PDF jobs, and how we handle your files when you use them."
 updated: "2026-11-06"
 ---
 
-AnyTools is a set of free everyday tools for files, images and text, with no signup and no watermarks.
+AnyTools is a set of free tools for everyday PDF jobs, with no signup and no watermarks. We add new tools one at a time, once each one is ready.
 
 ## Why we built it
 

@@ -98,3 +98,27 @@ test("consent - a finished merge is announced without any file details", async (
   await expect(page.getByRole("heading", { name: "Your file is ready" })).toBeVisible();
   expect(await page.evaluate(() => (window as unknown as { done: unknown[] }).done)).toEqual([null]);
 });
+
+test("consent - the card springs in and drops away when answered", async ({ page }) => {
+  await page.goto("/");
+  const card = banner(page);
+  await expect(card).toBeVisible();
+  expect(await card.evaluate((el) => getComputedStyle(el).animationName)).toBe("consent-in");
+  await card.getByRole("button", { name: "Decline" }).click();
+  await expect(card).toHaveAttribute("data-leaving", "");
+  await expect(card).toBeHidden();
+});
+
+test("consent - with reduced motion the card appears and goes without animation", async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: "reduce", storageState: { cookies: [], origins: [] } });
+  const page = await context.newPage();
+  await page.goto("http://127.0.0.1:4329/");
+  const card = banner(page);
+  await expect(card).toBeVisible();
+  expect(await card.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+  await card.getByRole("button", { name: "Accept" }).click();
+  await expect(card).toBeHidden();
+  // It went straight away, with no exit animation in between.
+  expect(await page.locator("[data-consent]").getAttribute("data-leaving")).toBeNull();
+  await context.close();
+});

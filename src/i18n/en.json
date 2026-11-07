@@ -2,8 +2,8 @@
   "site": {
     "brand": "AnyTools",
     "name": "AnyTools.fyi",
-    "tagline": "Free, fast tools for everyday jobs: merge PDFs, shrink photos, format text and more. No signup, no watermarks and no limits.",
-    "title": "AnyTools.fyi: Free Online Tools for PDFs, Images and More"
+    "tagline": "Free online PDF tools for everyday jobs: merge, split, organize and convert PDFs on any phone or computer. No signup, no watermarks.",
+    "title": "AnyTools.fyi: Free Online PDF Tools, No Signup"
   },
   "a11y": {
     "skipToContent": "Skip to main content",
@@ -22,7 +22,7 @@
     "quick": [
       "merge-pdf",
       "split-pdf",
-      "compress-image"
+      "jpg-to-pdf"
     ],
     "tabs": {
       "label": "Quick links",
@@ -34,7 +34,7 @@
     "soon": "Soon"
   },
   "footer": {
-    "promise": "Free tools for everyday jobs. No signup, no watermarks.",
+    "promise": "Free PDF tools for everyday jobs. No signup, no watermarks.",
     "tools": "Tools",
     "company": "Company",
     "legal": "Legal",
@@ -48,8 +48,8 @@
     "credits": "Credits"
   },
   "home": {
-    "heading": "Free tools that get everyday jobs done in seconds",
-    "lead": "Merge PDFs, shrink photos for forms, format code and more. No signup, no watermarks and no limits, on any phone or computer.",
+    "heading": "Free PDF tools that get the job done in seconds",
+    "lead": "Merge, split, organize and convert PDFs in a few taps. No signup, no watermarks and no limits, on any phone or computer.",
     "toolsHeading": "Tools",
     "why": {
       "heading": "Why people choose AnyTools",
@@ -75,16 +75,16 @@
     }
   },
   "allTools": {
-    "title": "All Tools: Free PDF, Image and Text Tools | AnyTools.fyi",
+    "title": "All PDF Tools: Free, No Signup | AnyTools.fyi",
     "heading": "All tools",
-    "description": "Browse every free AnyTools tool by category, from PDF and image tools to text, language and developer tools. No signup, no watermarks."
+    "description": "Every free AnyTools PDF tool in one place: merge, split, organize, rotate and convert PDFs. No signup and no watermarks."
   },
   "hubs": {
     "pdf": {
       "name": "PDF tools",
       "pill": "PDF",
       "title": "Free PDF Tools Online: Merge, Split, Convert | AnyTools.fyi",
-      "description": "Free online PDF tools to merge, split and convert PDF files in a few taps. No signup and no watermarks, on any phone or computer."
+      "description": "Free online PDF tools to merge, split, organize, rotate and convert PDF files. No signup and no watermarks, on any phone or computer."
     },
     "image": {
       "name": "Image tools",
@@ -124,92 +124,41 @@
       "title": "Merge PDF Files Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Merge PDF files online for free. Combine PDFs in any order, then rotate, crop, reorder or remove pages. No signup, no watermark, nothing uploaded."
     },
-    "compress-image": {
-      "name": "Compress image",
-      "description": "Make photos smaller for email, forms and websites."
-    },
     "split-pdf": {
       "name": "Split PDF",
-      "description": "Pull out the pages you need, or break a PDF into parts."
+      "description": "Break a PDF into several files, by page range or one file per page."
     },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
-      "description": "Turn JPG and PNG images into a single PDF."
+      "description": "Turn JPG and PNG images into one PDF, in the order you choose."
     },
     "pdf-to-jpg": {
       "name": "PDF to JPG",
-      "description": "Save each PDF page as a separate image."
+      "description": "Save each PDF page as a sharp JPG image."
     },
-    "number-to-bangla-words": {
-      "name": "Number to Bangla words",
-      "description": "Write any number or taka amount in Bangla words."
+    "organize-pdf": {
+      "name": "Organize PDF",
+      "description": "Reorder, rotate and delete pages to put a PDF in order."
     },
-    "resize-image": {
-      "name": "Resize image",
-      "description": "Change a photo's width and height in pixels."
+    "rotate-pdf": {
+      "name": "Rotate PDF",
+      "description": "Turn sideways or upside-down pages the right way up."
     },
-    "compress-image-to-20kb": {
-      "name": "Compress image to 20 KB",
-      "description": "Shrink a photo to fit a 20 KB upload limit.",
-      "size": "20 KB"
+    "remove-pdf-pages": {
+      "name": "Remove PDF pages",
+      "description": "Delete the pages you don't need and keep the rest."
     },
-    "compress-image-to-50kb": {
-      "name": "Compress image to 50 KB",
-      "description": "Shrink a photo to fit a 50 KB upload limit.",
-      "size": "50 KB"
+    "extract-pdf-pages": {
+      "name": "Extract PDF pages",
+      "description": "Save just the pages you choose as a new PDF."
     },
-    "compress-image-to-100kb": {
-      "name": "Compress image to 100 KB",
-      "description": "Shrink a photo to fit a 100 KB upload limit.",
-      "size": "100 KB"
+    "add-page-numbers": {
+      "name": "Add page numbers",
+      "description": "Number the pages of a PDF, in the position and style you choose."
     },
-    "photo-signature-resizer": {
-      "name": "Photo and signature resizer",
-      "description": "Prepare photos and signatures for form uploads."
-    },
-    "convert-image": {
-      "name": "Convert image",
-      "description": "Switch images between PNG, JPG and WebP."
-    },
-    "heic-to-jpg": {
-      "name": "HEIC to JPG",
-      "description": "Convert iPhone photos so they work everywhere."
-    },
-    "remove-image-metadata": {
-      "name": "Remove image metadata",
-      "description": "Strip location and camera details from photos."
-    },
-    "qr-code-generator": {
-      "name": "QR code generator",
-      "description": "Create a QR code for a link or text."
-    },
-    "bijoy-to-unicode": {
-      "name": "Bijoy to Unicode",
-      "description": "Convert Bijoy Bangla text to standard Unicode."
-    },
-    "bangla-date-converter": {
-      "name": "Bangla date converter",
-      "description": "Convert dates between the Bangla and English calendars."
-    },
-    "json-formatter": {
-      "name": "JSON formatter",
-      "description": "Format JSON and find errors in it."
-    },
-    "base64-encode-decode": {
-      "name": "Base64 encode and decode",
-      "description": "Convert text to and from Base64, including Bangla."
-    },
-    "password-generator": {
-      "name": "Password generator",
-      "description": "Create strong random passwords on your device."
-    },
-    "word-counter": {
-      "name": "Word counter",
-      "description": "Count words and characters in Bangla and English."
-    },
-    "age-calculator": {
-      "name": "Age calculator",
-      "description": "Work out an age or the time between two dates."
+    "add-watermark": {
+      "name": "Add watermark",
+      "description": "Stamp text like Draft or Confidential across your PDF pages."
     }
   },
   "shell": {
@@ -268,9 +217,9 @@
     "viewerLabel": "Page preview",
     "previewFailed": "The preview couldn't be shown, but your file is ready to download.",
     "previewNoteEditable": "Check the pages before you download. Select pages to change them, or select a page image to see it larger.",
-    "changedNote": "You've changed the pages. Apply the changes to update your download.",
-    "apply": "Apply changes",
-    "applying": "Applying changes…",
+    "changedNote": "You've changed the pages. Your download will include them.",
+    "apply": "Download with changes",
+    "applying": "Preparing your download…",
     "undo": "Undo changes",
     "pageMoved": "Page moved to position {position}.",
     "lastPage": "A PDF needs at least one page, so this page stays.",
@@ -354,7 +303,12 @@
     "swipeHint": "Swipe for the next page",
     "rotateLeftShort": "Left",
     "rotateRightShort": "Right",
-    "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first."
+    "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first.",
+    "changesBar": "You've changed the pages",
+    "changesBarLabel": "Page changes",
+    "downloadingChanges": "Downloading {name} with your changes.",
+    "previewFile": "Preview {name}",
+    "previewLoading": "Loading the preview…"
   },
   "toolPage": {
     "leadFiles": "Free, with no signup and no watermarks.",
@@ -385,7 +339,7 @@
     "description": "This page doesn't exist on AnyTools. Try one of our free tools, or see the full list."
   },
   "info": {
-    "draft": "Draft: this page will be finished and reviewed before the site launches.",
+    "draft": "Draft: this page is still being written.",
     "updated": "Last updated"
   },
   "search": {
@@ -440,7 +394,7 @@
     "privacyLink": "How to check this yourself"
   },
   "meta": {
-    "imageAlt": "AnyTools: free tools for everyday jobs, on any phone or computer",
+    "imageAlt": "AnyTools: free PDF tools for everyday jobs, on any phone or computer",
     "toolImageAlt": "{name} on AnyTools: {description}"
   },
   "card": {
