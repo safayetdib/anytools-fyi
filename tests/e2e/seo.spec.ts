@@ -55,8 +55,8 @@ test("seo - the sitemap lists only indexable pages", async ({ request }) => {
   expect(xml).toContain("<loc>https://anytools.fyi/privacy/</loc>");
 });
 
-test("seo - the cookies and privacy pages are published", async ({ page }) => {
-  for (const path of ["/cookies/", "/privacy/"]) {
+test("seo - the cookies, privacy and contact pages are published", async ({ page }) => {
+  for (const path of ["/cookies/", "/privacy/", "/contact/"]) {
     await page.goto(path);
     expect(await meta(page, "robots"), path).toContain("index, follow");
     await expect(page.getByText(/^Draft:/), path).toHaveCount(0);
@@ -79,4 +79,17 @@ test("seo - icons and the manifest are complete", async ({ request }) => {
   }
   const manifest = await (await request.get("/site.webmanifest")).json();
   expect(manifest.icons.some((icon: { purpose?: string }) => icon.purpose === "maskable")).toBe(true);
+});
+
+test("seo - the homepage names the founder for search engines", async ({ page }) => {
+  await page.goto("/");
+  const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
+  const org = blocks.map((text) => JSON.parse(text)).find((data) => data["@type"] === "Organization");
+  expect(org.founder).toMatchObject({
+    "@type": "Person",
+    name: "Safayet Adib",
+    sameAs: ["https://safayetadib.com/", "https://www.linkedin.com/in/safayetdib/"],
+  });
+  expect(await page.locator('meta[property="og:site_name"]').getAttribute("content")).toBe("AnyTools");
+  await expect(page.locator('link[rel="icon"][sizes="192x192"]')).toHaveAttribute("href", "/icon-192.png");
 });
