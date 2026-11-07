@@ -40,5 +40,12 @@
       }
     ],
     "vars": { "RATING_SALT": "preview-only" }
+  },
+  // Keeps the Worker's logs, including each daily refresh, in the Cloudflare dashboard.
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
   }
 }
