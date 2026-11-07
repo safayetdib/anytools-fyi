@@ -2,6 +2,7 @@
 import en from "../i18n/en.json";
 import { fill } from "../i18n/format";
 import { formatSize } from "../lib/files";
+import { toolBySlug } from "../lib/tools";
 import type { ToolConfig } from "../lib/shell/types";
 import ShellConfirm from "./ShellConfirm.astro";
 
@@ -13,6 +14,11 @@ interface Props {
 
 const { config, selectLabel = "", runLabel } = Astro.props;
 const t = en.shell;
+const r = en.rating;
+// Only live tools ask for a rating.
+const slug = Astro.params.tool;
+const rateName = slug && toolBySlug(slug)?.built ? (en.tools as Record<string, { name: string }>)[slug]?.name : undefined;
+const STAR = "M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z";
 const isFiles = config.mode === "files";
 const limits = isFiles
   ? fill(config.minFiles > 1 ? t.limitsMin : t.limits, {
@@ -144,6 +150,25 @@ const limits = isFiles
           <h2 class="shell-heading" tabindex="-1" data-el="result-heading">{t.resultOne}</h2>
         </div>
         <p class="shell-summary" data-el="summary"></p>
+        {
+          rateName && (
+            <div class="shell-rate" role="group" aria-labelledby="shell-rate-label" data-rate={slug} data-testid="shell-rate">
+              <p class="shell-rate-label" id="shell-rate-label">
+                {fill(r.ask, { tool: rateName })}
+              </p>
+              <div class="shell-rate-stars">
+                {[1, 2, 3, 4, 5].map((score) => (
+                  <button class="shell-star" type="button" data-score={score} aria-pressed="false" aria-label={fill(r.star, { score })}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={STAR} />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+              <p class="shell-rate-status" data-el="rate-status" aria-live="polite" />
+            </div>
+          )
+        }
       </div>
       <div class="shell-result-bar" data-testid="shell-result-bar">
         <p class="shell-changed" data-el="changed" hidden>{t.changedNote}</p>
@@ -1076,6 +1101,99 @@ const limits = isFiles
   .shell-summary {
     margin: 0 0 var(--space-md);
     color: var(--color-text-muted);
+  }
+
+  /* One tap rates the tool. Stars fill up to the one pointed at, then to the chosen score. */
+  .shell-rate {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--space-sm);
+    margin-top: var(--space-md);
+  }
+
+  .shell-rate-label {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .shell-rate-stars {
+    display: flex;
+    margin-inline: -8px;
+  }
+
+  .shell-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-button);
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+
+  .shell-star svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linejoin: round;
+    transition:
+      transform 160ms var(--ease-out),
+      fill 160ms var(--ease-out);
+  }
+
+  .shell-star.is-on,
+  .shell-rate-stars:has(.shell-star:hover) .shell-star {
+    color: var(--color-star);
+  }
+
+  .shell-star.is-on svg,
+  .shell-rate-stars:has(.shell-star:hover) .shell-star svg {
+    fill: currentColor;
+  }
+
+  .shell-rate-stars:has(.shell-star:hover) .shell-star:hover ~ .shell-star {
+    color: var(--color-text-muted);
+  }
+
+  .shell-rate-stars:has(.shell-star:hover) .shell-star:hover ~ .shell-star svg {
+    fill: none;
+  }
+
+  .shell-star:hover svg,
+  .shell-star.is-picked svg {
+    transform: scale(1.15);
+  }
+
+  .shell-rate-status {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .shell-rate-status:empty {
+    display: none;
+  }
+
+  .shell-rate-status.is-problem {
+    color: var(--color-warning);
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shell-star svg {
+      transition: none;
+    }
+
+    .shell-star:hover svg,
+    .shell-star.is-picked svg {
+      transform: none;
+    }
   }
 
   /* Lines above and below the preview split the page into result, preview and guide. */

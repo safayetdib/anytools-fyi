@@ -14,6 +14,7 @@ export default defineConfig({
     command: "npx astro build && npx astro preview --host 127.0.0.1 --port 4329 --ignore-lock",
     url: baseURL,
     reuseExistingServer: false,
-    env: { SHELL_DEMO: "1" },
+    // Builds the pages with a fixed set of ratings, so tests never read the live scores.
+    env: { SHELL_DEMO: "1", RATINGS_FILE: "tests/fixtures/ratings.json" },
   },
 });

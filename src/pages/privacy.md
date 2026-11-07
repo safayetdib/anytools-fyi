@@ -21,6 +21,12 @@ It never receives your files, file names, page counts or anything you type. We'v
 
 If you choose **Decline**, or make no choice, Google Analytics isn't loaded and nothing is sent to Google. [Cookies](/cookies/) lists every cookie and what it's for.
 
+## Ratings
+
+When a tool finishes, you can rate it from 1 to 5 stars. Only the score is sent, with a random id your browser makes when you first rate. That id lets you change your rating instead of adding a second one.
+
+We store the score, the date and a scrambled (salted and hashed) version of that id. Your IP address is never stored. To stop one connection flooding a tool with ratings, we keep a scrambled code made from your IP address, the tool and the day, which can't be turned back into the address. Ratings are counted only as totals and averages, which appear on each tool's page and in search results. They aren't sent to Google Analytics.
+
 ## Hosting
 
 The site is served by Cloudflare. Like any web host, Cloudflare handles your IP address to deliver pages and protect the site from attacks.

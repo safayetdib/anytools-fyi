@@ -405,6 +405,18 @@
   "card": {
     "comingSoon": "Coming soon"
   },
+  "rating": {
+    "ask": "How was {tool}?",
+    "star": "{score} out of 5",
+    "sending": "Sending your rating…",
+    "thanks": "Thanks! You rated it {score} out of 5.",
+    "failed": "Couldn't send your rating. Please try again.",
+    "limited": "Too many ratings from your connection today. Please try again tomorrow.",
+    "summary": "{average} out of 5",
+    "countOne": "1 rating",
+    "countMany": "{count} ratings",
+    "summaryLabel": "Rated {average} out of 5 by {count} people"
+  },
   "consent": {
     "title": "Help us improve AnyTools",
     "body": "With your OK, we use Google Analytics cookies to count visits and see which tools people use. Your files and anything you type are never included.",

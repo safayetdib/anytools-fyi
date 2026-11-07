@@ -1,4 +1,5 @@
 import en from "../i18n/en.json";
+import { aggregateRatingSchema, type RatingSummary } from "./ratings";
 
 const CONTEXT = "https://schema.org";
 
@@ -74,7 +75,15 @@ export function collectionSchema(
 }
 
 export function webApplicationSchema(
-  tool: { name: string; description: string; path: string; image?: string; features?: string[]; updated?: string },
+  tool: {
+    name: string;
+    description: string;
+    path: string;
+    image?: string;
+    features?: string[];
+    updated?: string;
+    rating?: RatingSummary;
+  },
   site: URL,
 ) {
   return {
@@ -93,6 +102,7 @@ export function webApplicationSchema(
     ...(tool.image && { image: absolute(tool.image, site) }),
     ...(tool.features?.length && { featureList: tool.features }),
     ...(tool.updated && { dateModified: tool.updated }),
+    ...(tool.rating && { aggregateRating: aggregateRatingSchema(tool.rating) }),
   };
 }
 

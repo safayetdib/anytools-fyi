@@ -5,6 +5,7 @@ import { createToolController, totalPages, type QueuedFile, type ShellState } fr
 import { createConfirm } from "./confirm";
 import { createFilePreview } from "./file-preview";
 import { createOutputPages } from "./output-pages";
+import { mountRating } from "./rating";
 import type { ToolDefinition } from "./types";
 
 const t = en.shell;
@@ -55,6 +56,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const isText = tool.config.mode === "text";
   const hasFilePreviews = Boolean(tool.previewFile);
   const canPreviewFiles = hasFilePreviews && Boolean(tool.previewOutput);
+  mountRating(root);
 
   const live = el(root, "live");
   const error = el(root, "error");

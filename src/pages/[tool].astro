@@ -14,6 +14,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { getEntry, render } from "astro:content";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import { breadcrumbSchema, faqSchema, howToSchema, webApplicationSchema } from "../lib/schema";
+import { formatAverage, shownRating } from "../lib/ratings";
+import { loadRatings } from "../lib/ratings-source";
 import { isToolIndexable, toolMeta } from "../lib/seo";
 import { TOOLS, hubFor, isHubLive, staysOnDevice, toolBySlug, variantsOf, type Tool } from "../lib/tools";
 
@@ -56,6 +58,16 @@ const image = indexable
 const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`];
 const Diagram = diagrams[`../tools/${tool.slug}/Diagram.astro`];
 const help = await getEntry("tools", tool.slug);
+// Real ratings only, shown once there are enough of them. The same numbers go to search engines.
+const rating = indexable ? shownRating((await loadRatings())[tool.slug]) : null;
+const ratingText = rating
+  ? `${fill(en.rating.summary, { average: formatAverage(rating.average) })} · ${
+      rating.count === 1 ? en.rating.countOne : fill(en.rating.countMany, { count: rating.count })
+    }`
+  : "";
+const STARS = [0, 1, 2, 3, 4]
+  .map((index) => `<path transform="translate(${index * 24} 0)" d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z"/>`)
+  .join("");
 const Explainer = help ? (await render(help)).Content : undefined;
 const updatedLabel = help
   ? new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(new Date(help.data.updated))
@@ -75,6 +87,7 @@ const updatedLabel = help
             image: image?.path,
             features: help?.data.steps.map((step) => step.title),
             updated: help?.data.updated,
+            rating: rating ?? undefined,
           },
           site,
         )}
@@ -92,6 +105,19 @@ const updatedLabel = help
       <ToolIcon tool={tool} />
       <h1>{strings.name}</h1>
     </div>
+    {
+      rating && (
+        <p class="rating" data-testid="tool-rating">
+          <span class="rating-stars" style={`--rating: ${(rating.average / 5) * 100}%`} aria-hidden="true">
+            <svg class="rating-empty" width="100" height="20" viewBox="0 0 120 24" set:html={STARS} />
+            <span class="rating-fill">
+              <svg width="100" height="20" viewBox="0 0 120 24" set:html={STARS} />
+            </span>
+          </span>
+          <span>{ratingText}</span>
+        </p>
+      )
+    }
     <p class="lead">{strings.description} {isText ? p.leadText : p.leadFiles}</p>
 
     {
@@ -257,6 +283,42 @@ const updatedLabel = help
     align-items: center;
     gap: var(--space-md);
     margin-top: var(--space-md);
+  }
+
+  /* Partly filled stars: the gold layer is cut to the average, so 4.5 shows four and a half. */
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .rating-stars {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+  }
+
+  .rating-empty {
+    fill: none;
+    stroke: var(--color-text-muted);
+    stroke-width: 1.5;
+  }
+
+  .rating-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--rating);
+    overflow: hidden;
+  }
+
+  .rating-fill svg {
+    fill: var(--color-star);
+    stroke: var(--color-star);
+    stroke-width: 1.5;
   }
 
   .lead {
