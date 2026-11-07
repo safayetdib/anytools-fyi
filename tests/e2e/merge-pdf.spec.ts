@@ -1318,3 +1318,62 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(violations.map((v) => v.id)).toEqual([]);
   });
 }
+
+// --- Previewing a chosen file ---
+
+test("file preview - the thumbnail opens the file page by page, and Escape returns to it", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200, 210])]);
+  const thumb = page.getByRole("button", { name: "Preview b.pdf" });
+  await expect(thumb.locator("img")).toBeVisible();
+  await thumb.click();
+  const viewer = page.getByRole("dialog", { name: "b.pdf" });
+  await expect(viewer).toBeVisible();
+  await expect(viewer.getByText("Page 1 of 2")).toBeVisible();
+  await expect.poll(() => viewer.locator("img").evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await expect(viewer.getByRole("button", { name: "Previous page" })).toBeDisabled();
+  await viewer.getByRole("button", { name: "Next page" }).click();
+  await expect(viewer.getByText("Page 2 of 2")).toBeVisible();
+  await page.keyboard.press("ArrowLeft");
+  await expect(viewer.getByText("Page 1 of 2")).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/file-preview.png` });
+  await page.keyboard.press("Escape");
+  await expect(viewer).toBeHidden();
+  await expect(thumb).toBeFocused();
+  // Previewing changes nothing in the list.
+  await expect(page.getByTestId("shell-file")).toHaveCount(2);
+});
+
+test("file preview - pointing at a thumbnail shows an eye", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+  const thumb = page.getByRole("button", { name: "Preview a.pdf" });
+  const eye = thumb.locator(".shell-thumb-eye");
+  await expect(eye).toHaveCSS("opacity", "0");
+  await thumb.hover();
+  await expect(eye).toHaveCSS("opacity", "1");
+  expect(await thumb.evaluate((el) => getComputedStyle(el).cursor)).toBe("zoom-in");
+});
+
+test("file preview - a password-protected file can't be opened", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([
+    { name: "locked.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makeEncryptedPdf()) },
+    await pdf("b.pdf", [200]),
+  ]);
+  await expect(page.getByTestId("shell-file").first()).toContainText("Has a password");
+  await expect(page.getByRole("button", { name: "Preview locked.pdf" })).toBeDisabled();
+});
+
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`file preview - has no axe violations in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.goto(PAGE);
+    await picker(page).setInputFiles([await pdf("a.pdf", [100]), await pdf("b.pdf", [200])]);
+    await page.getByRole("button", { name: "Preview a.pdf" }).click();
+    await expect(page.getByRole("dialog", { name: "a.pdf" }).getByText("Page 1 of 1")).toBeVisible();
+    const { violations } = await new AxeBuilder({ page }).analyze();
+    expect(violations.map((v) => v.id)).toEqual([]);
+  });
+}

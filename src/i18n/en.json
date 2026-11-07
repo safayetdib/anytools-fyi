@@ -306,7 +306,9 @@
     "arrangeHintPhone": "Drag the dots to change the order, or tap ⋮ for more. The top file goes first.",
     "changesBar": "You've changed the pages",
     "changesBarLabel": "Page changes",
-    "downloadingChanges": "Downloading {name} with your changes."
+    "downloadingChanges": "Downloading {name} with your changes.",
+    "previewFile": "Preview {name}",
+    "previewLoading": "Loading the preview…"
   },
   "toolPage": {
     "leadFiles": "Free, with no signup and no watermarks.",

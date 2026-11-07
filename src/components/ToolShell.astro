@@ -287,6 +287,34 @@ const limits = isFiles
     )
   }
 
+  {
+    isFiles && (
+      <dialog class="shell-viewer shell-file-viewer" data-el="file-viewer" aria-labelledby="shell-fv-name">
+        <div class="shell-viewer-head">
+          <div class="shell-fv-heading">
+            <p class="shell-viewer-title shell-fv-name" id="shell-fv-name" data-el="fv-name" />
+            <p class="shell-fv-page" data-el="fv-page" aria-live="polite" />
+          </div>
+          <button class="shell-icon-button" type="button" data-el="fv-close" aria-label={t.close}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12" /><path d="M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <div class="shell-viewer-stage">
+          <div class="shell-fv-scroll" data-el="fv-scroll">
+            <img class="shell-fv-image" data-el="fv-image" alt="" />
+            <p class="shell-fv-status" data-el="fv-status" hidden />
+          </div>
+          <button class="shell-viewer-nav shell-viewer-prev" type="button" data-el="fv-prev" aria-label={t.previous}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <button class="shell-viewer-nav shell-viewer-next" type="button" data-el="fv-next" aria-label={t.next}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+      </dialog>
+    )
+  }
+
   <dialog class="shell-viewer" data-el="viewer" aria-labelledby="shell-viewer-title">
     <div class="shell-viewer-head">
       <p class="shell-viewer-title" id="shell-viewer-title" data-el="viewer-title"></p>
@@ -909,6 +937,113 @@ const limits = isFiles
     border: 1px solid var(--color-border-subtle);
     border-radius: 0.375rem;
     background: var(--color-bg);
+  }
+
+  /* A thumbnail that opens the file's preview: a darker veil and an eye show it can be opened. */
+  button.shell-thumb {
+    position: relative;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    cursor: zoom-in;
+  }
+
+  button.shell-thumb:disabled {
+    cursor: default;
+  }
+
+  /* A slightly larger tap area than the small picture, for fingers. */
+  button.shell-thumb::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  .shell-thumb-eye {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(7 36 27 / 0.55);
+    color: #ffffff;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .shell-thumb-eye svg {
+    transform: scale(0.8);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  button.shell-thumb:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  button.shell-thumb:not(:disabled):focus-visible .shell-thumb-eye {
+    opacity: 1;
+  }
+
+  button.shell-thumb:not(:disabled):focus-visible .shell-thumb-eye svg {
+    transform: scale(1);
+  }
+
+  @media (hover: hover) {
+    button.shell-thumb:not(:disabled):hover .shell-thumb-eye {
+      opacity: 1;
+    }
+
+    button.shell-thumb:not(:disabled):hover .shell-thumb-eye svg {
+      transform: scale(1);
+    }
+  }
+
+  /* The file preview: the page fits the space, with arrows over its sides. */
+  .shell-fv-heading {
+    display: grid;
+    min-width: 0;
+  }
+
+  .shell-fv-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shell-fv-page {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .shell-fv-scroll {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: var(--space-md);
+    touch-action: pan-y;
+  }
+
+  .shell-fv-image {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    background: #ffffff;
+    box-shadow: 0 6px 24px -10px rgb(0 0 0 / 0.5);
+  }
+
+  .shell-fv-image:not([src]) {
+    display: none;
+  }
+
+  .shell-fv-status {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-align: center;
   }
 
   .shell-thumb img {
@@ -2245,6 +2380,10 @@ const limits = isFiles
 
     .shell-viewer-stage {
       background: var(--color-stage);
+    }
+
+    .shell-fv-status {
+      color: var(--color-on-bar);
     }
 
     .shell-viewer-scroll {
