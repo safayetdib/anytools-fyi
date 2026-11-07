@@ -38,3 +38,8 @@ Collect honest 1–5 star ratings from people who used a tool, show the average 
 - Live: D1 `anytools-ratings`. Secret `RATING_SALT` set on the Worker.
 - Branch previews: D1 `anytools-ratings-preview` (the `previews` block in `wrangler.jsonc`), with a plain preview-only salt, so test ratings never reach the live scores.
 - A new migration must be applied to both databases. Wrangler only finds the preview database by name through a config that lists it at the top level, so apply it from a temporary config that does.
+
+## Daily refresh
+- A Cron Trigger runs the Worker once a day at 00:00 UTC.
+- If any rating was added or changed in the last 24 hours, it POSTs to the Cloudflare deploy hook for `main`, which rebuilds the site with fresh scores. Quiet days start no build.
+- The hook URL is the secret `DEPLOY_HOOK_URL`. Without it the refresh does nothing.
