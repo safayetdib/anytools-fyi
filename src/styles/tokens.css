@@ -11,6 +11,8 @@
   --color-on-accent: #ffffff;
   --color-danger: #b42318;
   --color-warning: #8a5300;
+  /* Filled rating stars. At least 3:1 against the page, like any meaningful graphic. */
+  --color-star: #b36d00;
   --color-bar: #0a6b52;
   --color-on-bar: #ffffff;
   --color-bar-border: #0a6b52;
@@ -61,6 +63,7 @@
     --color-on-accent: #07241b;
     --color-danger: #ff9b8f;
     --color-warning: #f2b654;
+    --color-star: #f2b654;
     --color-bar: #1b5e4c;
     --color-on-bar: #eaf1ee;
     --color-bar-border: #4fd1a5;
@@ -84,6 +87,7 @@
   --color-on-accent: #07241b;
   --color-danger: #ff9b8f;
   --color-warning: #f2b654;
+  --color-star: #f2b654;
   --color-bar: #1b5e4c;
   --color-on-bar: #eaf1ee;
   --color-bar-border: #4fd1a5;

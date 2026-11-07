@@ -18,13 +18,15 @@ If you choose **Decline**, Google Analytics isn't loaded at all, and nothing is 
 
 ## Kept in your browser, not cookies
 
-These never leave your device:
+These stay on your device. The only exception is the rating id, which is sent along with a rating you choose to give:
 
 | Name | What it's for |
 | --- | --- |
 | `anytools-consent` | Remembers whether you accepted or declined cookies |
 | `theme` | Remembers light or dark mode, if you chose one |
 | `logoIntro` | Plays the logo animation once per visit. It's cleared when you close the tab |
+| `anytools-voter` | A random id, made only if you rate a tool, so rating again changes your score instead of adding one |
+| `anytools-rated` | The score you gave each tool, so you can see it next time |
 
 ## Change your choice
 
