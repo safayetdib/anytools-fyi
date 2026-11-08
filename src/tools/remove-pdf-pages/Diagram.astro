@@ -1,0 +1,198 @@
+---
+import en from "../../i18n/en.json";
+import { fill } from "../../i18n/format";
+
+const d = en.removePdfPages.diagram;
+const PAGES = 6;
+---
+
+<figure class="remove-diagram" aria-labelledby="remove-diagram-caption" data-remove-diagram data-marked="3">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{fill(d.pages, { count: PAGES })}</span>
+      <span class="pages" data-source>
+        {Array.from({ length: PAGES }, (_, i) => <span class="page" data-page={i + 1}>{i + 1}</span>)}
+      </span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M6 6l1 14h10l1-14" /><path d="M10 10v6" /><path d="M14 10v6" />
+      </svg>
+      <span>{d.remove}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.output}</span>
+      <span class="doc-meta" data-result-meta></span>
+      <span class="pages" data-result></span>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-first={d.tryFirst} data-label-other={d.tryOther}>
+      {d.tryOther}
+    </button>
+  </div>
+  <figcaption id="remove-diagram-caption" aria-live="polite" data-caption-first={d.captionFirst} data-caption-other={d.captionOther}>
+    {d.captionFirst}
+  </figcaption>
+</figure>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+
+  const d = en.removePdfPages.diagram;
+  const figure = document.querySelector<HTMLElement>("[data-remove-diagram]");
+  const source = figure?.querySelector<HTMLElement>("[data-source]");
+  const result = figure?.querySelector<HTMLElement>("[data-result]");
+  const meta = figure?.querySelector<HTMLElement>("[data-result-meta]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  // Marks the sample pages to remove, and shows the pages the new file keeps.
+  function draw(removed: number[]) {
+    if (!figure || !source || !result || !meta || !caption || !toggle) return;
+    const first = removed.length === 1;
+    figure.dataset.marked = removed.join(",");
+    const pages = Array.from(source.children) as HTMLElement[];
+    pages.forEach((page) => page.toggleAttribute("data-removed", removed.includes(Number(page.dataset.page))));
+    const kept = pages.map((page) => Number(page.dataset.page)).filter((page) => !removed.includes(page));
+    result.replaceChildren(
+      ...kept.map((page) => {
+        const tile = document.createElement("span");
+        tile.className = "page";
+        tile.textContent = String(page);
+        return tile;
+      }),
+    );
+    meta.textContent = fill(d.pages, { count: kept.length });
+    caption.textContent = (first ? caption.dataset.captionFirst : caption.dataset.captionOther) ?? "";
+    toggle.textContent = (first ? toggle.dataset.labelOther : toggle.dataset.labelFirst) ?? "";
+  }
+
+  draw([3]);
+  toggle?.addEventListener("click", () => draw(figure?.dataset.marked === "3" ? [2, 5] : [3]));
+</script>
+
+<style>
+  /* The kept pages are drawn by the script below, so their styles reach past this component's own markup. */
+  .remove-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--space-xs);
+  }
+
+  :global(.remove-diagram .page) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2.6rem;
+    border-radius: 4px;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  /* A page to remove is faded and crossed out, as in the tool itself. The number stays readable. */
+  :global(.remove-diagram .page[data-removed]) {
+    border: 2px dashed var(--color-danger);
+    background: var(--color-surface);
+    color: var(--color-danger);
+    text-decoration: line-through;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.remove-diagram .page) {
+      transition: none;
+    }
+  }
+</style>

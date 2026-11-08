@@ -153,7 +153,9 @@
     },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
-      "description": "Delete the pages you don't need and keep the rest."
+      "description": "Delete the pages you don't need and keep the rest.",
+      "title": "Remove PDF Pages Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Remove pages from a PDF for free. Tap the pages you don't need, or type them like 2,5-8, and download the rest. No signup, no watermark, nothing uploaded."
     },
     "extract-pdf-pages": {
       "name": "Extract PDF pages",
@@ -472,6 +474,35 @@
     "movedRange": "Range moved to position {position}.",
     "createdTail": "will be created."
   },
+  "removePdfPages": {
+    "selectLabel": "Select a PDF file",
+    "runLabel": "Remove pages",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Select the pages to remove. The pages below show what will be removed.",
+    "panelTitle": "Remove pages",
+    "info": "Select the pages you want to remove. Hold Shift to select a range.",
+    "totalPages": "Total pages:",
+    "pagesLabel": "Pages to remove",
+    "pagesPlaceholder": "example: 1,5-8",
+    "allError": "Keep at least one page. A PDF can't be empty.",
+    "summary": "Done. Removed {removed} pages from {name}. {output} has {pages} pages ({size}).",
+    "summaryOne": "Done. Removed 1 page from {name}. {output} has {pages} pages ({size}).",
+    "summaryLeftOne": "Done. Removed {removed} pages from {name}. {output} has 1 page ({size}).",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "empty": "Select at least one page to remove.",
+    "encrypted": "{name} has a password. Remove the password, then try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged.",
+    "diagram": {
+      "file": "application.pdf",
+      "pages": "{count} pages",
+      "remove": "Removed in your browser",
+      "output": "application_removed.pdf",
+      "tryOther": "Remove pages 2 and 5 instead",
+      "tryFirst": "Remove page 3 only",
+      "captionFirst": "Page 3 is marked, so the new file keeps the other 5 pages in the same order.",
+      "captionOther": "Pages 2 and 5 are marked, so the new file keeps the other 4 pages. Your original file isn't changed."
+    }
+  },
   "theme": {
     "label": "Dark theme"
   },
@@ -526,7 +557,7 @@
     "rangeSummary": "Range {number}: pages {from} to {to}",
     "rangeSummaryOne": "Range {number}: page {page}",
     "loading": "Loading pages…",
-    "failed": "The pages couldn't be shown. You can still split the file.",
+    "failed": "The pages couldn't be shown. You can still type page numbers.",
     "zoom": "See page {page} larger"
   }
 }

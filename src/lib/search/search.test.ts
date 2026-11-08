@@ -33,6 +33,7 @@ describe("finds the closest tool", () => {
     ["separate pdf", "split-pdf"],
     ["divide a pdf", "split-pdf"],
     ["splt pdf", "split-pdf"],
+    ["পৃষ্ঠা মুছুন", "remove-pdf-pages"],
     ["jpg to pdf", "jpg-to-pdf"],
     ["jpeg to pdf", "jpg-to-pdf"],
     ["png to pdf", "jpg-to-pdf"],

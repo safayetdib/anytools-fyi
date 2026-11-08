@@ -95,8 +95,8 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["extract-pdf-pages", "organize-pdf", "split-pdf", "merge-pdf"],
-    aliases: ["delete pdf pages", "remove pages from pdf", "delete page from pdf", "erase pdf page"],
-    built: false,
+    aliases: ["delete pdf pages", "remove pages from pdf", "delete page from pdf", "erase pdf page", "পিডিএফ পৃষ্ঠা মুছুন"],
+    built: true,
     runsIn: "browser",
   },
   {

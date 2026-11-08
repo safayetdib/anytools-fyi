@@ -9,6 +9,8 @@ const ZOOM =
   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
 const TICK =
   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+const CROSS =
+  '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>';
 
 export interface GridRange {
   from: number;
@@ -19,15 +21,17 @@ interface PageGridOptions {
   list: HTMLOListElement;
   status: HTMLElement;
   open(blob: Blob): Promise<OutputPreview>;
-  // Called when someone taps a page in a selectable view.
-  onToggle?(page: number): void;
+  // Called when someone taps a page in a selectable view. `shift` is true when Shift was held, to pick a run of pages.
+  onToggle?(page: number, shift: boolean): void;
   // Called from a page's zoom button, to show that page larger.
   onZoom?(page: number, from: HTMLElement): void;
+  // How chosen pages look: a tick for pages to keep, or faded with a ✕ for pages to remove.
+  mark?: "tick" | "remove";
 }
 
 // The pages of one file, shown either as ranges (first page … last page in a dashed box)
 // or as every page with a tick. Thumbnails render only as they scroll into view, and are kept for reuse.
-export function createPageGrid({ list, status, open, onToggle, onZoom }: PageGridOptions) {
+export function createPageGrid({ list, status, open, onToggle, onZoom, mark = "tick" }: PageGridOptions) {
   let preview: OutputPreview | null = null;
   let observer: IntersectionObserver | null = null;
   let token = 0;
@@ -54,6 +58,7 @@ export function createPageGrid({ list, status, open, onToggle, onZoom }: PageGri
     pageCount = 0;
     list.replaceChildren();
     list.removeAttribute("data-view");
+    list.removeAttribute("data-mark");
     say("");
   }
 
@@ -141,7 +146,7 @@ export function createPageGrid({ list, status, open, onToggle, onZoom }: PageGri
       return;
     }
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-page]");
-    if (button && onToggle) onToggle(Number(button.dataset.page));
+    if (button && onToggle) onToggle(Number(button.dataset.page), (event as MouseEvent).shiftKey);
   });
 
   return {
@@ -209,6 +214,7 @@ export function createPageGrid({ list, status, open, onToggle, onZoom }: PageGri
     showPages(selected: Set<number>, selectable: boolean) {
       if (!pageCount) return;
       list.dataset.view = "pages";
+      list.dataset.mark = mark;
       list.setAttribute("aria-label", fill(g.label, { name: fileName }));
       const items = Array.from({ length: pageCount }, (_, index) => {
         const page = index + 1;
@@ -229,7 +235,7 @@ export function createPageGrid({ list, status, open, onToggle, onZoom }: PageGri
         const tick = document.createElement("span");
         tick.className = "page-grid-tick";
         tick.setAttribute("aria-hidden", "true");
-        tick.innerHTML = TICK;
+        tick.innerHTML = mark === "remove" ? CROSS : TICK;
         tick.hidden = !selected.has(page);
         holder.append(tick, pageCard(page));
         item.append(holder);

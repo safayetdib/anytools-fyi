@@ -209,6 +209,31 @@ const { name } = Astro.props;
     display: none;
   }
 
+  /* Pages to remove: the page fades and a large ✕ covers it, like most PDF tools show it. */
+  .page-grid-list[data-mark="remove"] .page-grid-tick {
+    inset: 0;
+    width: auto;
+    height: auto;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--color-danger);
+  }
+
+  .page-grid-list[data-mark="remove"] button.page-grid-page[aria-pressed="true"] {
+    border-color: var(--color-danger);
+  }
+
+  .page-grid-list[data-mark="remove"] [aria-pressed="true"] .page-grid-frame {
+    opacity: 0.45;
+  }
+
+  @media (hover: hover) {
+    .page-grid-list[data-mark="remove"] button.page-grid-page:hover {
+      border-color: var(--color-danger);
+    }
+  }
+
   @media (max-width: 599px) {
     .page-grid-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
