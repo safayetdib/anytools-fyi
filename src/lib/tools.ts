@@ -60,7 +60,7 @@ export const TOOLS: Tool[] = [
     input: "files",
     related: ["pdf-to-jpg", "merge-pdf", "organize-pdf", "rotate-pdf"],
     aliases: ["image to pdf", "photo to pdf", "png to pdf", "pictures to pdf", "scan to pdf", "ছবি থেকে পিডিএফ"],
-    built: false,
+    built: true,
     runsIn: "browser",
   },
   {

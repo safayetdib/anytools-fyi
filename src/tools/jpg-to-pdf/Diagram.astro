@@ -1,0 +1,216 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.jpgToPdf.diagram;
+// Three sample photos: their shapes show how Fit and A4 differ.
+const PHOTOS = [
+  { shape: "tall", colour: 1 },
+  { shape: "wide", colour: 2 },
+  { shape: "square", colour: 3 },
+];
+---
+
+<figure class="images-diagram" aria-labelledby="images-diagram-caption" data-images-diagram data-size="a4">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.photos}</span>
+      <span class="photos" aria-hidden="true">
+        {PHOTOS.map((photo) => <span class="photo" data-shape={photo.shape} data-colour={photo.colour} />)}
+      </span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+      </svg>
+      <span>{d.convert}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.output}</span>
+      <span class="pages" aria-hidden="true">
+        {
+          PHOTOS.map((photo) => (
+            <span class="page" data-shape={photo.shape}>
+              <span class="photo" data-shape={photo.shape} data-colour={photo.colour} />
+            </span>
+          ))
+        }
+      </span>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-fit={d.tryFit} data-label-a4={d.tryA4}>{d.tryFit}</button>
+  </div>
+  <figcaption id="images-diagram-caption" aria-live="polite" data-caption-fit={d.captionFit} data-caption-a4={d.captionA4}>
+    {d.captionA4}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-images-diagram]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  // Switches the result between A4 pages with a margin and pages that fit each photo.
+  toggle?.addEventListener("click", () => {
+    if (!figure || !caption) return;
+    const fit = figure.dataset.size === "a4";
+    figure.dataset.size = fit ? "fit" : "a4";
+    caption.textContent = (fit ? caption.dataset.captionFit : caption.dataset.captionA4) ?? "";
+    toggle.textContent = (fit ? toggle.dataset.labelA4 : toggle.dataset.labelFit) ?? "";
+  });
+</script>
+
+<style>
+  .images-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+  }
+
+  .photos,
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .photo {
+    display: block;
+    border-radius: 2px;
+    background: var(--part);
+  }
+
+  .photo[data-colour="1"] {
+    --part: var(--color-part-1);
+  }
+
+  .photo[data-colour="2"] {
+    --part: var(--color-part-2);
+  }
+
+  .photo[data-colour="3"] {
+    --part: var(--color-part-3);
+  }
+
+  .photo[data-shape="tall"] {
+    width: 1.8rem;
+    height: 2.4rem;
+  }
+
+  .photo[data-shape="wide"] {
+    width: 2.8rem;
+    height: 1.6rem;
+  }
+
+  .photo[data-shape="square"] {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* A4: every page is the same size, with the photo centred inside a margin. */
+  .page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 3.6rem;
+    padding: 0.3rem;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+    transition:
+      width var(--dur-base) var(--ease-out),
+      height var(--dur-base) var(--ease-out),
+      padding var(--dur-base) var(--ease-out);
+  }
+
+  .page .photo {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Fit: each page is exactly its photo. */
+  .images-diagram[data-size="fit"] .page {
+    width: auto;
+    height: auto;
+    padding: 0;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page {
+      transition: none;
+    }
+  }
+</style>

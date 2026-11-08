@@ -69,7 +69,7 @@ describe("launch registry", () => {
       "add-watermark",
     ]);
     expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
-    expect(TOOLS.filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "organize-pdf", "rotate-pdf", "remove-pdf-pages", "extract-pdf-pages"]);
+    expect(TOOLS.filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "jpg-to-pdf", "organize-pdf", "rotate-pdf", "remove-pdf-pages", "extract-pdf-pages"]);
   });
 
   it("publishes only the PDF hub", () => {

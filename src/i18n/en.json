@@ -137,7 +137,9 @@
     },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
-      "description": "Turn JPG and PNG images into one PDF, in the order you choose."
+      "description": "Turn JPG and PNG images into one PDF, in the order you choose.",
+      "title": "JPG to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert JPG, PNG and other images to PDF for free. Choose A4, Letter or the image's own size, add margins, and merge into one PDF. No signup, nothing uploaded."
     },
     "pdf-to-jpg": {
       "name": "PDF to JPG",
@@ -613,6 +615,51 @@
       "tryBefore": "Show the scan again",
       "captionBefore": "A scan with the pages out of order, page 3 upside down and an unneeded page 5.",
       "captionAfter": "After organizing: pages in order, page 3 turned the right way up, page 5 deleted and a blank page added before the appendix."
+    }
+  },
+  "jpgToPdf": {
+    "selectLabel": "Select images",
+    "runLabel": "Convert to PDF",
+    "acceptLabel": "JPG, PNG and other images",
+    "arrangeHint": "The order of this list is the order of the pages. Choose how each page looks below.",
+    "panelTitle": "Image to PDF options",
+    "orientation": "Page orientation",
+    "orientations": {
+      "portrait": "Portrait",
+      "landscape": "Landscape"
+    },
+    "fitNote": "With Fit, each page takes its image's shape.",
+    "pageSize": "Page size",
+    "sizes": {
+      "fit": "Fit (same size as image)",
+      "a4": "A4 (297×210 mm)",
+      "letter": "US Letter (215.9×279.4 mm)"
+    },
+    "margin": "Margin",
+    "margins": {
+      "none": "No margin",
+      "small": "Small",
+      "big": "Big"
+    },
+    "merge": "Merge all images in one PDF file",
+    "cardsLabel": "Your images, as their pages will look",
+    "rotateImage": "Rotate {name}",
+    "cardLabel": "{name}, turned {angle}°",
+    "zipName": "anytools_images.zip",
+    "summaryOne": "Done. {count} images saved as {output}, one per page ({size}).",
+    "summaryOneImage": "Done. {name} saved as {output} ({size}).",
+    "summaryMany": "Done. {count} images saved as {count} PDFs in one ZIP ({size}).",
+    "partLabel": "From {name}",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "unreadable": "{name} couldn't be read as an image. Try saving it as JPG or PNG first.",
+    "diagram": {
+      "photos": "Your photos",
+      "convert": "Converted in your browser",
+      "output": "photos.pdf",
+      "tryFit": "Show Fit size",
+      "tryA4": "Show A4 with margins",
+      "captionA4": "A4 with a small margin: every photo sits centred on a standard page, ready to print.",
+      "captionFit": "Fit: each page takes its photo's own shape, so nothing is added around it."
     }
   },
   "theme": {
