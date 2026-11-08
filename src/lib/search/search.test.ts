@@ -49,6 +49,7 @@ describe("finds the closest tool", () => {
     ["organise pdf", "organize-pdf"],
     ["reorder pages", "organize-pdf"],
     ["rearrange pdf", "organize-pdf"],
+    ["পৃষ্ঠা সাজান", "organize-pdf"],
     ["rotate", "rotate-pdf"],
     ["rotate pdf", "rotate-pdf"],
     ["turn pdf pages", "rotate-pdf"],

@@ -145,7 +145,9 @@
     },
     "organize-pdf": {
       "name": "Organize PDF",
-      "description": "Reorder, rotate and delete pages to put a PDF in order."
+      "description": "Reorder, rotate and delete pages to put a PDF in order.",
+      "title": "Organize PDF Pages Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Organize PDF pages for free. Drag pages into order, rotate or delete them, add blank pages, and combine several PDFs. No signup, no watermark, nothing uploaded."
     },
     "rotate-pdf": {
       "name": "Rotate PDF",
@@ -566,6 +568,51 @@
       "tryRight": "Turn it right instead",
       "captionRight": "Right turns every page a quarter turn clockwise, so a sideways scan reads the right way up.",
       "captionLeft": "Left turns every page a quarter turn the other way. Your original file isn't changed."
+    }
+  },
+  "organizePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Organize",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Drag pages into order, and turn, delete or add pages below.",
+    "panelTitle": "Organize PDF",
+    "info": "Drag pages to reorder them. Use the buttons on each page to turn it, delete it or add a blank page before it.",
+    "filesHeading": "Files:",
+    "fileLetter": "{letter}: {name}",
+    "resetAll": "Reset all",
+    "pagesLabel": "Pages of the new PDF, in order",
+    "page": "Page {label}",
+    "blank": "Blank page",
+    "turned": "turned {angle}°",
+    "rotate": "Rotate page {label}",
+    "delete": "Delete page {label}",
+    "deleteBlank": "Delete this blank page",
+    "zoom": "See page {label} larger",
+    "addBlank": "Add a blank page before page {label}",
+    "addBlankBefore": "Add a blank page before this blank page",
+    "move": "Move page {label}. Drag, or use Alt with the arrow keys.",
+    "moveBlank": "Move this blank page. Drag, or use Alt with the arrow keys.",
+    "moved": "Page {label} moved to position {position}.",
+    "deleted": "Page {label} deleted. Reset all brings it back.",
+    "added": "Blank page added at position {position}.",
+    "allError": "Keep at least one page. A PDF can't be empty.",
+    "tooMany": "That's more than {max} pages. Organize fewer files at once.",
+    "outputName": "organized.pdf",
+    "summary": "Done. {pages} pages saved as organized.pdf ({size}).",
+    "summaryOne": "Done. 1 page saved as organized.pdf ({size}).",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "empty": "Keep at least one page. A PDF can't be empty.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "application.pdf",
+      "before": "Pages as scanned",
+      "after": "organized.pdf",
+      "organize": "Organized in your browser",
+      "tryAfter": "Show the organized file",
+      "tryBefore": "Show the scan again",
+      "captionBefore": "A scan with the pages out of order, page 3 upside down and an unneeded page 5.",
+      "captionAfter": "After organizing: pages in order, page 3 turned the right way up, page 5 deleted and a blank page added before the appendix."
     }
   },
   "theme": {

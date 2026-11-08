@@ -1,0 +1,748 @@
+---
+import en from "../../i18n/en.json";
+
+const t = en.organizePdf;
+---
+
+<div class="organize-layout" data-organize-options data-testid="organize-options">
+  <aside class="organize-panel" aria-labelledby="organize-panel-title">
+    <h3 class="organize-panel-title" id="organize-panel-title">{t.panelTitle}</h3>
+    <p class="organize-info">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><path d="M12 8h.01" /></svg>
+      <span>{t.info}</span>
+    </p>
+    <div class="organize-files-head">
+      <h4>{t.filesHeading}</h4>
+      <button type="button" class="organize-reset" data-reset hidden>{t.resetAll}</button>
+    </div>
+    <ul class="organize-files" data-files></ul>
+    <p class="organize-error" data-error data-testid="organize-error" role="alert" hidden></p>
+    <p class="sr-only" data-announce aria-live="polite"></p>
+    <input type="hidden" name="plan" data-plan />
+  </aside>
+
+  <ol class="organize-grid" data-grid aria-label={t.pagesLabel}></ol>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { previewPdfOutput } from "../../lib/pdf/preview";
+  import type { OutputPreview } from "../../lib/shell/types";
+  import { MAX_PAGES, type PlanStep } from "./organize";
+
+  const t = en.organizePdf;
+  // Twice the shown width, so thumbnails stay sharp on high-density screens.
+  const THUMBNAIL_WIDTH = 240;
+  const COLOURS = 4;
+  const ICONS = {
+    zoom: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    rotate: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+    delete: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
+    add: '<path d="M12 5v14"/><path d="M5 12h14"/>',
+    grip: '<circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/>',
+  };
+  const svg = (name: keyof typeof ICONS, size = 16) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${name === "grip" ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+
+  type Item = { id: number; file: File; page: number; spin: number } | { id: number; blank: true };
+  interface Doc {
+    preview: OutputPreview | null;
+    pageCount: number;
+    thumbnails: Map<number, string>;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-organize-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const grid = box.querySelector("[data-grid]") as HTMLOListElement;
+    const fileList = box.querySelector("[data-files]") as HTMLUListElement;
+    const reset = box.querySelector("[data-reset]") as HTMLButtonElement;
+    const error = box.querySelector("[data-error]") as HTMLElement;
+    const planInput = box.querySelector("[data-plan]") as HTMLInputElement;
+    const announce = box.querySelector("[data-announce]") as HTMLElement;
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+
+    let files: File[] = [];
+    const docs = new Map<File, Doc>();
+    let items: Item[] = [];
+    let nextId = 1;
+    let changed = false;
+    let observer: IntersectionObserver | null = null;
+    const queue: HTMLElement[] = [];
+    let drawing = false;
+
+    const isBlank = (item: Item): item is { id: number; blank: true } => "blank" in item;
+    const turnOf = (item: Item) => (isBlank(item) ? 0 : (((item.spin % 360) + 360) % 360));
+    const letter = (file: File) => String.fromCharCode(65 + files.indexOf(file));
+    const colour = (file: File) => (files.indexOf(file) % COLOURS) + 1;
+    function label(item: Item) {
+      if (isBlank(item)) return "blank";
+      return files.length > 1 ? `${letter(item.file)}${item.page}` : String(item.page);
+    }
+    function spoken(item: Item) {
+      const name = isBlank(item) ? t.blank : fill(t.page, { label: label(item) });
+      const turned = turnOf(item);
+      return turned ? `${name}, ${fill(t.turned, { angle: turned })}` : name;
+    }
+
+    // Every page of every file, in file order: how things start, and what Reset all returns to.
+    function startingItems(): Item[] {
+      return files.flatMap((file) => {
+        const doc = docs.get(file);
+        return Array.from({ length: doc?.pageCount ?? 0 }, (_, index) => ({ id: nextId++, file, page: index + 1, spin: 0 }));
+      });
+    }
+
+    function say(message: string) {
+      announce.textContent = message;
+    }
+
+    function sync() {
+      const plan: PlanStep[] = items.map((item) =>
+        isBlank(item) ? { blank: true } : { file: files.indexOf(item.file), page: item.page, rotate: turnOf(item) as 0 | 90 | 180 | 270 },
+      );
+      planInput.value = JSON.stringify(plan);
+      const hasPages = files.some((file) => (docs.get(file)?.pageCount ?? 0) > 0);
+      const message = items.length > MAX_PAGES ? fill(t.tooMany, { max: MAX_PAGES }) : hasPages && !items.length ? t.allError : "";
+      error.textContent = message;
+      error.hidden = !message;
+      reset.hidden = !changed;
+      if (runButton) runButton.disabled = !items.length || Boolean(message);
+    }
+
+    function drawFiles() {
+      fileList.replaceChildren(
+        ...files.map((file) => {
+          const row = document.createElement("li");
+          row.className = "organize-file";
+          row.dataset.colour = String(colour(file));
+          row.textContent = fill(t.fileLetter, { letter: letter(file), name: file.name });
+          return row;
+        }),
+      );
+    }
+
+    function button(className: string, icon: keyof typeof ICONS, name: string, action: string) {
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = className;
+      element.dataset.action = action;
+      element.setAttribute("aria-label", name);
+      element.innerHTML = svg(icon, icon === "grip" ? 18 : 16);
+      return element;
+    }
+
+    function card(item: Item, index: number): HTMLLIElement {
+      const name = label(item);
+      const li = document.createElement("li");
+      li.className = "organize-card";
+      li.tabIndex = 0;
+      li.dataset.id = String(item.id);
+      li.dataset.index = String(index);
+      li.dataset.label = name;
+      li.dataset.turn = String(turnOf(item));
+      li.setAttribute("data-testid", "organize-page");
+      li.style.setProperty("--spin", `${isBlank(item) ? 0 : item.spin}deg`);
+      if (!isBlank(item)) li.dataset.colour = String(colour(item.file));
+      li.setAttribute("aria-label", spoken(item));
+
+      const add = button("organize-add", "add", isBlank(item) ? t.addBlankBefore : fill(t.addBlank, { label: name }), "add");
+      const frame = document.createElement("span");
+      frame.className = "organize-frame";
+      if (isBlank(item)) frame.classList.add("is-blank");
+      else {
+        frame.dataset.thumb = "";
+        const url = docs.get(item.file)?.thumbnails.get(item.page);
+        if (url) {
+          const img = document.createElement("img");
+          img.alt = "";
+          img.src = url;
+          frame.append(img);
+        }
+      }
+      const actions = document.createElement("span");
+      actions.className = "organize-actions";
+      if (!isBlank(item)) {
+        actions.append(
+          button("organize-action", "zoom", fill(t.zoom, { label: name }), "zoom"),
+          button("organize-action", "rotate", fill(t.rotate, { label: name }), "rotate"),
+        );
+      }
+      actions.append(button("organize-action", "delete", isBlank(item) ? t.deleteBlank : fill(t.delete, { label: name }), "delete"));
+      const foot = document.createElement("span");
+      foot.className = "organize-foot";
+      const grip = button("organize-grip", "grip", isBlank(item) ? t.moveBlank : fill(t.move, { label: name }), "grip");
+      const caption = document.createElement("span");
+      caption.className = "organize-label";
+      caption.textContent = isBlank(item) ? t.blank : name;
+      caption.setAttribute("aria-hidden", "true");
+      foot.append(grip, caption);
+      li.append(add, actions, frame, foot);
+      return li;
+    }
+
+    async function drawQueue() {
+      if (drawing) return;
+      drawing = true;
+      while (queue.length) {
+        const frame = queue.shift() as HTMLElement;
+        const li = frame.closest<HTMLElement>(".organize-card");
+        const item = items.find((entry) => String(entry.id) === li?.dataset.id);
+        if (!frame.isConnected || !item || isBlank(item) || frame.querySelector("img")) continue;
+        const doc = docs.get(item.file);
+        if (!doc?.preview) continue;
+        let url = doc.thumbnails.get(item.page);
+        if (!url) {
+          try {
+            url = URL.createObjectURL((await doc.preview.renderPage(item.page, THUMBNAIL_WIDTH)).blob);
+            doc.thumbnails.set(item.page, url);
+          } catch {
+            continue;
+          }
+        }
+        if (!frame.isConnected) continue;
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = url;
+        frame.replaceChildren(img);
+      }
+      drawing = false;
+    }
+
+    // Pictures are drawn as cards scroll into view, so a long file doesn't freeze a phone.
+    function watch() {
+      observer?.disconnect();
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            queue.push(entry.target as HTMLElement);
+            observer?.unobserve(entry.target);
+          }
+          void drawQueue();
+        },
+        { rootMargin: "400px 0px" },
+      );
+      grid.querySelectorAll<HTMLElement>("[data-thumb]").forEach((frame) => {
+        if (!frame.querySelector("img")) observer?.observe(frame);
+      });
+    }
+
+    function draw(focusId?: number, focusAction?: string) {
+      grid.replaceChildren(...items.map(card));
+      watch();
+      sync();
+      if (focusId === undefined) return;
+      const li = grid.querySelector<HTMLElement>(`[data-id="${focusId}"]`);
+      const target = focusAction ? li?.querySelector<HTMLElement>(`[data-action="${focusAction}"]`) : li;
+      target?.focus();
+    }
+
+    function move(from: number, to: number, focusAction?: string) {
+      if (to < 0 || to >= items.length || to === from) return;
+      const [item] = items.splice(from, 1);
+      items.splice(to, 0, item);
+      changed = true;
+      draw(item.id, focusAction);
+      say(fill(t.moved, { label: isBlank(item) ? t.blank : label(item), position: to + 1 }));
+    }
+
+    box.addEventListener("click", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
+      const li = target?.closest<HTMLElement>(".organize-card");
+      if (!target || !li) return;
+      const index = Number(li.dataset.index);
+      const item = items[index];
+      const action = target.dataset.action;
+      if (action === "rotate" && !isBlank(item)) {
+        item.spin += 90;
+        changed = true;
+        li.dataset.turn = String(turnOf(item));
+        li.style.setProperty("--spin", `${item.spin}deg`);
+        li.setAttribute("aria-label", spoken(item));
+        sync();
+      } else if (action === "delete") {
+        items.splice(index, 1);
+        changed = true;
+        const next = items[Math.min(index, items.length - 1)];
+        draw(next?.id, "delete");
+        if (!next) reset.focus();
+        say(fill(t.deleted, { label: isBlank(item) ? t.blank : label(item) }));
+      } else if (action === "add") {
+        const blank: Item = { id: nextId++, blank: true };
+        items.splice(index, 0, blank);
+        changed = true;
+        draw(blank.id, "delete");
+        say(fill(t.added, { position: index + 1 }));
+      } else if (action === "zoom" && !isBlank(item)) {
+        shell.dispatchEvent(new CustomEvent("anytools:preview-file", { detail: { file: item.file, from: target, page: item.page } }));
+      }
+    });
+
+    reset.addEventListener("click", () => {
+      items = startingItems();
+      changed = false;
+      draw();
+      grid.querySelector<HTMLElement>(".organize-card")?.focus();
+    });
+
+    // Alt with an arrow key moves the focused page, like the page editor elsewhere on the site.
+    grid.addEventListener("keydown", (event) => {
+      const li = (event.target as HTMLElement).closest<HTMLElement>(".organize-card");
+      if (!li) return;
+      const onGrip = (event.target as HTMLElement).closest(".organize-grip");
+      if (!event.altKey && !onGrip) return;
+      const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[event.key];
+      if (!step) return;
+      event.preventDefault();
+      const index = Number(li.dataset.index);
+      move(index, index + step, onGrip ? "grip" : undefined);
+    });
+
+    // Dragging: anywhere on a page with a mouse, or by its grip on touch screens. A line shows where it will land.
+    grid.addEventListener("pointerdown", (event) => {
+      const target = event.target as HTMLElement;
+      const li = target.closest<HTMLElement>(".organize-card");
+      if (!li || event.button !== 0) return;
+      const grip = target.closest(".organize-grip");
+      if (!grip && (event.pointerType !== "mouse" || target.closest("button"))) return;
+      const start = Number(li.dataset.index);
+      const startX = event.clientX;
+      const startY = event.clientY;
+      let dragging = false;
+      let drop = start;
+      const handle = (grip as HTMLElement | null) ?? li;
+      handle.setPointerCapture(event.pointerId);
+      if (grip) event.preventDefault();
+
+      const clear = () =>
+        grid.querySelectorAll("[data-drop-before], [data-drop-after]").forEach((other) => {
+          other.removeAttribute("data-drop-before");
+          other.removeAttribute("data-drop-after");
+        });
+
+      const onMove = (moveEvent: PointerEvent) => {
+        if (!dragging && Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) < 6) return;
+        dragging = true;
+        li.setAttribute("data-dragging", "");
+        const others = Array.from(grid.querySelectorAll<HTMLElement>(".organize-card")).filter((other) => other !== li);
+        if (!others.length) return;
+        let nearest = 0;
+        let best = Infinity;
+        others.forEach((other, index) => {
+          const rect = other.getBoundingClientRect();
+          const distance = Math.hypot(moveEvent.clientX - (rect.left + rect.width / 2), moveEvent.clientY - (rect.top + rect.height / 2));
+          if (distance < best) {
+            best = distance;
+            nearest = index;
+          }
+        });
+        const rect = others[nearest].getBoundingClientRect();
+        const after = moveEvent.clientX > rect.left + rect.width / 2;
+        drop = nearest + (after ? 1 : 0);
+        clear();
+        others[nearest].setAttribute(after ? "data-drop-after" : "data-drop-before", "");
+      };
+      const onUp = () => {
+        handle.removeEventListener("pointermove", onMove);
+        li.removeAttribute("data-dragging");
+        clear();
+        if (dragging) move(start, drop, grip ? "grip" : undefined);
+      };
+      handle.addEventListener("pointermove", onMove);
+      handle.addEventListener("pointerup", onUp, { once: true });
+      handle.addEventListener("pointercancel", onUp, { once: true });
+    });
+
+    shell.addEventListener("anytools:files", async (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files;
+      const first = files.length === 0 && next.length > 0;
+      for (const [file, doc] of docs) {
+        if (next.includes(file)) continue;
+        doc.preview?.close();
+        doc.thumbnails.forEach((url) => URL.revokeObjectURL(url));
+        docs.delete(file);
+      }
+      const added = next.filter((file) => !docs.has(file));
+      files = next;
+      items = items.filter((item) => isBlank(item) || files.includes(item.file));
+      for (const file of added) docs.set(file, { preview: null, pageCount: 0, thumbnails: new Map() });
+      drawFiles();
+      draw();
+      // Each new file opens once; its pages join the end of the grid, in the file list's order.
+      const opened = await Promise.all(
+        added.map(async (file) => {
+          try {
+            return { file, preview: await previewPdfOutput(file) };
+          } catch {
+            return { file, preview: null };
+          }
+        }),
+      );
+      for (const { file, preview } of opened) {
+        const doc = docs.get(file);
+        if (!doc || !files.includes(file)) {
+          preview?.close();
+          continue;
+        }
+        doc.preview = preview;
+        doc.pageCount = preview?.pageCount ?? 0;
+        items.push(...Array.from({ length: doc.pageCount }, (_, index) => ({ id: nextId++, file, page: index + 1, spin: 0 })));
+      }
+      drawFiles();
+      draw();
+      // Bring the pages into view after choosing the first files, so the next step is obvious.
+      if (first) {
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+    });
+
+    sync();
+  }
+</script>
+
+<style>
+  /* Like most PDF tools: the options in a panel on the right, the pages on the left. Phones show the options first. */
+  .organize-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .organize-layout {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: start;
+    }
+
+    .organize-grid {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .organize-panel {
+      position: sticky;
+      top: calc(var(--header-height, 4rem) + var(--space-md));
+      grid-column: 2;
+    }
+  }
+
+  .organize-panel {
+    display: grid;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .organize-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .organize-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .organize-info {
+    display: flex;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: var(--space-md);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    line-height: 1.5;
+  }
+
+  .organize-info svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-accent);
+  }
+
+  .organize-files-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    min-height: 44px;
+  }
+
+  .organize-files-head h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .organize-reset {
+    min-height: 44px;
+    padding: 0 var(--space-xs);
+    border: 0;
+    background: none;
+    color: var(--color-accent);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .organize-reset[hidden],
+  .organize-error[hidden] {
+    display: none;
+  }
+
+  .organize-files {
+    display: grid;
+    gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Each file's colour matches the edge of its pages in the grid. */
+  :global(.organize-file) {
+    padding: var(--space-xs) var(--space-sm);
+    border-left: 4px solid var(--file-colour);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--file-colour) 10%, var(--color-surface));
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.organize-file[data-colour="1"]),
+  :global(.organize-card[data-colour="1"]) {
+    --file-colour: var(--color-part-1);
+  }
+
+  :global(.organize-file[data-colour="2"]),
+  :global(.organize-card[data-colour="2"]) {
+    --file-colour: var(--color-part-2);
+  }
+
+  :global(.organize-file[data-colour="3"]),
+  :global(.organize-card[data-colour="3"]) {
+    --file-colour: var(--color-part-3);
+  }
+
+  :global(.organize-file[data-colour="4"]),
+  :global(.organize-card[data-colour="4"]) {
+    --file-colour: var(--color-part-4);
+  }
+
+  .organize-error {
+    margin: 0;
+    color: var(--color-danger);
+    font-weight: 600;
+  }
+
+  .organize-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: var(--space-lg) var(--space-xl);
+    align-content: start;
+    margin: 0;
+    /* Room on the left for the + before the first page in each row. */
+    padding: 0 0 0 calc(var(--space-xl) / 2 + 18px);
+    list-style: none;
+  }
+
+  @media (max-width: 599px) {
+    .organize-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md) var(--space-xl);
+    }
+  }
+
+  /* A page card: its picture turned to show the result, its label, and its buttons. */
+  :global(.organize-card) {
+    position: relative;
+    display: grid;
+    gap: var(--space-xs);
+    min-width: 0;
+    padding: var(--space-xs);
+    border: 1px solid var(--color-border-subtle);
+    border-top: 4px solid var(--file-colour, var(--color-border));
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+    cursor: grab;
+    touch-action: auto;
+  }
+
+  :global(.organize-card:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  :global(.organize-card[data-dragging]) {
+    opacity: 0.5;
+  }
+
+  :global(.organize-card[data-drop-before])::before,
+  :global(.organize-card[data-drop-after])::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 2px;
+    background: var(--color-accent);
+  }
+
+  :global(.organize-card[data-drop-before])::before {
+    left: calc(-1 * var(--space-xl) / 2 - 2px);
+  }
+
+  :global(.organize-card[data-drop-after])::after {
+    right: calc(-1 * var(--space-xl) / 2 - 2px);
+  }
+
+  :global(.organize-frame) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--color-bg);
+  }
+
+  :global(.organize-frame img) {
+    max-width: 80%;
+    max-height: 80%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+    transform: rotate(var(--spin, 0deg));
+    transition: transform var(--dur-base) var(--ease-out);
+    pointer-events: none;
+  }
+
+  :global(.organize-frame.is-blank)::before {
+    content: "";
+    width: 58%;
+    aspect-ratio: 3 / 4;
+    border: 2px dashed var(--color-border);
+    background: #ffffff;
+  }
+
+  :global(.organize-actions) {
+    position: absolute;
+    top: calc(var(--space-xs) + 4px);
+    right: var(--space-xs);
+    z-index: 1;
+    display: flex;
+    gap: 2px;
+  }
+
+  :global(.organize-action),
+  :global(.organize-add),
+  :global(.organize-grip) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  :global(.organize-action) {
+    width: 32px;
+    height: 32px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+  }
+
+  :global(.organize-action[data-action="delete"]) {
+    color: var(--color-danger);
+  }
+
+  /* The + sits in the gap before each page, where the blank page will go. */
+  :global(.organize-add) {
+    position: absolute;
+    top: 50%;
+    left: calc(-1 * var(--space-xl) / 2 - 16px);
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-50%);
+  }
+
+  :global(.organize-foot) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    min-width: 0;
+  }
+
+  :global(.organize-grip) {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  :global(.organize-label) {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 32px;
+  }
+
+  /* With a mouse, the buttons appear on hover or keyboard focus, like other PDF tools; touch screens always show them. */
+  @media (hover: hover) {
+    :global(.organize-actions),
+    :global(.organize-add) {
+      opacity: 0;
+      transition: opacity var(--dur-fast) var(--ease-out);
+    }
+
+    :global(.organize-card:hover .organize-actions),
+    :global(.organize-card:focus-within .organize-actions),
+    :global(.organize-card:hover .organize-add),
+    :global(.organize-card:focus-within .organize-add) {
+      opacity: 1;
+    }
+
+    :global(.organize-action:hover),
+    :global(.organize-add:hover) {
+      background: var(--color-accent);
+      color: var(--color-on-accent);
+    }
+  }
+
+  @media (pointer: coarse) {
+    :global(.organize-grip) {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.organize-frame img) {
+      transition: none;
+    }
+  }
+</style>

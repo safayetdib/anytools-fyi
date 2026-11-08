@@ -77,8 +77,8 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["rotate-pdf", "remove-pdf-pages", "merge-pdf", "split-pdf"],
-    aliases: ["reorder pdf pages", "rearrange pdf", "sort pdf pages", "move pdf pages", "organise pdf"],
-    built: false,
+    aliases: ["reorder pdf pages", "rearrange pdf", "sort pdf pages", "move pdf pages", "organise pdf", "পিডিএফ পৃষ্ঠা সাজান"],
+    built: true,
     runsIn: "browser",
   },
   {
