@@ -74,10 +74,10 @@ for (const colorScheme of ["light", "dark"] as const) {
 // --- Tool pages and sub routes ---
 
 test("tool page - an unbuilt tool goes through its hub and says it's being built", async ({ page }) => {
-  await page.goto("/rotate-pdf/");
+  await page.goto("/add-watermark/");
   const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
   await expect(crumbs.getByRole("link")).toHaveText(["Home", "PDF tools"]);
-  await expect(page.getByRole("heading", { level: 1, name: "Rotate PDF" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Add watermark" })).toBeVisible();
   await expect(page.getByTestId("tool-area")).toBeVisible();
   await expect(page.getByRole("region", { name: "Related tools" }).getByTestId("tool-card")).toHaveCount(4);
 });

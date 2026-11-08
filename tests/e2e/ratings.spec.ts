@@ -44,7 +44,7 @@ test("ratings - the tool page shows the average and gives it to search engines",
 });
 
 test("ratings - coming-soon tools neither show nor ask for ratings", async ({ page }) => {
-  await page.goto("/rotate-pdf/");
+  await page.goto("/add-watermark/");
   await expect(page.getByTestId("tool-rating")).toHaveCount(0);
   await expect(page.getByTestId("shell-rate")).toHaveCount(0);
 });

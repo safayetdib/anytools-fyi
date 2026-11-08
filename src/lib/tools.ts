@@ -87,7 +87,7 @@ export const TOOLS: Tool[] = [
     input: "files",
     related: ["organize-pdf", "merge-pdf", "remove-pdf-pages", "add-page-numbers"],
     aliases: ["turn pdf pages", "rotate pdf pages", "fix sideways pdf", "flip pdf"],
-    built: false,
+    built: true,
     runsIn: "browser",
   },
   {

@@ -149,7 +149,9 @@
     },
     "rotate-pdf": {
       "name": "Rotate PDF",
-      "description": "Turn sideways or upside-down pages the right way up."
+      "description": "Turn sideways or upside-down pages the right way up.",
+      "title": "Rotate PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Rotate PDF files for free. Turn one PDF or many at once, right or left, or only the portrait or landscape ones. No signup, no watermark, nothing uploaded."
     },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
@@ -519,6 +521,51 @@
       "trySeparate": "Keep them as separate PDFs",
       "captionSeparate": "Pages 2, 4 and 5 are selected, so each becomes its own PDF. Your original file isn't changed.",
       "captionMerged": "With Merge extracted pages into one PDF file, the same 3 pages become one PDF, in page order."
+    }
+  },
+  "rotatePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Rotate PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Turn each file with its rotate button, or turn them all at once.",
+    "panelTitle": "Rotate PDF",
+    "info": "Select the rotate button on a file to turn it, or turn every file at once.",
+    "filterLegend": "Select files to rotate",
+    "filters": {
+      "all": "All",
+      "portrait": "Portrait",
+      "landscape": "Landscape"
+    },
+    "rotation": "Rotation",
+    "right": "Right",
+    "left": "Left",
+    "rightLabel": "Turn the chosen files right",
+    "leftLabel": "Turn the chosen files left",
+    "resetAll": "Reset all",
+    "rotateFile": "Rotate {name}",
+    "cardsLabel": "Your files and how they will be turned",
+    "turned": "{name}, turned {angle}°",
+    "notTurned": "{name}, not turned",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipName": "anytools_rotated.zip",
+    "summaryOne": "Done. Every page of {name} is turned. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs turned, saved in one ZIP ({size}).",
+    "skippedOne": "{name} wasn't turned, so it isn't included.",
+    "skippedMany": "{count} files weren't turned, so they aren't included.",
+    "partTurn": "Turned {angle}°",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "empty": "Turn at least one file first.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "scan.pdf",
+      "before": "Sideways scan",
+      "after": "scan_rotated.pdf",
+      "rotate": "Turned in your browser",
+      "tryLeft": "Turn it left instead",
+      "tryRight": "Turn it right instead",
+      "captionRight": "Right turns every page a quarter turn clockwise, so a sideways scan reads the right way up.",
+      "captionLeft": "Left turns every page a quarter turn the other way. Your original file isn't changed."
     }
   },
   "theme": {
