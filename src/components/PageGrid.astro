@@ -1,0 +1,225 @@
+---
+// The pages of one file as thumbnails, filled in by createPageGrid (src/lib/shell/page-grid.ts).
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+---
+
+<div class="page-grid">
+  <p class="page-grid-status" data-el={`${name}-status`} role="status" hidden></p>
+  <ol class="page-grid-list" data-el={`${name}-list`} data-testid="page-grid"></ol>
+</div>
+
+<style is:global>
+  .page-grid-status {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .page-grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+    gap: var(--space-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .page-grid-list[data-view="ranges"],
+  .page-grid-list[data-view="first"] {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+
+  .page-grid-card {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+    width: 100%;
+    padding: var(--space-sm);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+
+  .page-grid-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--color-bg);
+  }
+
+  .page-grid-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #ffffff;
+  }
+
+  .page-grid-caption {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* Ranges: a dashed box with the first page, "…" and the last page, like most PDF tools show them. */
+  .page-grid-range {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: center;
+  }
+
+  .page-grid-range-title {
+    font-weight: 600;
+  }
+
+  .page-grid-range-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-md);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-card);
+  }
+
+  .page-grid-range-box .page-grid-card {
+    max-width: 8rem;
+  }
+
+  .page-grid-range[data-active] .page-grid-range-box {
+    border-style: solid;
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  .page-grid-list[data-view="first"] .page-grid-caption {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* A magnifier on each page, shown on hover or keyboard focus, to see it larger. */
+  .page-grid-item {
+    position: relative;
+  }
+
+  .page-grid-zoom {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+    cursor: zoom-in;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .page-grid-item:hover .page-grid-zoom,
+  .page-grid-zoom:focus-visible {
+    opacity: 1;
+  }
+
+  /* Touch screens have no hover, so the magnifier always shows, with a full-size tap target. */
+  @media (hover: none) {
+    .page-grid-zoom {
+      width: 44px;
+      height: 44px;
+      top: 0;
+      right: 0;
+      opacity: 1;
+    }
+  }
+
+  .page-grid-more {
+    color: var(--color-text-muted);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .page-grid-list[data-view="first"] .page-grid-range-box {
+    justify-content: flex-start;
+    padding: 0;
+    border: 0;
+  }
+
+  /* Pages: a tick in the corner of each chosen page. Selectable pages are buttons. */
+  .page-grid-page {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: calc(var(--radius-button) + 2px);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+  }
+
+  button.page-grid-page {
+    cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  button.page-grid-page[aria-pressed="true"] {
+    border-color: var(--color-accent);
+  }
+
+  @media (hover: hover) {
+    button.page-grid-page:hover {
+      border-color: var(--color-accent);
+    }
+  }
+
+  .page-grid-tick {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--color-surface);
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .page-grid-tick[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 599px) {
+    .page-grid-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-lg) var(--space-md);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button.page-grid-page,
+    .page-grid-zoom {
+      transition: none;
+    }
+  }
+</style>

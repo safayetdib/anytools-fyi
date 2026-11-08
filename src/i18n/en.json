@@ -131,7 +131,9 @@
     },
     "split-pdf": {
       "name": "Split PDF",
-      "description": "Break a PDF into several files, by page range or one file per page."
+      "description": "Split a PDF into separate files: every page, every few pages, or the exact pages you pick.",
+      "title": "Split PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Split a PDF into separate files for free: by page range, every page, the pages you pick, or by file size. No signup, no watermark, nothing uploaded."
     },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
@@ -176,8 +178,13 @@
     "cancel": "Cancel",
     "resultOne": "Your file is ready",
     "resultMany": "Your files are ready",
+    "resultParts": "Your {count} files are ready",
     "resultText": "Your result",
     "download": "Download {name} ({size})",
+    "partsHeading": "Your files",
+    "partsNote": "Download one, or use the button above to get them all at once.",
+    "downloadPart": "Download {name}",
+    "partMeta": "{label} · {size}",
     "copy": "Copy",
     "startOver": "Start over",
     "editInput": "Edit input",
@@ -268,7 +275,7 @@
     "clearQuestionMany": "Remove all {count} files and start over?",
     "clearYes": "Yes, start over",
     "clearNo": "Keep files",
-    "resetQuestion": "Start over? Your merged file and any page changes will be cleared, so download it first if you need it.",
+    "resetQuestion": "Start over? The files you made and any page changes will be cleared, so download what you need first.",
     "resetNo": "Keep my file",
     "undoQuestion": "Undo all your page changes?",
     "undoYes": "Yes, undo changes",
@@ -380,6 +387,91 @@
     },
     "editedSummary": "Done. {name} now has {pages} pages ({size})."
   },
+  "splitPdf": {
+    "selectLabel": "Select a PDF file",
+    "runLabel": "Split PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose how to split. The pages below show what each new PDF will hold.",
+    "panelTitle": "Split",
+    "tabsLegend": "Split by",
+    "tabs": {
+      "range": "Range",
+      "pages": "Pages",
+      "size": "Size"
+    },
+    "rangeMode": "Range mode",
+    "rangeModes": {
+      "custom": "Custom",
+      "fixed": "Fixed"
+    },
+    "rangeLabel": "Range {number}",
+    "fromPage": "from page",
+    "toPage": "to",
+    "removeRange": "Remove range {number}",
+    "addRange": "Add range",
+    "mergeRanges": "Merge all ranges in one PDF file",
+    "fixedLabel": "Split into page ranges of",
+    "fixedInfo": "This PDF will be split into files of {size} pages.",
+    "extractMode": "Extract mode",
+    "extractModes": {
+      "all": "Extract all pages",
+      "select": "Select pages"
+    },
+    "allInfo": "Selected pages will be converted into separate PDF files.",
+    "pagesLabel": "Pages to extract",
+    "mergeExtracted": "Merge extracted pages into one PDF file",
+    "selectInfo": "Selected pages will be converted into separate PDF files.",
+    "createdOne": "1 PDF",
+    "createdMany": "{count} PDFs",
+    "originalSize": "Original file size:",
+    "totalPages": "Total pages:",
+    "sizeLabel": "Maximum size per file",
+    "sizeUnit": "Unit",
+    "units": {
+      "KB": "KB",
+      "MB": "MB"
+    },
+    "sizeInfo": "This PDF will be split into files no larger than {size} each.",
+    "rowErrors": {
+      "invalid": "Range {number} needs a page number in both boxes.",
+      "outOfRange": "Range {number} goes past the last page. This file has {pages} pages.",
+      "reversed": "In range {number}, the first page comes after the last page.",
+      "empty": "Add at least one range."
+    },
+    "rangeErrors": {
+      "empty": "Select at least one page.",
+      "invalid": "\"{range}\" isn't a page or range. Use numbers like 4 or 5-8.",
+      "outOfRange": "\"{range}\" goes past the last page. This file has {pages} pages.",
+      "reversed": "\"{range}\" runs backwards. Put the smaller page first, like 2-5.",
+      "tooMany": "That makes more than {max} PDFs. Use bigger ranges, or split the file in two first."
+    },
+    "sizeError": "Enter a size of at least 10 KB.",
+    "zipName": "{name}-split.zip",
+    "partPages": "Pages {pages}",
+    "partPage": "Page {page}",
+    "summaryMany": "Done. {name} split into {count} PDFs ({size} as a ZIP).",
+    "summaryOne": "Done. {pages} pages from {name}, saved as {output} ({size}).",
+    "summaryOnePage": "Done. 1 page from {name}, saved as {output} ({size}).",
+    "oversize": "{count} pages are larger than the limit on their own, so each is in a file by itself.",
+    "oversizeOne": "1 page is larger than the limit on its own, so it's in a file by itself.",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, then try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged.",
+    "diagram": {
+      "file": "notes.pdf",
+      "pages": "{count} pages",
+      "split": "Split in your browser",
+      "partName": "notes-{number}.pdf",
+      "tryTwo": "Show every 2 pages",
+      "tryThree": "Show every 3 pages",
+      "captionTwo": "Every 2 pages: the 6 pages of notes.pdf become 3 PDFs. Each colour is one new file.",
+      "captionThree": "Every 3 pages: the same 6 pages become 2 PDFs. Your original file isn't changed."
+    },
+    "pagesPlaceholder": "example: 1,5-8",
+    "moveRange": "Move range {number}. Drag, or use the up and down arrow keys.",
+    "movedRange": "Range moved to position {position}.",
+    "createdTail": "will be created."
+  },
   "theme": {
     "label": "Dark theme"
   },
@@ -424,5 +516,17 @@
     "accept": "Accept",
     "decline": "Decline",
     "settings": "Cookie settings"
+  },
+  "pageGrid": {
+    "label": "Pages of {name}",
+    "rangesLabel": "Ranges of {name}",
+    "page": "Page {page}",
+    "selectPage": "Page {page}",
+    "rangeTitle": "Range {number}",
+    "rangeSummary": "Range {number}: pages {from} to {to}",
+    "rangeSummaryOne": "Range {number}: page {page}",
+    "loading": "Loading pages…",
+    "failed": "The pages couldn't be shown. You can still split the file.",
+    "zoom": "See page {page} larger"
   }
 }

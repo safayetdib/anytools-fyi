@@ -14,6 +14,8 @@ const GRIP_ICON =
 // How close to the screen's top or bottom edge, in pixels, a dragged row must be before the page scrolls.
 const DRAG_SCROLL_EDGE = 96;
 const DRAG_SCROLL_STEP = 14;
+// Part cards show the first page at twice the shown width, so it stays sharp on high-density screens.
+const THUMBNAIL_WIDTH = 128;
 const MORE_ICON =
   '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
 const EYE_ICON =
@@ -74,6 +76,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const resultHeading = el(root, "result-heading");
   const summary = el(root, "summary");
   const downloads = el<HTMLUListElement>(root, "downloads");
+  const partsSection = root.querySelector<HTMLElement>('[data-el="parts"]');
+  const partsList = root.querySelector<HTMLOListElement>('[data-el="parts-list"]');
   const output = el(root, "output");
   const copyButton = el<HTMLButtonElement>(root, "copy");
   const resetButton = el<HTMLButtonElement>(root, "reset");
@@ -340,14 +344,130 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
         return item;
       }),
     );
+    renderParts();
     const text = state.output?.text;
     output.hidden = text === undefined;
     copyButton.hidden = text === undefined;
     output.textContent = text ?? "";
     summary.textContent = state.output?.summary ?? "";
+    const partCount = state.output?.parts?.length ?? 0;
     resultHeading.textContent =
-      text !== undefined ? t.resultText : files.length > 1 ? t.resultMany : t.resultOne;
+      text !== undefined
+        ? t.resultText
+        : partCount > 1
+          ? fill(t.resultParts, { count: partCount })
+          : files.length > 1
+            ? t.resultMany
+            : t.resultOne;
     if (files.length === 1 && tool.previewOutput) void outputPages.load(files[0]);
+  }
+
+  // Each part gets a card: its first page, what it holds, and its own download. The picture opens the whole part.
+  // Part pictures are drawn one at a time as their cards scroll into view, so a long list stays light.
+  let partObserver: IntersectionObserver | null = null;
+  const partQueue: HTMLElement[] = [];
+  let drawingParts = false;
+
+  async function drawParts() {
+    if (drawingParts) return;
+    drawingParts = true;
+    while (partQueue.length) {
+      const thumb = partQueue.shift() as HTMLElement;
+      const part = state.output?.parts?.[Number(thumb.dataset.part)];
+      if (thumb.isConnected && part) await partThumbnail(part.blob, thumb);
+    }
+    drawingParts = false;
+  }
+
+  function renderParts() {
+    const parts = state.output?.parts ?? [];
+    partObserver?.disconnect();
+    partQueue.length = 0;
+    if (!partsSection || !partsList) return;
+    partsSection.hidden = parts.length === 0;
+    partsList.replaceChildren(
+      ...parts.map(({ name, blob, label }, index) => {
+        const url = URL.createObjectURL(blob);
+        objectUrls.push(url);
+        const safeName = safeFileName(name);
+        const item = document.createElement("li");
+        item.className = "shell-part";
+        item.setAttribute("data-testid", "shell-part");
+        const thumb = document.createElement("button");
+        thumb.type = "button";
+        thumb.className = "shell-thumb shell-part-thumb";
+        thumb.dataset.part = String(index);
+        thumb.setAttribute("aria-label", fill(t.previewFile, { name: safeName }));
+        thumb.insertAdjacentHTML("beforeend", EYE_ICON);
+        const info = document.createElement("span");
+        info.className = "shell-file-info";
+        const title = document.createElement("span");
+        title.className = "shell-file-name";
+        title.textContent = safeName;
+        const meta = document.createElement("span");
+        meta.className = "shell-file-meta";
+        meta.textContent = fill(t.partMeta, { label, size: formatSize(blob.size) });
+        info.append(title, meta);
+        const link = document.createElement("a");
+        link.className = "shell-icon-button shell-part-download";
+        link.href = url;
+        link.download = safeName;
+        link.setAttribute("aria-label", fill(t.downloadPart, { name: safeName }));
+        link.innerHTML = DOWNLOAD_ICON;
+        item.append(thumb, info, link);
+        return item;
+      }),
+    );
+    if (!parts.length) return;
+    partObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          partQueue.push(entry.target as HTMLElement);
+          partObserver?.unobserve(entry.target);
+        }
+        void drawParts();
+      },
+      { rootMargin: "300px 0px" },
+    );
+    partsList.querySelectorAll("button[data-part]").forEach((thumb) => partObserver?.observe(thumb));
+  }
+
+  async function partThumbnail(blob: Blob, thumb: HTMLElement) {
+    const output = state.output;
+    if (!tool.previewOutput) return;
+    try {
+      const preview = await tool.previewOutput(blob);
+      try {
+        const page = await preview.renderPage(1, THUMBNAIL_WIDTH);
+        if (state.output !== output) return;
+        const img = document.createElement("img");
+        img.alt = "";
+        const url = URL.createObjectURL(page.blob);
+        objectUrls.push(url);
+        img.src = url;
+        thumb.prepend(img);
+      } finally {
+        preview.close();
+      }
+    } catch {
+      // A missing picture doesn't stop the download.
+    }
+  }
+
+  partsList?.addEventListener("click", (event) => {
+    const thumb = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-part]");
+    const part = thumb && state.output?.parts?.[Number(thumb.dataset.part)];
+    if (part) void filePreview?.open(new File([part.blob], safeFileName(part.name), { type: part.blob.type }), thumb);
+  });
+
+  // Tools with their own controls, such as a page picker, hear which files are chosen.
+  let announcedFiles = "";
+  function announceFiles() {
+    const key = state.files.map((f) => f.id).join(",");
+    if (key === announcedFiles) return;
+    announcedFiles = key;
+    root.dispatchEvent(new CustomEvent("anytools:files", { detail: { files: state.files.map((f) => f.file) } }));
   }
 
   const steps = root.querySelector<HTMLElement>('[data-el="steps-text"]');
@@ -384,6 +504,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     status.textContent =
       state.progress === null ? t.working : fill(t.percent, { percent: Math.round(state.progress * 100) });
     renderFiles();
+    announceFiles();
     renderOutput();
     announce(state.announcement);
     syncLeaveGuard();
@@ -458,6 +579,11 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   });
 
   const filePreview = createFilePreview(root, tool);
+  // A tool's own controls, such as a page picker, can open a page of the chosen file here too.
+  root.addEventListener("anytools:preview-file", (event) => {
+    const { file, from, page } = (event as CustomEvent<{ file: File; from: HTMLElement; page?: number }>).detail;
+    void filePreview?.open(file, from, page);
+  });
 
   // --- A file's actions in a bottom sheet, on phones ---
 

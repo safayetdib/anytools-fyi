@@ -61,7 +61,7 @@ export function createFilePreview(root: HTMLElement, tool: ToolDefinition) {
     }
   }
 
-  async function open(file: File, from: HTMLElement) {
+  async function open(file: File, from: HTMLElement, startPage = 1) {
     opener = from;
     const run = ++token;
     name.textContent = file.name;
@@ -76,7 +76,7 @@ export function createFilePreview(root: HTMLElement, tool: ToolDefinition) {
       if (!opened) return;
       if (run !== token) return opened.close();
       preview = opened;
-      await show(0);
+      await show(startPage - 1);
     } catch {
       if (run === token) setStatus(t.previewFailed);
     }

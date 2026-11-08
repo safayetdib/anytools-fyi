@@ -50,8 +50,8 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["extract-pdf-pages", "remove-pdf-pages", "merge-pdf", "organize-pdf"],
-    aliases: ["split pdf pages", "separate pdf", "divide pdf", "pdf splitter", "পিডিএফ ভাগ করুন"],
-    built: false,
+    aliases: ["split pdf pages", "separate pdf", "divide pdf", "pdf splitter", "pdf cutter", "পিডিএফ ভাগ করুন"],
+    built: true,
     runsIn: "browser",
   },
   {

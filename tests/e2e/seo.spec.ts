@@ -24,7 +24,7 @@ test("seo - Merge PDF has full search and share metadata", async ({ page, reques
 });
 
 test("seo - coming-soon tools stay out of search", async ({ page }) => {
-  await page.goto("/split-pdf/");
+  await page.goto("/rotate-pdf/");
   expect(await meta(page, "robots")).toBe("noindex, follow");
   const types = (await jsonLd(page)).map((data) => data["@type"]);
   expect(types).not.toContain("WebApplication");
@@ -33,7 +33,7 @@ test("seo - coming-soon tools stay out of search", async ({ page }) => {
 
 test("seo - coming-soon tools are labelled on their cards", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByTestId("tool-card").filter({ hasText: "Split PDF" })).toContainText("Coming soon");
+  await expect(page.getByTestId("tool-card").filter({ hasText: "Rotate PDF" })).toContainText("Coming soon");
   await expect(page.getByTestId("tool-card").filter({ hasText: "Merge PDF" })).not.toContainText("Coming soon");
 });
 
@@ -48,7 +48,8 @@ test("seo - the sitemap lists only indexable pages", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
   expect(xml).toContain("<loc>https://anytools.fyi/merge-pdf/</loc>");
   expect(xml).toContain("<loc>https://anytools.fyi/pdf-tools/</loc>");
-  expect(xml).not.toContain("split-pdf");
+  expect(xml).toContain("<loc>https://anytools.fyi/split-pdf/</loc>");
+  expect(xml).not.toContain("rotate-pdf");
   expect(xml).not.toContain("image-tools");
   expect(xml).not.toContain("/terms/");
   expect(xml).toContain("<loc>https://anytools.fyi/cookies/</loc>");
@@ -68,7 +69,8 @@ test("seo - robots.txt and llms.txt are served for crawlers", async ({ request }
   const llms = await (await request.get("/llms.txt")).text();
   expect(llms).toMatch(/^# AnyTools\.fyi/);
   expect(llms).toContain("[Merge PDF](https://anytools.fyi/merge-pdf/)");
-  expect(llms).not.toContain("Split PDF");
+  expect(llms).toContain("[Split PDF](https://anytools.fyi/split-pdf/)");
+  expect(llms).not.toContain("Rotate PDF");
   const full = await (await request.get("/llms-full.txt")).text();
   expect(full).toContain("Does this upload my files?");
 });
