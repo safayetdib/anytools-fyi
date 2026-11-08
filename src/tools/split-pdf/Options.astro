@@ -2,6 +2,12 @@
 import PageGrid from "../../components/PageGrid.astro";
 import en from "../../i18n/en.json";
 
+interface Props {
+  // The tab shown first. Extract PDF pages opens on Pages, as other PDF tools do.
+  start?: "range" | "pages";
+}
+
+const { start = "range" } = Astro.props;
 const t = en.splitPdf;
 const ICONS = {
   range:
@@ -21,7 +27,7 @@ const tabs = ["range", "pages", "size"] as const;
       {
         tabs.map((tab) => (
           <label class="split-tab">
-            <input type="radio" name="split-tab" value={tab} checked={tab === "range"} />
+            <input type="radio" name="split-tab" value={tab} checked={tab === start} />
             <svg width="36" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[tab]} />
             <span>{t.tabs[tab]}</span>
             <span class="split-tab-badge" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></span>
@@ -30,7 +36,7 @@ const tabs = ["range", "pages", "size"] as const;
       }
     </fieldset>
 
-    <div class="split-section" data-tab-panel="range">
+    <div class="split-section" data-tab-panel="range" hidden={start !== "range"}>
       <fieldset class="split-switch">
         <legend>{t.rangeMode}</legend>
         <div class="split-switch-options">
@@ -54,7 +60,7 @@ const tabs = ["range", "pages", "size"] as const;
       </div>
     </div>
 
-    <div class="split-section" data-tab-panel="pages" hidden>
+    <div class="split-section" data-tab-panel="pages" hidden={start !== "pages"}>
       <fieldset class="split-switch">
         <legend>{t.extractMode}</legend>
         <div class="split-switch-options">
