@@ -1,0 +1,223 @@
+---
+import en from "../../i18n/en.json";
+import { fill } from "../../i18n/format";
+
+const d = en.splitPdf.diagram;
+const PAGES = 6;
+---
+
+<figure class="split-diagram" aria-labelledby="split-diagram-caption" data-split-diagram data-size="2">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{fill(d.pages, { count: PAGES })}</span>
+      <span class="pages" data-source>
+        {Array.from({ length: PAGES }, (_, i) => <span class="page" data-page={i + 1}>{i + 1}</span>)}
+      </span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M20 4 8.1 15.9"></path><path d="M14.5 14.5 20 20"></path><path d="M8.1 8.1 12 12"></path>
+      </svg>
+      <span>{d.split}</span>
+    </div>
+    <ol class="results" data-results></ol>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-two={d.tryTwo} data-label-three={d.tryThree}>
+      {d.tryThree}
+    </button>
+  </div>
+  <figcaption id="split-diagram-caption" aria-live="polite" data-caption-two={d.captionTwo} data-caption-three={d.captionThree}>
+    {d.captionTwo}
+  </figcaption>
+</figure>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+
+  const d = en.splitPdf.diagram;
+  const figure = document.querySelector<HTMLElement>("[data-split-diagram]");
+  const source = figure?.querySelector<HTMLElement>("[data-source]");
+  const results = figure?.querySelector<HTMLOListElement>("[data-results]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  // Groups the sample pages into parts of `size`, colouring the source pages to match.
+  function draw(size: number) {
+    if (!figure || !source || !results || !caption || !toggle) return;
+    figure.dataset.size = String(size);
+    const pages = Array.from(source.children) as HTMLElement[];
+    pages.forEach((page, index) => (page.dataset.part = String((Math.floor(index / size) % 4) + 1)));
+    const parts = Array.from({ length: Math.ceil(pages.length / size) }, (_, part) => {
+      const item = document.createElement("li");
+      item.className = "doc result";
+      item.dataset.part = String((part % 4) + 1);
+      const name = document.createElement("span");
+      name.className = "doc-name";
+      name.textContent = fill(d.partName, { number: part + 1 });
+      const row = document.createElement("span");
+      row.className = "pages";
+      for (let page = part * size + 1; page <= Math.min((part + 1) * size, pages.length); page++) {
+        const tile = document.createElement("span");
+        tile.className = "page";
+        tile.dataset.part = item.dataset.part;
+        tile.textContent = String(page);
+        row.append(tile);
+      }
+      item.append(name, row);
+      return item;
+    });
+    results.replaceChildren(...parts);
+    caption.textContent = (size === 2 ? caption.dataset.captionTwo : caption.dataset.captionThree) ?? "";
+    toggle.textContent = (size === 2 ? toggle.dataset.labelThree : toggle.dataset.labelTwo) ?? "";
+  }
+
+  draw(2);
+  toggle?.addEventListener("click", () => draw(figure?.dataset.size === "2" ? 3 : 2));
+</script>
+
+<style>
+  /* The parts are drawn by the script below, so their styles reach past this component's own markup. */
+  .split-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .split-diagram :global(.doc) {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .split-diagram :global(.doc-name) {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .split-diagram :global(.doc-meta) {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .split-diagram :global(.pages) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--space-xs);
+  }
+
+  /* Pages carry their part's colour, so the source shows where each new PDF comes from. */
+  :global(.split-diagram .page) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2.6rem;
+    border-radius: 4px;
+    background: var(--color-border);
+    color: var(--color-surface);
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+
+  :global(.split-diagram [data-part="1"]) {
+    --part: var(--color-part-1);
+  }
+
+  :global(.split-diagram [data-part="2"]) {
+    --part: var(--color-part-2);
+  }
+
+  :global(.split-diagram [data-part="3"]) {
+    --part: var(--color-part-3);
+  }
+
+  :global(.split-diagram [data-part="4"]) {
+    --part: var(--color-part-4);
+  }
+
+  :global(.split-diagram .page[data-part]) {
+    background: var(--part);
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .results {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .split-diagram :global(.result) {
+    border: 2px solid var(--part);
+    padding-block: var(--space-sm);
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.split-diagram .page) {
+      transition: none;
+    }
+  }
+</style>

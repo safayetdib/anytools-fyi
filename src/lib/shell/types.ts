@@ -32,8 +32,19 @@ export interface RunContext {
   onProgress(fraction: number | null): void;
 }
 
+// One of several files a tool made, such as each part of a split PDF.
+export interface OutputPart {
+  name: string;
+  blob: Blob;
+  // What the part holds, such as "Pages 1–3".
+  label: string;
+}
+
 export interface ToolOutput {
+  // The main download. With parts, this is usually a ZIP of all of them.
   files?: { name: string; blob: Blob }[];
+  // Shown as cards under the result, each with a preview and its own download.
+  parts?: OutputPart[];
   text?: string;
   summary: string;
 }

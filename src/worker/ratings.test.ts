@@ -86,7 +86,7 @@ describe("POST /api/ratings/{slug}", () => {
   });
 
   it("refuses tools that aren't built or don't exist", async () => {
-    expect((await rate("split-pdf", { score: 5, voter: VOTER })).status).toBe(404);
+    expect((await rate("rotate-pdf", { score: 5, voter: VOTER })).status).toBe(404);
     expect((await rate("no-such-tool", { score: 5, voter: VOTER })).status).toBe(404);
   });
 

@@ -13,6 +13,11 @@
   --color-warning: #8a5300;
   /* Filled rating stars. At least 3:1 against the page, like any meaningful graphic. */
   --color-star: #b36d00;
+  /* Page groups in a page picker, such as the parts of a split. Each is at least 3:1 against the page. */
+  --color-part-1: #0a6b52;
+  --color-part-2: #2563c9;
+  --color-part-3: #b35400;
+  --color-part-4: #7a3fb8;
   --color-bar: #0a6b52;
   --color-on-bar: #ffffff;
   --color-bar-border: #0a6b52;
@@ -64,6 +69,10 @@
     --color-danger: #ff9b8f;
     --color-warning: #f2b654;
     --color-star: #f2b654;
+    --color-part-1: #4fd1a5;
+    --color-part-2: #7da2ff;
+    --color-part-3: #f2a65a;
+    --color-part-4: #c78bf0;
     --color-bar: #1b5e4c;
     --color-on-bar: #eaf1ee;
     --color-bar-border: #4fd1a5;
@@ -88,6 +97,10 @@
   --color-danger: #ff9b8f;
   --color-warning: #f2b654;
   --color-star: #f2b654;
+  --color-part-1: #4fd1a5;
+  --color-part-2: #7da2ff;
+  --color-part-3: #f2a65a;
+  --color-part-4: #c78bf0;
   --color-bar: #1b5e4c;
   --color-on-bar: #eaf1ee;
   --color-bar-border: #4fd1a5;

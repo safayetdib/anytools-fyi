@@ -11,6 +11,22 @@ export async function makePdf(widths: number[], height = 300): Promise<Uint8Arra
   return doc.save({ useObjectStreams: false });
 }
 
+// A PDF of the given number of pages, each carrying about `kilobytes` of its own drawing,
+// so the file is big enough to split by size.
+export async function makeHeavyPdf(pages: number, kilobytes: number): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  for (let index = 0; index < pages; index++) {
+    const page = doc.addPage([200 + index, 300]);
+    // Scattered marks in varied colours, so the drawing doesn't compress away. Seeded, so files are the same every run.
+    let seed = index + 1;
+    const next = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (let mark = 0; mark < kilobytes * 12; mark++) {
+      page.drawRectangle({ x: next() * 190, y: next() * 290, width: 1 + next() * 3, height: 1 + next() * 3, color: rgb(next(), next(), next()) });
+    }
+  }
+  return doc.save({ useObjectStreams: false });
+}
+
 // The standard 32-byte password padding from the PDF specification.
 const PADDING = Buffer.from(
   "28bf4e5e4e758a4164004e56fffa01082e2e00b6d0683e802f0ca9fe6453697a",

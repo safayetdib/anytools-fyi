@@ -90,8 +90,14 @@ const limits = isFiles
     {
       isFiles && config.arrangeHint && (
         <p class="shell-hint shell-arrange-hint">
-          <span class="shell-long-hint">{config.arrangeHint}</span>
-          <span class="shell-touch-hint">{t.arrangeHintPhone}</span>
+          {config.multiple ? (
+            <>
+              <span class="shell-long-hint">{config.arrangeHint}</span>
+              <span class="shell-touch-hint">{t.arrangeHintPhone}</span>
+            </>
+          ) : (
+            config.arrangeHint
+          )}
         </p>
       )
     }
@@ -191,7 +197,17 @@ const limits = isFiles
       </div>
     </div>
     <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
+    {/* Right under the result card, beside the Start over and Undo buttons that ask through it. */}
     {isFiles && <ShellConfirm name="result-confirm" />}
+    {
+      isFiles && (
+        <section class="shell-parts" data-el="parts" aria-labelledby="shell-parts-heading" data-testid="shell-parts" hidden>
+          <h3 id="shell-parts-heading">{t.partsHeading}</h3>
+          <p class="shell-hint">{t.partsNote}</p>
+          <ol class="shell-parts-list" data-el="parts-list" />
+        </section>
+      )
+    }
     {
       isFiles && (
         <div class="shell-changes-bar" role="region" aria-label={t.changesBarLabel} data-el="changes-bar" data-testid="changes-bar" hidden>
@@ -588,6 +604,48 @@ const limits = isFiles
   .shell-file-name {
     font-weight: 600;
     overflow-wrap: anywhere;
+  }
+
+  /* Result parts: one card per file the tool made, laid out like the file list. */
+  .shell-parts {
+    margin-top: var(--space-2xl);
+  }
+
+  .shell-parts h3 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .shell-parts .shell-hint {
+    margin: 0;
+  }
+
+  .shell-parts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-sm);
+    margin: var(--space-lg) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .shell-part {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-md);
+    padding: 0.75rem var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+  }
+
+  .shell-part-thumb {
+    width: 48px;
+  }
+
+  .shell-part-download {
+    padding: 0;
+    color: var(--color-accent);
   }
 
   .shell-file-actions {

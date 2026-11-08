@@ -711,7 +711,7 @@ test("confirm - Start over after merging asks first, and keeping changes nothing
   await mergeForEditing(page, [100], [200]);
   await page.getByRole("button", { name: "Start over" }).click();
   const card = page.getByRole("group", { name: /Start over\?/ });
-  await expect(card).toContainText("download it first");
+  await expect(card).toContainText("download what you need first");
   await expect(page.getByRole("button", { name: "Keep my file" })).toBeFocused();
   await page.getByRole("button", { name: "Keep my file" }).click();
   await expect(card).toBeHidden();
@@ -1249,11 +1249,17 @@ for (const width of [375, 768]) {
     await mergeForEditing(page, [100], [200]);
     await page.getByTestId("shell-result-bar").getByRole("button", { name: "Start over" }).click();
     const confirm = page.locator('[data-el="result-confirm"]');
-    const box = await confirm.boundingBox();
-    const keep = await confirm.getByRole("button", { name: "Keep my file" }).boundingBox();
-    const yes = await confirm.getByRole("button", { name: "Yes, start over" }).boundingBox();
-    expect((box?.x ?? 0) + (box?.width ?? 0) - ((keep?.x ?? 0) + (keep?.width ?? 0))).toBeLessThan(24);
-    expect(Math.abs((yes?.y ?? 0) - (keep?.y ?? 0))).toBeLessThan(2);
+    // The card animates in, so measure once it has settled.
+    const gaps = async () => {
+      const box = await confirm.boundingBox();
+      const keep = await confirm.getByRole("button", { name: "Keep my file" }).boundingBox();
+      const yes = await confirm.getByRole("button", { name: "Yes, start over" }).boundingBox();
+      return {
+        right: (box?.x ?? 0) + (box?.width ?? 0) - ((keep?.x ?? 0) + (keep?.width ?? 0)) < 24,
+        level: Math.abs((yes?.y ?? 0) - (keep?.y ?? 0)) < 2,
+      };
+    };
+    await expect.poll(gaps).toEqual({ right: true, level: true });
     // On phones the docked bar steps aside while the question is open.
     if (width < 600) await expect(page.getByTestId("shell-result-bar")).toBeHidden();
     await expect(confirm.getByRole("button", { name: "Keep my file" })).toBeInViewport();
