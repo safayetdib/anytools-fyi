@@ -23,20 +23,6 @@ test("seo - Merge PDF has full search and share metadata", async ({ page, reques
   expect(types).toEqual(expect.arrayContaining(["WebApplication", "BreadcrumbList", "HowTo", "FAQPage"]));
 });
 
-test("seo - coming-soon tools stay out of search", async ({ page }) => {
-  await page.goto("/add-watermark/");
-  expect(await meta(page, "robots")).toBe("noindex, follow");
-  const types = (await jsonLd(page)).map((data) => data["@type"]);
-  expect(types).not.toContain("WebApplication");
-  expect(types).not.toContain("FAQPage");
-});
-
-test("seo - coming-soon tools are labelled on their cards", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("tool-card").filter({ hasText: "Add watermark" })).toContainText("Coming soon");
-  await expect(page.getByTestId("tool-card").filter({ hasText: "Merge PDF" })).not.toContainText("Coming soon");
-});
-
 test("seo - draft pages and empty categories stay out of search", async ({ page }) => {
   for (const path of ["/terms/", "/image-tools/", "/no-such-page/"]) {
     await page.goto(path);
@@ -50,7 +36,7 @@ test("seo - the sitemap lists only indexable pages", async ({ request }) => {
   expect(xml).toContain("<loc>https://anytools.fyi/pdf-tools/</loc>");
   expect(xml).toContain("<loc>https://anytools.fyi/split-pdf/</loc>");
   expect(xml).toContain("<loc>https://anytools.fyi/rotate-pdf/</loc>");
-  expect(xml).not.toContain("add-watermark");
+  expect(xml).toContain("<loc>https://anytools.fyi/add-watermark/</loc>");
   expect(xml).not.toContain("image-tools");
   expect(xml).not.toContain("/terms/");
   expect(xml).toContain("<loc>https://anytools.fyi/cookies/</loc>");
@@ -72,7 +58,7 @@ test("seo - robots.txt and llms.txt are served for crawlers", async ({ request }
   expect(llms).toContain("[Merge PDF](https://anytools.fyi/merge-pdf/)");
   expect(llms).toContain("[Split PDF](https://anytools.fyi/split-pdf/)");
   expect(llms).toContain("[Rotate PDF](https://anytools.fyi/rotate-pdf/)");
-  expect(llms).not.toContain("Add watermark");
+  expect(llms).toContain("[Add watermark](https://anytools.fyi/add-watermark/)");
   const full = await (await request.get("/llms-full.txt")).text();
   expect(full).toContain("Does this upload my files?");
 });

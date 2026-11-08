@@ -1,0 +1,696 @@
+---
+import PageGrid from "../../components/PageGrid.astro";
+import en from "../../i18n/en.json";
+
+const t = en.addWatermark;
+const KIND_ICONS = {
+  text: '<path d="M6 20 12 4l6 16"/><path d="M8.5 14h7"/><path d="M4 20h16"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/>',
+} as const;
+const LAYER_ICONS = {
+  over: '<path d="m12 3 9 5-9 5-9-5z" fill="currentColor"/><path d="m3 13 9 5 9-5"/>',
+  below: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5" stroke-width="3"/>',
+} as const;
+const kinds = ["text", "image"] as const;
+const spots = ["top-left", "top-center", "top-right", "middle-left", "middle-center", "middle-right", "bottom-left", "bottom-center", "bottom-right"] as const;
+const transparencies = ["0", "75", "50", "25"] as const;
+const rotations = ["0", "45", "90", "180", "270"] as const;
+const layers = ["over", "below"] as const;
+const fonts = ["helvetica", "times", "courier"] as const;
+const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
+---
+
+<div class="mark-layout" data-watermark-options data-testid="watermark-options">
+  <aside class="mark-panel" aria-labelledby="mark-panel-title">
+    <h3 class="mark-panel-title" id="mark-panel-title">{t.panelTitle}</h3>
+
+    <fieldset class="mark-kinds">
+      <legend class="sr-only">{t.kindLegend}</legend>
+      {
+        kinds.map((kind) => (
+          <label class="mark-kind">
+            <input type="radio" name="mark-kind" value={kind} checked={kind === "text"} />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={KIND_ICONS[kind]} />
+            <span>{t.kinds[kind]}</span>
+          </label>
+        ))
+      }
+    </fieldset>
+
+    <div class="mark-section" data-kind-panel="text">
+      <div class="mark-field">
+        <label for="mark-text">{t.text}</label>
+        <input id="mark-text" type="text" maxlength="120" value="CONFIDENTIAL" data-text aria-describedby="mark-error" />
+      </div>
+      <fieldset class="mark-group">
+        <legend>{t.format}</legend>
+        <div class="mark-format">
+          <select data-font aria-label={t.font}>
+            {fonts.map((font) => <option value={font} selected={font === "helvetica"}>{t.fonts[font]}</option>)}
+          </select>
+          <select data-size aria-label={t.size}>
+            {sizes.map((size) => <option value={size} selected={size === 14}>{size}</option>)}
+          </select>
+          <label class="mark-toggle" title={t.bold}><input type="checkbox" data-bold aria-label={t.bold} /><b aria-hidden="true">B</b></label>
+          <label class="mark-toggle" title={t.italic}><input type="checkbox" data-italic aria-label={t.italic} /><i aria-hidden="true">I</i></label>
+          <label class="mark-toggle" title={t.underline}><input type="checkbox" data-underline aria-label={t.underline} /><u aria-hidden="true">U</u></label>
+          <label class="mark-color" title={t.color}><input type="color" value="#000000" data-color aria-label={t.color} /></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="mark-section" data-kind-panel="image" hidden>
+      <div class="mark-field">
+        <span class="mark-label">{t.image}</span>
+        <label class="mark-pick">
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image class="sr-only" aria-label={t.chooseImage} aria-describedby="mark-image-hint" />
+          <span class="mark-pick-preview" data-image-preview hidden></span>
+          <span data-pick-text>{t.chooseImage}</span>
+        </label>
+        <p class="mark-hint" id="mark-image-hint">{t.imageHint}</p>
+      </div>
+    </div>
+
+    <div class="mark-row">
+      <fieldset class="mark-group">
+        <legend>{t.position}</legend>
+        <div class="mark-spots" data-spots>
+          {
+            spots.map((spot) => (
+              <label class="mark-spot" title={t.positions[spot]}>
+                <input type="radio" name="mark-spot" value={spot} checked={spot === "top-left"} aria-label={t.positions[spot]} />
+                <span class="mark-dot" aria-hidden="true" />
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+      <label class="mark-check"><input type="checkbox" data-mosaic />{t.mosaic}</label>
+    </div>
+
+    <div class="mark-pair">
+      <div class="mark-field">
+        <label for="mark-transparency">{t.transparency}</label>
+        <select id="mark-transparency" data-transparency>
+          {transparencies.map((value) => <option value={value} selected={value === "0"}>{t.transparencies[value]}</option>)}
+        </select>
+      </div>
+      <div class="mark-field">
+        <label for="mark-rotation">{t.rotation}</label>
+        <select id="mark-rotation" data-rotation>
+          {rotations.map((value) => <option value={value} selected={value === "0"}>{t.rotations[value]}</option>)}
+        </select>
+      </div>
+    </div>
+
+    <fieldset class="mark-group">
+      <legend>{t.pages}</legend>
+      <div class="mark-boxes">
+        <label class="mark-box"><span>{t.fromPage}</span><input type="number" inputmode="numeric" min="1" step="1" value="1" data-from aria-label={t.fromLabel} /></label>
+        <label class="mark-box"><span>{t.toPage}</span><input type="number" inputmode="numeric" min="1" step="1" value="1" data-to aria-label={t.toLabel} /></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="mark-group">
+      <legend>{t.layer}</legend>
+      <div class="mark-layers">
+        {
+          layers.map((layer) => (
+            <label class="mark-kind mark-layer">
+              <input type="radio" name="mark-layer" value={layer} checked={layer === "over"} />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={LAYER_ICONS[layer]} />
+              <span>{t.layers[layer]}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <p class="mark-error" id="mark-error" data-error data-testid="watermark-error" role="alert" hidden></p>
+    <input type="hidden" name="watermark" data-watermark />
+  </aside>
+
+  <div class="mark-preview">
+    <PageGrid name="mark-grid" />
+  </div>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { canDraw } from "../../lib/pdf/stamp";
+  import { previewPdfOutput } from "../../lib/pdf/preview";
+  import { createPageGrid } from "../../lib/shell/page-grid";
+  import { chosenImage, prepareWatermarkImage, setChosenImage } from "./chosen-image";
+  import { centreFor, mosaicCentres, readSettings, type Settings } from "./watermark";
+
+  const t = en.addWatermark;
+  // Previews are drawn as if pages were A4, so sizes and spots look in proportion.
+  const PAGE = { width: 595, height: 842 };
+  // A4 is a little narrower than the preview frame, so the page fills 94% of its width, centred.
+  const PAGE_SHARE = 94;
+  const FAMILIES = { helvetica: "Helvetica, Arial, sans-serif", times: '"Times New Roman", Times, serif', courier: '"Courier New", Courier, monospace' };
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-watermark-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
+    const textInput = $<HTMLInputElement>("[data-text]");
+    const from = $<HTMLInputElement>("[data-from]");
+    const to = $<HTMLInputElement>("[data-to]");
+    const imageInput = $<HTMLInputElement>("[data-image]");
+    const error = $<HTMLElement>("[data-error]");
+    const output = $<HTMLInputElement>("[data-watermark]");
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+    const measure = document.createElement("canvas").getContext("2d") as CanvasRenderingContext2D;
+
+    let file: File | null = null;
+    let pageCount = 0;
+    // Until someone changes "to", it means the last page of every file.
+    let toChanged = false;
+    let current: Settings = readSettings("");
+
+    const picked = (name: string) => box.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value ?? "";
+    const checked = (selector: string) => $<HTMLInputElement>(selector).checked;
+
+    function read(): Settings {
+      const [vertical, horizontal] = picked("mark-spot").split("-");
+      return readSettings(
+        JSON.stringify({
+          kind: picked("mark-kind"),
+          text: textInput.value,
+          font: $<HTMLSelectElement>("[data-font]").value,
+          size: $<HTMLSelectElement>("[data-size]").value,
+          bold: checked("[data-bold]"),
+          italic: checked("[data-italic]"),
+          underline: checked("[data-underline]"),
+          color: $<HTMLInputElement>("[data-color]").value,
+          vertical,
+          horizontal,
+          mosaic: checked("[data-mosaic]"),
+          transparency: Number($<HTMLSelectElement>("[data-transparency]").value),
+          rotation: Number($<HTMLSelectElement>("[data-rotation]").value),
+          from: from.value,
+          to: toChanged ? to.value : null,
+          layer: picked("mark-layer"),
+        }),
+      );
+    }
+
+    // The watermark's size in points, measured the way it will be drawn.
+    function markSize(): { width: number; height: number } | null {
+      if (current.kind === "image") {
+        const image = chosenImage();
+        if (!image) return null;
+        const scale = Math.min(0.75, (PAGE.width * 0.5) / image.width, (PAGE.height * 0.5) / image.height);
+        return { width: image.width * scale, height: image.height * scale };
+      }
+      measure.font = `${current.italic ? "italic " : ""}${current.bold ? "700 " : ""}${current.size}px ${FAMILIES[current.font]}`;
+      return { width: measure.measureText(current.text).width, height: current.size * 0.72 };
+    }
+
+    // The watermark drawn over a page's picture, in proportion, for each spot it will go.
+    function overlay(page: number): HTMLElement | null {
+      if (!pageCount) return null;
+      const last = Math.min(current.to ?? pageCount, pageCount);
+      if (page < current.from || page > last) return null;
+      const size = markSize();
+      if (!size || (current.kind === "text" && !current.text.trim())) return null;
+      const centres = current.mosaic
+        ? mosaicCentres(PAGE.width, PAGE.height, size.width, size.height, current.rotation)
+        : [centreFor(PAGE.width, PAGE.height, size.width, size.height, current)];
+      const layer = document.createElement("span");
+      for (const centre of centres) {
+        const mark = document.createElement("span");
+        mark.className = "mark-stamp";
+        mark.setAttribute("data-testid", "watermark-mark");
+        mark.dataset.spot = `${current.vertical}-${current.horizontal}`;
+        mark.style.left = `${(100 - PAGE_SHARE) / 2 + (centre.x / PAGE.width) * PAGE_SHARE}%`;
+        mark.style.top = `${(1 - centre.y / PAGE.height) * 100}%`;
+        mark.style.setProperty("--turn", `${-current.rotation}deg`);
+        mark.style.opacity = String(1 - current.transparency / 100);
+        if (current.kind === "image") {
+          const img = document.createElement("img");
+          img.alt = "";
+          img.src = (chosenImage() as { url: string }).url;
+          mark.style.width = `${(size.width / PAGE.width) * PAGE_SHARE}%`;
+          img.style.width = "100%";
+          mark.append(img);
+        } else {
+          mark.textContent = current.text;
+          mark.style.setProperty("--size", String((current.size / PAGE.width) * (PAGE_SHARE / 100)));
+          mark.style.fontFamily = FAMILIES[current.font];
+          mark.style.fontWeight = current.bold ? "700" : "400";
+          mark.style.fontStyle = current.italic ? "italic" : "normal";
+          mark.style.textDecoration = current.underline ? "underline" : "none";
+          mark.style.color = current.color;
+        }
+        layer.append(mark);
+      }
+      return layer;
+    }
+
+    const grid = createPageGrid({
+      list: $<HTMLOListElement>('[data-el="mark-grid-list"]'),
+      status: $<HTMLElement>('[data-el="mark-grid-status"]'),
+      open: previewPdfOutput,
+      overlay,
+      onZoom(page, fromButton) {
+        if (file) shell.dispatchEvent(new CustomEvent("anytools:preview-file", { detail: { file, from: fromButton, page } }));
+      },
+    });
+
+    function sync() {
+      current = read();
+      box.querySelectorAll<HTMLElement>("[data-kind-panel]").forEach((panel) => (panel.hidden = panel.dataset.kindPanel !== current.kind));
+      let message = "";
+      if (current.kind === "text" && !canDraw(current.text)) message = t.textError;
+      else if (current.kind === "text" && !current.text.trim()) message = t.emptyText;
+      error.textContent = message;
+      error.hidden = !message;
+      textInput.toggleAttribute("aria-invalid", current.kind === "text" && Boolean(message));
+      if (runButton) runButton.disabled = Boolean(message) || (current.kind === "image" && !chosenImage());
+      output.value = JSON.stringify(current);
+      grid.decorate();
+    }
+
+    // Page numbers are tidied when leaving a box: within the file, and "to" never before "from".
+    function tidy() {
+      if (!pageCount) return;
+      const start = Math.min(Math.max(Number(from.value) || 1, 1), pageCount);
+      from.value = String(start);
+      if (toChanged) to.value = String(Math.min(Math.max(Number(to.value) || pageCount, start), pageCount));
+      sync();
+    }
+
+    imageInput.addEventListener("change", async () => {
+      const picture = imageInput.files?.[0];
+      imageInput.value = "";
+      if (!picture) return;
+      try {
+        const prepared = await prepareWatermarkImage(picture);
+        setChosenImage(prepared);
+        const preview = $<HTMLElement>("[data-image-preview]");
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = prepared.url;
+        preview.replaceChildren(img);
+        preview.hidden = false;
+        $<HTMLElement>("[data-pick-text]").textContent = t.changeImage;
+        error.hidden = true;
+      } catch {
+        error.textContent = t.imageUnreadable;
+        error.hidden = false;
+        return;
+      }
+      sync();
+    });
+
+    box.addEventListener("input", (event) => {
+      if (event.target === imageInput) return;
+      if (event.target === to) toChanged = true;
+      sync();
+    });
+    box.addEventListener("change", (event) => {
+      if (event.target === imageInput) return;
+      if (event.target === from || event.target === to) tidy();
+      else sync();
+    });
+
+    shell.addEventListener("anytools:files", async (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files[0] ?? null;
+      if (next === file) return;
+      file = next;
+      pageCount = 0;
+      sync();
+      pageCount = (await grid.load(file)) ?? 0;
+      if (!file || !pageCount) return;
+      $<HTMLOListElement>('[data-el="mark-grid-list"]').setAttribute("aria-label", fill(t.pagesLabel, { name: file.name }));
+      if (!toChanged) to.value = String(pageCount);
+      from.max = to.max = String(pageCount);
+      sync();
+      grid.showPages(new Set(), false);
+      // Bring the choices into view, so the next step is obvious after choosing a file.
+      const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+    });
+
+    sync();
+  }
+</script>
+
+<style>
+  /* Like most PDF tools: the options in a panel on the right, the pages on the left. Phones show the options first. */
+  .mark-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .mark-layout {
+      grid-template-columns: minmax(0, 1fr) 23rem;
+      align-items: start;
+    }
+
+    .mark-preview {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .mark-panel {
+      position: sticky;
+      top: calc(var(--header-height, 4rem) + var(--space-md));
+      grid-column: 2;
+    }
+  }
+
+  .mark-panel {
+    display: grid;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .mark-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .mark-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .mark-section {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .mark-section[hidden],
+  .mark-error[hidden],
+  .mark-pick-preview[hidden] {
+    display: none;
+  }
+
+  .mark-group {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .mark-group legend,
+  .mark-field label,
+  .mark-label {
+    margin: 0 0 var(--space-sm);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .mark-group legend {
+    float: left;
+    width: 100%;
+  }
+
+  .mark-kinds,
+  .mark-layers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  /* Choices with pictures, like Split PDF's tabs. They are radio buttons underneath. */
+  .mark-kind {
+    position: relative;
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+    min-width: 0;
+    padding: var(--space-sm) 4px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    color: var(--color-text-muted);
+    font-size: clamp(0.8125rem, 3.4vw, 1rem);
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .mark-layer {
+    font-size: clamp(0.75rem, 3.2vw, 0.875rem);
+    line-height: 1.3;
+  }
+
+  .mark-kind input,
+  .mark-spot input,
+  .mark-toggle input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .mark-kind:has(input:checked),
+  .mark-toggle:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .mark-kind:has(input:focus-visible),
+  .mark-spot:has(input:focus-visible),
+  .mark-toggle:has(input:focus-visible),
+  .mark-color:has(input:focus-visible),
+  .mark-pick:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .mark-field {
+    display: grid;
+  }
+
+  .mark-field select,
+  .mark-field input[type="text"],
+  .mark-format select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  .mark-field input[aria-invalid] {
+    border: 2px solid var(--color-danger);
+  }
+
+  .mark-format {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .mark-format select:first-child {
+    flex: 1 1 100%;
+  }
+
+  .mark-format select[data-size] {
+    flex: 0 0 5rem;
+  }
+
+  .mark-toggle,
+  .mark-color {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    font-size: 1.0625rem;
+    cursor: pointer;
+  }
+
+  .mark-color input {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .mark-pick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    min-height: 56px;
+    padding: var(--space-sm);
+    border: 2px dashed var(--color-accent);
+    border-radius: var(--radius-button);
+    color: var(--color-accent);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mark-pick-preview img {
+    display: block;
+    max-width: 64px;
+    max-height: 40px;
+  }
+
+  .mark-hint {
+    margin: var(--space-xs) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .mark-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--space-lg);
+  }
+
+  /* The position grid: a small page split into nine spots, the chosen one marked with a dot. */
+  .mark-spots {
+    display: grid;
+    grid-template-columns: repeat(3, 32px);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+  }
+
+
+  .mark-row:has([data-mosaic]:checked) .mark-spots {
+    opacity: 0.45;
+  }
+
+  .mark-spot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 36px;
+    border: 1px dashed var(--color-border-subtle);
+    cursor: pointer;
+  }
+
+  .mark-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .mark-spot:has(input:checked) .mark-dot {
+    background: var(--color-accent);
+  }
+
+  .mark-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mark-check input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-accent);
+  }
+
+  .mark-pair,
+  .mark-boxes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  /* A number box with its label inside, like Split PDF's range fields. */
+  .mark-box {
+    display: flex;
+    align-items: stretch;
+    min-height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    overflow: hidden;
+  }
+
+  .mark-box span {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-sm);
+    border-right: 1px solid var(--color-border-subtle);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  .mark-box input {
+    width: 100%;
+    min-width: 0;
+    padding: 0 var(--space-sm);
+    border: 0;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    text-align: right;
+    appearance: textfield;
+  }
+
+  .mark-box input::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+
+  .mark-error {
+    margin: 0;
+    color: var(--color-danger);
+    font-weight: 600;
+  }
+
+  /* The preview watermark sits on the page picture, sized, turned and faded like the real one. */
+  :global(.page-grid-overlay:has(.mark-stamp)) {
+    overflow: hidden;
+    container-type: inline-size;
+  }
+
+  :global(.mark-stamp) {
+    position: absolute;
+    font-size: max(5px, calc(var(--size, 0) * 100cqw));
+    line-height: 1;
+    white-space: nowrap;
+    translate: -50% -50%;
+    rotate: var(--turn, 0deg);
+  }
+
+  :global(.mark-stamp img) {
+    display: block;
+  }
+</style>

@@ -14,7 +14,8 @@ import { HUBS, TOOLS, toolBySlug, type Tool } from "./tools";
 
 const site = new URL("https://anytools.fyi");
 const merge = toolBySlug("merge-pdf") as Tool;
-const unbuilt = toolBySlug("add-watermark") as Tool;
+// Every listed tool is built now, so the unbuilt case uses a made-up one.
+const unbuilt: Tool = { ...merge, slug: "not-built-yet", built: false };
 
 describe("indexing", () => {
   it("indexes built tools only", () => {

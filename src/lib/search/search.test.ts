@@ -73,6 +73,7 @@ describe("finds the closest tool", () => {
     ["watermark pdf", "add-watermark"],
     ["stamp confidential", "add-watermark"],
     ["watermrk", "add-watermark"],
+    ["জলছাপ", "add-watermark"],
   ])("%s finds %s", (query, slug) => {
     expect(top(query)).toBe(slug);
   });

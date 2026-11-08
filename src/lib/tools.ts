@@ -163,8 +163,8 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["add-page-numbers", "merge-pdf", "rotate-pdf", "organize-pdf"],
-    aliases: ["watermark pdf", "stamp pdf", "pdf watermark", "confidential stamp", "draft stamp"],
-    built: false,
+    aliases: ["watermark pdf", "stamp pdf", "pdf watermark", "confidential stamp", "draft stamp", "logo on pdf", "জলছাপ"],
+    built: true,
     runsIn: "browser",
   },
 ];

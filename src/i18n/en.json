@@ -209,7 +209,9 @@
     },
     "add-watermark": {
       "name": "Add watermark",
-      "description": "Stamp text like Draft or Confidential across your PDF pages."
+      "description": "Stamp text like Draft or Confidential across your PDF pages.",
+      "title": "Add Watermark to PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Add a watermark to a PDF for free: text like CONFIDENTIAL or DRAFT, or your logo. Set position, transparency, rotation and layer, with live preview."
     }
   },
   "shell": {
@@ -822,6 +824,94 @@
       "trySingle": "Show single pages",
       "captionSingle": "Single page: every number sits in the same corner, here the bottom right.",
       "captionFacing": "Facing pages: numbers move to the outer edge of each spread, like a printed book."
+    }
+  },
+  "addWatermark": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Add watermark",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose your watermark. The pages below show it as it'll look.",
+    "panelTitle": "Watermark options",
+    "kindLegend": "Watermark type",
+    "kinds": {
+      "text": "Place text",
+      "image": "Place image"
+    },
+    "text": "Text",
+    "format": "Text format",
+    "font": "Font",
+    "fonts": {
+      "helvetica": "Helvetica (like Arial)",
+      "times": "Times (like Times New Roman)",
+      "courier": "Courier"
+    },
+    "size": "Size",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "color": "Colour",
+    "image": "Image",
+    "chooseImage": "Choose an image",
+    "changeImage": "Change image",
+    "imageHint": "JPG, PNG, WebP or GIF. See-through parts of a PNG logo stay see-through.",
+    "imageUnreadable": "That image couldn't be opened. Try a JPG or PNG.",
+    "position": "Position",
+    "positions": {
+      "top-left": "Top left",
+      "top-center": "Top center",
+      "top-right": "Top right",
+      "middle-left": "Middle left",
+      "middle-center": "Middle center",
+      "middle-right": "Middle right",
+      "bottom-left": "Bottom left",
+      "bottom-center": "Bottom center",
+      "bottom-right": "Bottom right"
+    },
+    "mosaic": "Mosaic",
+    "transparency": "Transparency",
+    "transparencies": {
+      "0": "No transparency",
+      "75": "75%",
+      "50": "50%",
+      "25": "25%"
+    },
+    "rotation": "Rotation",
+    "rotations": {
+      "0": "Do not rotate",
+      "45": "45 degrees",
+      "90": "90 degrees",
+      "180": "180 degrees",
+      "270": "270 degrees"
+    },
+    "pages": "Pages",
+    "fromPage": "from page",
+    "toPage": "to",
+    "fromLabel": "Watermark from page",
+    "toLabel": "to page",
+    "layer": "Layer",
+    "layers": {
+      "over": "Over the PDF content",
+      "below": "Below the PDF content"
+    },
+    "textError": "The watermark can only use Latin letters, numbers and common symbols for now. Try CONFIDENTIAL or DRAFT.",
+    "emptyText": "Type the watermark text first.",
+    "needImage": "Choose an image first.",
+    "pagesLabel": "Pages of {name}, with the watermark",
+    "zipName": "anytools_watermark.zip",
+    "summaryOne": "Done. Watermark added to {name}, saved as {output} ({size}).",
+    "summaryMany": "Done. Watermark added to {count} PDFs, saved in one ZIP ({size}).",
+    "partLabel": "From {name}",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "contract.pdf",
+      "stamp": "Stamped in your browser",
+      "output": "contract_watermark.pdf",
+      "tryMosaic": "Show Mosaic",
+      "tryCentre": "Show one in the middle",
+      "captionCentre": "One diagonal watermark across the middle of each page, at 50% transparency.",
+      "captionMosaic": "Mosaic repeats the watermark across the whole page, so no part can be cropped out cleanly."
     }
   },
   "theme": {
