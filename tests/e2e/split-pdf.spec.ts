@@ -442,3 +442,20 @@ for (const width of [375, 1366]) {
     await expect(row).toHaveCount(0);
   });
 }
+
+test("split pdf - several files show no page preview, since each part has its own card", async ({ page }) => {
+  await page.goto(PAGE);
+  await picker(page).setInputFiles([{ name: "merged.pdf", mimeType: "application/pdf", buffer: Buffer.from(await makeHeavyPdf(8, 20)) }]);
+  await expect(page.getByTestId("page-grid-range")).toHaveCount(1);
+  await to(page, 1).fill("3");
+  await to(page, 1).blur();
+  await page.getByRole("button", { name: "Add range" }).click();
+  await from(page, 2).fill("6");
+  await from(page, 2).blur();
+  await splitButton(page).click();
+  await expect(page.getByRole("heading", { name: "Your 2 files are ready" })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId("shell-part")).toHaveCount(2);
+  // The download is a ZIP. pdf.js would read the first part out of it, so the preview must not try.
+  await page.waitForTimeout(3000);
+  await expect(page.getByRole("heading", { name: "Preview", exact: true })).toBeHidden();
+});
