@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
-import { buildPdf, jpegOrientation, pageLayout, pdfName, readSettings, type Settings } from "./layout";
+import { buildPdf, isHeic, jpegOrientation, pageLayout, pdfName, readSettings, type Settings } from "./layout";
 
 const image = (name: string) => new Uint8Array(readFileSync(`tests/fixtures/images/${name}`));
 const settings = (overrides: Partial<Settings> = {}): Settings => ({ size: "a4", orientation: "portrait", margin: "none", merge: true, ...overrides });
@@ -12,6 +12,15 @@ describe("jpegOrientation", () => {
     expect(jpegOrientation(image("phone.jpg"))).toBe(6);
     expect(jpegOrientation(image("tall.jpg"))).toBe(1);
     expect(jpegOrientation(new Uint8Array([1, 2, 3]))).toBe(1);
+  });
+});
+
+describe("isHeic", () => {
+  it("spots iPhone HEIC photos by their contents, not their name", () => {
+    expect(isHeic(image("iphone.heic"))).toBe(true);
+    expect(isHeic(image("tall.jpg"))).toBe(false);
+    expect(isHeic(image("logo.png"))).toBe(false);
+    expect(isHeic(new Uint8Array(4))).toBe(false);
   });
 });
 

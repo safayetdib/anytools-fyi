@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "fflate": "0.8.3",
+    "heic-to": "1.6.7",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.5.438"
   }

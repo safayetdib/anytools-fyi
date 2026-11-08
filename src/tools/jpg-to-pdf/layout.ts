@@ -66,6 +66,15 @@ export function jpegOrientation(bytes: Uint8Array): number {
   return 1;
 }
 
+// HEIC and HEIF photos, as iPhones save them, start with an "ftyp" box naming one of these brands.
+const HEIC_BRANDS = new Set(["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"]);
+
+export function isHeic(bytes: Uint8Array): boolean {
+  if (bytes.length < 12) return false;
+  const text = (from: number, to: number) => String.fromCharCode(...bytes.subarray(from, to));
+  return text(4, 8) === "ftyp" && HEIC_BRANDS.has(text(8, 12));
+}
+
 // Where an image of width × height pixels, turned by `rotate`, goes on its page.
 export function pageLayout(width: number, height: number, rotate: number, settings: Settings) {
   const turned = rotate % 180 !== 0;

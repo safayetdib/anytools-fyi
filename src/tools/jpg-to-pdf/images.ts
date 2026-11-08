@@ -1,4 +1,4 @@
-import { jpegOrientation, type PreparedImage } from "./layout";
+import { isHeic, jpegOrientation, type PreparedImage } from "./layout";
 
 // Runs in the page: decoding images needs the browser. JPG and PNG pass through untouched when they can.
 
@@ -9,8 +9,15 @@ function kindOf(bytes: Uint8Array): "jpg" | "png" | "other" {
 }
 
 // The browser turns photos the way their camera tag says, so what's decoded is what people see.
+// Only Safari opens iPhone HEIC photos itself; elsewhere a HEIC decoder (about 0.8 MB) loads the first time one is chosen.
 async function decode(file: Blob): Promise<ImageBitmap> {
-  return createImageBitmap(file, { imageOrientation: "from-image" });
+  try {
+    return await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch (error) {
+    if (!isHeic(new Uint8Array(await file.slice(0, 12).arrayBuffer()))) throw error;
+    const { heicTo } = await import("heic-to");
+    return heicTo({ blob: file, type: "bitmap", options: { imageOrientation: "from-image" } });
+  }
 }
 
 function canvasFor(bitmap: ImageBitmap, width = bitmap.width, height = bitmap.height) {
