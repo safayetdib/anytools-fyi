@@ -525,6 +525,15 @@ const limits = isFiles
     transform: scale(0.98);
   }
 
+  /* Until the tool has what it needs, like a page to remove, the run button fades, as in other PDF tools. */
+  .shell-run-row .shell-run:disabled,
+  .shell-run-row .shell-run:disabled:hover {
+    opacity: 0.55;
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+  }
+
   .shell-secondary,
   .shell-icon-button {
     display: inline-flex;
