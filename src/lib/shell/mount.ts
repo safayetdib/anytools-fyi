@@ -364,7 +364,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
           : files.length > 1
             ? t.resultMany
             : t.resultOne;
-    if (files.length === 1 && tool.previewOutput) void outputPages.load(files[0]);
+    // With parts, the download is a ZIP and each part has its own card, so there's no single file to preview.
+    if (files.length === 1 && partCount === 0 && tool.previewOutput) void outputPages.load(files[0]);
   }
 
   // Each part gets a card: its first page, what it holds, and its own download. The picture opens the whole part.
