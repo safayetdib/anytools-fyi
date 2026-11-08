@@ -4,7 +4,7 @@ howToTitle: "How to convert an image to PDF"
 steps:
   - icon: select
     title: "Select your images"
-    text: "Choose photos, screenshots or scanned pages, or drop them onto the page. JPG, PNG, WebP, GIF and BMP all work."
+    text: "Choose photos, screenshots or scanned pages, or drop them onto the page. JPG, PNG, HEIC, WebP, GIF and BMP all work."
   - icon: arrange
     title: "Put them in order"
     text: "Drag the images in the list to set the page order. Use the rotate button on a card to turn a photo."
@@ -21,7 +21,7 @@ limits:
   - icon: file
     value: "Most types"
     label: "Image types"
-    note: "JPG, PNG, WebP, GIF and BMP, plus HEIC in Safari."
+    note: "JPG, PNG, HEIC, WebP, GIF and BMP."
   - icon: size
     value: "50 MB"
     label: "Image size"
@@ -55,7 +55,7 @@ faq:
   - question: "How do I make one PDF from photos of a document?"
     answer: "Add the photos in page order, choose A4, and leave Merge all images in one PDF file ticked. Each photo becomes one page of the PDF."
   - question: "Which image types can I use?"
-    answer: "JPG, PNG, WebP, GIF and BMP work in every modern browser. HEIC photos from iPhones work in Safari; in other browsers, share them as JPG first."
+    answer: "JPG, PNG, HEIC from iPhones, WebP, GIF and BMP, in every modern browser. TIFF isn't supported, because browsers can't open it."
   - question: "Will my photos lose quality?"
     answer: "No. JPG and PNG images go into the PDF exactly as they are. Other types are converted once at high quality."
   - question: "Can I use it on my phone?"

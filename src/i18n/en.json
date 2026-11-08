@@ -157,6 +157,13 @@
       "metaDescription": "Convert PNG to PDF for free. Screenshots, logos and transparent PNGs keep their full quality, as one PDF or one per image. No signup, nothing uploaded.",
       "size": "PNG"
     },
+    "heic-to-pdf": {
+      "name": "HEIC to PDF",
+      "description": "Convert iPhone HEIC photos to PDF, in any browser, on any phone or computer.",
+      "title": "HEIC to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert HEIC to PDF for free. iPhone photos open in any browser on Windows, Android or Mac and become one PDF, upright and full quality. Nothing uploaded.",
+      "size": "HEIC"
+    },
     "webp-to-pdf": {
       "name": "WebP to PDF",
       "description": "Convert WebP images saved from websites into a PDF you can open anywhere.",

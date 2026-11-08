@@ -90,7 +90,7 @@ describe("launch registry", () => {
   // Each image type gets its own page, running the JPG to PDF tool, with its own guide so it isn't a copy.
   it("gives each image type its own page that runs JPG to PDF", () => {
     const formats = TOOLS.filter((t) => t.variantOf === "jpg-to-pdf");
-    expect(formats.map((t) => t.slug)).toEqual(["image-to-pdf", "png-to-pdf", "webp-to-pdf"]);
+    expect(formats.map((t) => t.slug)).toEqual(["image-to-pdf", "png-to-pdf", "heic-to-pdf", "webp-to-pdf"]);
     for (const format of formats) {
       expect(format.built, format.slug).toBe(true);
       expect(existsSync(`src/content/tools/${format.slug}.md`), format.slug).toBe(true);

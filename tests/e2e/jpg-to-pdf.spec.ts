@@ -106,6 +106,20 @@ test("jpg to pdf - separate PDFs come in one ZIP, named after each image", async
   await expect(page.getByTestId("shell-part")).toHaveCount(3);
 });
 
+// Chrome can't open HEIC by itself, so this uses the decoder the page loads for HEIC photos.
+test("jpg to pdf - iPhone HEIC photos convert in browsers that can't open them", async ({ page }) => {
+  await choose(page, ["iphone.heic", "wide.heic", "tall.jpg"]);
+  await expect(page.getByTestId("shell-file").first()).not.toContainText("Couldn't preview");
+  await panel(page).getByLabel("Page size").selectOption("fit");
+  const { name, bytes } = await convertAndDownload(page);
+  expect(name).toBe("iphone.pdf");
+  expect(await sizes(bytes)).toEqual([
+    [450, 600],
+    [675, 375],
+    [450, 600],
+  ]);
+});
+
 test("jpg to pdf - a phone photo comes out the way it's shown, not sideways", async ({ page }) => {
   await choose(page, ["phone.jpg"]);
   await panel(page).getByLabel("Page size").selectOption("fit");
@@ -153,6 +167,7 @@ for (const colorScheme of ["light", "dark"] as const) {
 
 const FORMATS = [
   { path: "/png-to-pdf/", name: "PNG to PDF", title: "PNG to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert PNG to PDF", file: "logo.png" },
+  { path: "/heic-to-pdf/", name: "HEIC to PDF", title: "HEIC to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert HEIC to PDF", file: "iphone.heic" },
   { path: "/webp-to-pdf/", name: "WebP to PDF", title: "WebP to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert WebP to PDF", file: "square.webp" },
   { path: "/image-to-pdf/", name: "Image to PDF", title: "Image to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert an image to PDF", file: "wide.jpg" },
 ];
@@ -172,7 +187,7 @@ for (const format of FORMATS) {
     expect(crumbs).toEqual(["Home", "PDF tools", "JPG to PDF", format.name]);
     // Links to the other image types, with this one marked as the current page.
     const types = page.getByRole("navigation", { name: "Convert other image types" });
-    await expect(types.getByRole("link")).toHaveText(["JPG", "Any image", "PNG", "WebP"]);
+    await expect(types.getByRole("link")).toHaveText(["JPG", "Any image", "PNG", "HEIC", "WebP"]);
     await expect(types.locator('[aria-current="page"]')).toHaveText(format.name === "Image to PDF" ? "Any image" : format.name.split(" ")[0]);
     await picker(page).setInputFiles([`${IMAGES}/${format.file}`]);
     await expect(cards(page).locator("img")).toHaveCount(1);

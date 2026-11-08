@@ -39,6 +39,8 @@ describe("finds the closest tool", () => {
     ["jpeg to pdf", "jpg-to-pdf"],
     ["png to pdf", "png-to-pdf"],
     ["webp to pdf", "webp-to-pdf"],
+    ["heic to pdf", "heic-to-pdf"],
+    ["iphone photo to pdf", "heic-to-pdf"],
     ["image to pdf", "image-to-pdf"],
     ["pictures to pdf", "image-to-pdf"],
     ["photo to pdf", "image-to-pdf"],

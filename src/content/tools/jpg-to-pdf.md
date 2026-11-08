@@ -4,7 +4,7 @@ howToTitle: "How to convert JPG to PDF"
 steps:
   - icon: select
     title: "Select your images"
-    text: "Choose JPG, PNG or other photos, or drop them onto the page. Each one becomes a page, in the order of the list."
+    text: "Choose JPG, PNG, HEIC or other photos, or drop them onto the page. Each one becomes a page, in the order of the list."
   - icon: arrange
     title: "Put them in order"
     text: "Drag the images in the list to change the order of the pages. Use the rotate button on a card to turn a photo."
@@ -21,7 +21,7 @@ limits:
   - icon: file
     value: "JPG, PNG"
     label: "Image types"
-    note: "Also WebP, GIF and BMP, and HEIC on iPhone and Mac Safari. Not TIFF."
+    note: "Also HEIC from iPhones, WebP, GIF and BMP. Not TIFF."
   - icon: size
     value: "50 MB"
     label: "Image size"
@@ -59,7 +59,7 @@ faq:
   - question: "What page size should I choose?"
     answer: "A4 is the standard paper size in most countries, and US Letter in the US and Canada. Choose Fit to keep each image's own size and shape."
   - question: "Can I convert iPhone photos (HEIC)?"
-    answer: "Yes, in Safari on iPhone, iPad and Mac, which can open HEIC photos. In other browsers, share the photo as JPG first, or set your iPhone camera to Most Compatible."
+    answer: "Yes, in any modern browser. Safari opens HEIC photos itself; other browsers load a small HEIC reader the first time you add one, and it runs on your device like everything else."
   - question: "Does it work offline?"
     answer: "Yes, once your images are chosen. The page loads its PDF tool as soon as you start choosing files. After that, you can turn off your connection and still convert them."
 ---

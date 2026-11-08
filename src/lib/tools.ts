@@ -85,6 +85,16 @@ export const TOOLS: Tool[] = [
     variantOf: "jpg-to-pdf",
   },
   {
+    slug: "heic-to-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["jpg-to-pdf", "pdf-to-jpg", "merge-pdf", "organize-pdf"],
+    aliases: ["heif to pdf", "iphone photo to pdf", "convert heic to pdf", "heic into pdf", "apple photo to pdf"],
+    built: true,
+    runsIn: "browser",
+    variantOf: "jpg-to-pdf",
+  },
+  {
     slug: "webp-to-pdf",
     hub: "pdf",
     input: "files",
