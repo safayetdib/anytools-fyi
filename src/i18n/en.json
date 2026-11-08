@@ -137,9 +137,32 @@
     },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
-      "description": "Turn JPG and PNG images into one PDF, in the order you choose.",
-      "title": "JPG to PDF Converter Online Free, No Upload | AnyTools.fyi",
-      "metaDescription": "Convert JPG, PNG and other images to PDF for free. Choose A4, Letter or the image's own size, add margins, and merge into one PDF. No signup, nothing uploaded."
+      "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
+      "title": "JPG to PDF: Convert Images to PDF Online Free | AnyTools.fyi",
+      "metaDescription": "Convert JPG to PDF, or any image to PDF: photos, PNG, WebP and scans. Choose A4, Letter or Fit, add margins, merge into one PDF. Free, no upload.",
+      "size": "JPG",
+      "variantsTitle": "Convert other image types"
+    },
+    "image-to-pdf": {
+      "name": "Image to PDF",
+      "description": "Convert photos, pictures and scans to PDF, as one file or one per image.",
+      "title": "Image to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert any image to PDF for free: photos, screenshots and scans in JPG, PNG or WebP. Merge them into one PDF, on A4, Letter or Fit. Nothing uploaded.",
+      "size": "Any image"
+    },
+    "png-to-pdf": {
+      "name": "PNG to PDF",
+      "description": "Convert PNG images and screenshots to PDF, keeping transparent backgrounds.",
+      "title": "PNG to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert PNG to PDF for free. Screenshots, logos and transparent PNGs keep their full quality, as one PDF or one per image. No signup, nothing uploaded.",
+      "size": "PNG"
+    },
+    "webp-to-pdf": {
+      "name": "WebP to PDF",
+      "description": "Convert WebP images saved from websites into a PDF you can open anywhere.",
+      "title": "WebP to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert WebP to PDF for free. Turn WebP images saved from websites into a PDF that opens on any device, merged or one per image. Nothing uploaded.",
+      "size": "WebP"
     },
     "pdf-to-jpg": {
       "name": "PDF to JPG",

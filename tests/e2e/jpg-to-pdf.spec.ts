@@ -148,3 +148,53 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(result.map((v) => v.id)).toEqual([]);
   });
 }
+
+// --- Pages for other image types: the same tool, each with its own title, guide and search details ---
+
+const FORMATS = [
+  { path: "/png-to-pdf/", name: "PNG to PDF", title: "PNG to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert PNG to PDF", file: "logo.png" },
+  { path: "/webp-to-pdf/", name: "WebP to PDF", title: "WebP to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert WebP to PDF", file: "square.webp" },
+  { path: "/image-to-pdf/", name: "Image to PDF", title: "Image to PDF Converter Online Free, No Upload | AnyTools.fyi", how: "How to convert an image to PDF", file: "wide.jpg" },
+];
+
+for (const format of FORMATS) {
+  test(`jpg to pdf - ${format.name} has its own page that converts`, async ({ page }) => {
+    await page.goto(format.path);
+    await expect(page).toHaveTitle(format.title);
+    await expect(page.getByRole("heading", { level: 1, name: format.name })).toBeVisible();
+    await expect(page.getByRole("heading", { name: format.how })).toBeVisible();
+    expect(await page.locator('link[rel="canonical"]').getAttribute("href")).toBe(`https://anytools.fyi${format.path}`);
+    expect(await page.locator('meta[name="robots"]').getAttribute("content")).toContain("index, follow");
+    expect(await page.locator('meta[property="og:image"]').getAttribute("content")).toBe(`https://anytools.fyi/og${format.path.slice(0, -1)}.png`);
+    const data = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((text) => JSON.parse(text));
+    expect(data.map((item) => item["@type"])).toEqual(expect.arrayContaining(["WebApplication", "HowTo", "FAQPage", "BreadcrumbList"]));
+    const crumbs = data.find((item) => item["@type"] === "BreadcrumbList").itemListElement.map((item: { name: string }) => item.name);
+    expect(crumbs).toEqual(["Home", "PDF tools", "JPG to PDF", format.name]);
+    // Links to the other image types, with this one marked as the current page.
+    const types = page.getByRole("navigation", { name: "Convert other image types" });
+    await expect(types.getByRole("link")).toHaveText(["JPG", "Any image", "PNG", "WebP"]);
+    await expect(types.locator('[aria-current="page"]')).toHaveText(format.name === "Image to PDF" ? "Any image" : format.name.split(" ")[0]);
+    await picker(page).setInputFiles([`${IMAGES}/${format.file}`]);
+    await expect(cards(page).locator("img")).toHaveCount(1);
+    const { name } = await convertAndDownload(page);
+    expect(name).toBe(format.file.replace(/\.[^.]+$/, ".pdf"));
+  });
+}
+
+test("jpg to pdf - image type pages are in the sitemap and search, not the tool grid", async ({ page, request }) => {
+  const xml = await (await request.get("/sitemap.xml")).text();
+  for (const { path } of FORMATS) expect(xml).toContain(`<loc>https://anytools.fyi${path}</loc>`);
+  await page.goto("/");
+  await expect(page.getByTestId("tool-card").filter({ hasText: "JPG to PDF" })).toHaveCount(1);
+  await expect(page.getByTestId("tool-card").filter({ hasText: "PNG to PDF" })).toHaveCount(0);
+});
+
+for (const width of [375, 768]) {
+  test(`jpg to pdf - the image type links fit at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/png-to-pdf/");
+    await expect(page.getByRole("navigation", { name: "Convert other image types" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/png-page-${width}.png` });
+  });
+}

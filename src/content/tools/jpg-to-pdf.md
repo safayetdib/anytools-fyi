@@ -54,7 +54,7 @@ faq:
     answer: "No. Your images are read and turned into a PDF inside your browser, and the PDF is saved straight to your device. You can check this in your browser's Network tab: nothing is uploaded."
   - question: "Will my photos lose quality?"
     answer: "No. JPG and PNG images are placed in the PDF exactly as they are, without compressing them again. Other formats are converted once at high quality."
-  - question: "Can I make one PDF from several photos?"
+  - question: "Can I convert several photos into one PDF?"
     answer: "Yes. Add all your photos and leave Merge all images in one PDF file ticked. Each photo becomes a page, in the order of the list."
   - question: "What page size should I choose?"
     answer: "A4 is the standard paper size in most countries, and US Letter in the US and Canada. Choose Fit to keep each image's own size and shape."
@@ -64,4 +64,4 @@ faq:
     answer: "Yes, once your images are chosen. The page loads its PDF tool as soon as you start choosing files. After that, you can turn off your connection and still convert them."
 ---
 
-Converting images to PDF puts your photos, scans and screenshots into one document that's easy to send, upload or print. Choose A4 or US Letter for pages that print evenly, or Fit to keep each image's own shape, and add a margin if you need one. Photos keep their full quality, and they're turned the right way up, just as your phone shows them.
+Converting JPG to PDF, or any image to PDF, puts your photos, scans and screenshots into one document that's easy to send, upload or print. Choose A4 or US Letter for pages that print evenly, or Fit to keep each image's own shape, and add a margin if you need one. Photos keep their full quality, and they're turned the right way up, just as your phone shows them.
