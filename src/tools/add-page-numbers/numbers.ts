@@ -1,4 +1,5 @@
-import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import { PDFDocument, degrees, type PDFFont, type PDFPage } from "pdf-lib";
+import { FONTS, colour, shownSize, toPage } from "../../lib/pdf/stamp";
 import { JobError } from "../../lib/worker/host";
 
 export interface Settings {
@@ -118,35 +119,6 @@ export function place(width: number, height: number, textWidth: number, textHeig
   const x = { left: margin, center: (width - textWidth) / 2, right: width - margin - textWidth }[horizontal];
   const y = { bottom: margin, middle: (height - textHeight) / 2, top: height - margin - textHeight }[settings.vertical];
   return { x, y };
-}
-
-const FONTS = {
-  helvetica: [StandardFonts.Helvetica, StandardFonts.HelveticaBold, StandardFonts.HelveticaOblique, StandardFonts.HelveticaBoldOblique],
-  times: [StandardFonts.TimesRoman, StandardFonts.TimesRomanBold, StandardFonts.TimesRomanItalic, StandardFonts.TimesRomanBoldItalic],
-  courier: [StandardFonts.Courier, StandardFonts.CourierBold, StandardFonts.CourierOblique, StandardFonts.CourierBoldOblique],
-} as const;
-
-function colour(hex: string) {
-  const value = Number.parseInt(hex.slice(1), 16);
-  return rgb(((value >> 16) & 255) / 255, ((value >> 8) & 255) / 255, (value & 255) / 255);
-}
-
-// Turns a point measured on the page as shown into the page's own coordinates, and the angle text needs to look upright.
-function toPage(page: PDFPage, x: number, y: number) {
-  const box = page.getCropBox();
-  const turn = ((page.getRotation().angle % 360) + 360) % 360;
-  const points = {
-    0: { x, y, angle: 0 },
-    90: { x: box.width - y, y: x, angle: 90 },
-    180: { x: box.width - x, y: box.height - y, angle: 180 },
-    270: { x: y, y: box.height - x, angle: 270 },
-  }[turn as 0 | 90 | 180 | 270];
-  return { x: box.x + points.x, y: box.y + points.y, angle: points.angle };
-}
-
-function shownSize(page: PDFPage): [number, number] {
-  const { width, height } = page.getCropBox();
-  return page.getRotation().angle % 180 === 0 ? [width, height] : [height, width];
 }
 
 function drawLabel(page: PDFPage, font: PDFFont, label: string, settings: Settings, left: boolean) {

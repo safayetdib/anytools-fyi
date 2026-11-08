@@ -111,13 +111,12 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
   import { fill } from "../../i18n/format";
   import { previewPdfOutput } from "../../lib/pdf/preview";
   import { createPageGrid } from "../../lib/shell/page-grid";
+  import { canDraw } from "../../lib/pdf/stamp";
   import { MARGINS, labelFor, numbering, onLeft, readSettings, type Settings } from "./numbers";
 
   const t = en.addPageNumbers;
   // Previews are drawn as if pages were A4 wide, so sizes and margins look in proportion.
   const PREVIEW_WIDTH_PT = 595;
-  // Latin letters, digits and the symbols the built-in PDF fonts can draw (Windows-1252).
-  const DRAWABLE = /^[\x20-\x7e\xa0-\xff€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]*$/;
   const FAMILIES = { helvetica: "Helvetica, Arial, sans-serif", times: '"Times New Roman", Times, serif', courier: '"Courier New", Courier, monospace' };
 
   const root = document.querySelector<HTMLElement>("[data-tool-shell]");
@@ -209,7 +208,7 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
       const isCustom = current.text === "custom";
       $<HTMLElement>("[data-custom-row]").hidden = !isCustom;
       $<HTMLElement>("[data-cover-row]").hidden = current.mode !== "facing";
-      const drawable = !isCustom || DRAWABLE.test(custom.value);
+      const drawable = !isCustom || canDraw(custom.value);
       error.hidden = drawable;
       custom.toggleAttribute("aria-invalid", !drawable);
       if (runButton) runButton.disabled = !drawable;
