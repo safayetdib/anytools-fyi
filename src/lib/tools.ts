@@ -110,7 +110,7 @@ export const TOOLS: Tool[] = [
     input: "files",
     related: ["jpg-to-pdf", "extract-pdf-pages", "split-pdf", "merge-pdf"],
     aliases: ["pdf to image", "pdf to png", "pdf to picture", "save pdf as image", "পিডিএফ থেকে ছবি"],
-    built: false,
+    built: true,
     runsIn: "browser",
   },
   {

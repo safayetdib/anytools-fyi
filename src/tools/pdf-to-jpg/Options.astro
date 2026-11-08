@@ -1,0 +1,398 @@
+---
+import en from "../../i18n/en.json";
+
+const t = en.pdfToJpg;
+const modes = ["pages", "images"] as const;
+const qualities = ["normal", "high"] as const;
+---
+
+<div class="jpg-layout" data-pdf-jpg-options data-testid="pdf-jpg-options">
+  <aside class="jpg-panel" aria-labelledby="jpg-panel-title">
+    <h3 class="jpg-panel-title" id="jpg-panel-title">{t.panelTitle}</h3>
+
+    <fieldset class="jpg-modes">
+      <legend class="sr-only">{t.modeLegend}</legend>
+      {
+        modes.map((mode) => (
+          <label class="jpg-mode">
+            <input type="radio" name="jpg-mode" value={mode} checked={mode === "pages"} />
+            <span class="jpg-mode-title">{t.modes[mode]}</span>
+            {mode === "pages" ? (
+              <span class="jpg-mode-note" id="jpg-info" data-testid="pdf-jpg-info" data-pages-info />
+            ) : (
+              <span class="jpg-mode-note" data-images-info>
+                {t.imagesInfo}
+              </span>
+            )}
+          </label>
+        ))
+      }
+    </fieldset>
+
+    <fieldset class="jpg-quality">
+      <legend>{t.quality}</legend>
+      <div class="jpg-quality-options">
+        {
+          qualities.map((quality) => (
+            <label class="jpg-quality-option">
+              <input type="radio" name="jpg-quality" value={quality} checked={quality === "normal"} />
+              <span class="jpg-quality-name">{t.qualities[quality]}</span>
+              {quality === "normal" && <span class="jpg-quality-note">{t.recommended}</span>}
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+    <input type="hidden" name="choice" data-choice />
+  </aside>
+
+  <ul class="jpg-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { previewPdfFile } from "../../lib/pdf/preview";
+
+  const t = en.pdfToJpg;
+  const THUMBNAIL_WIDTH = 240;
+
+  interface Entry {
+    url: string | null;
+    pages: number | null;
+    failed: boolean;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-pdf-jpg-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+    const pagesInfo = box.querySelector("[data-pages-info]") as HTMLElement;
+    const choiceInput = box.querySelector("[data-choice]") as HTMLInputElement;
+
+    let files: File[] = [];
+    const entries = new Map<File, Entry>();
+    const picked = (name: string) => box.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value ?? "";
+
+    // "Every page of this PDF will be converted into a JPG file. 12 JPG will be created.", with the count in bold.
+    function sync() {
+      choiceInput.value = JSON.stringify({ mode: picked("jpg-mode"), quality: picked("jpg-quality") });
+      const counts = files.map((file) => entries.get(file)?.pages);
+      const known = counts.every((count) => typeof count === "number");
+      pagesInfo.replaceChildren(files.length > 1 ? t.pagesInfoMany : t.pagesInfoOne);
+      if (files.length && known) {
+        const total = (counts as number[]).reduce((sum, count) => sum + count, 0);
+        const strong = document.createElement("strong");
+        strong.textContent = fill(t.created, { count: total });
+        pagesInfo.append(" ", strong, ` ${t.createdTail}`);
+      }
+    }
+
+    function draw() {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const entry = entries.get(file) as Entry;
+          const card = document.createElement("li");
+          card.className = "jpg-card";
+          card.setAttribute("data-testid", "pdf-jpg-card");
+          const frame = document.createElement("span");
+          frame.className = "jpg-card-frame";
+          if (entry.url) {
+            const img = document.createElement("img");
+            img.alt = "";
+            img.src = entry.url;
+            frame.append(img);
+          } else if (entry.failed) frame.textContent = t.unreadablePreview;
+          else frame.classList.add("is-loading");
+          const name = document.createElement("span");
+          name.className = "jpg-card-name";
+          name.textContent = file.name;
+          const meta = document.createElement("span");
+          meta.className = "jpg-card-meta";
+          if (entry.pages !== null) meta.textContent = entry.pages === 1 ? t.pageOne : fill(t.pageMany, { count: entry.pages });
+          card.append(frame, name, meta);
+          return card;
+        }),
+      );
+      sync();
+    }
+
+    async function look(file: File) {
+      const entry = entries.get(file) as Entry;
+      const preview = await previewPdfFile(file, THUMBNAIL_WIDTH);
+      if (preview.status === "ready" && preview.image) {
+        entry.url = URL.createObjectURL(preview.image);
+        entry.pages = preview.pageCount ?? null;
+      } else {
+        entry.failed = true;
+        entry.pages = 0;
+      }
+      if (files.includes(file)) draw();
+    }
+
+    box.addEventListener("change", sync);
+
+    shell.addEventListener("anytools:files", (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files;
+      for (const [file, entry] of entries) {
+        if (next.includes(file)) continue;
+        if (entry.url) URL.revokeObjectURL(entry.url);
+        entries.delete(file);
+      }
+      const added = next.filter((file) => !entries.has(file));
+      for (const file of added) entries.set(file, { url: null, pages: null, failed: false });
+      const first = files.length === 0 && next.length > 0;
+      files = next;
+      draw();
+      added.forEach((file) => void look(file));
+      // Bring the choices into view after choosing the first files, so the next step is obvious.
+      if (first) {
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+    });
+
+    sync();
+  }
+</script>
+
+<style>
+  /* Like most PDF tools: the options in a panel on the right, the files on the left. Phones show the options first. */
+  .jpg-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .jpg-layout {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: start;
+    }
+
+    .jpg-cards {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .jpg-panel {
+      position: sticky;
+      top: calc(var(--header-height, 4rem) + var(--space-md));
+      grid-column: 2;
+    }
+  }
+
+  .jpg-panel {
+    display: grid;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .jpg-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .jpg-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .jpg-modes {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  /* Each mode is a card with a radio, its name and what it makes, like other PDF tools. */
+  .jpg-mode {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px var(--space-sm);
+    align-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    cursor: pointer;
+  }
+
+  .jpg-mode input {
+    grid-row: span 2;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 2px 0 0;
+    accent-color: var(--color-accent);
+  }
+
+  .jpg-mode:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .jpg-mode-title {
+    font-weight: 700;
+  }
+
+  .jpg-mode-note {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .jpg-mode-note strong {
+    color: var(--color-text);
+  }
+
+  .jpg-quality legend {
+    margin: 0 0 var(--space-sm);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .jpg-quality-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .jpg-quality-option {
+    position: relative;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    min-height: 52px;
+    padding: var(--space-xs);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .jpg-quality-option input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .jpg-quality-option:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .jpg-quality-option:has(input:focus-visible),
+  .jpg-mode:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .jpg-quality-note {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  @media (hover: hover) {
+    .jpg-mode:not(:has(input:checked)):hover,
+    .jpg-quality-option:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+  }
+
+  .jpg-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: var(--space-lg);
+    align-content: start;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (max-width: 599px) {
+    .jpg-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+  }
+
+  :global(.jpg-card) {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--space-sm);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+
+  :global(.jpg-card-frame) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    margin-bottom: var(--space-xs);
+    border-radius: 6px;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+
+  :global(.jpg-card-frame img) {
+    max-width: 80%;
+    max-height: 80%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  }
+
+  :global(.jpg-card-frame.is-loading) {
+    animation: jpg-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes jpg-pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  :global(.jpg-card-name) {
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.jpg-card-meta) {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.jpg-card-frame.is-loading) {
+      animation: none;
+    }
+  }
+</style>

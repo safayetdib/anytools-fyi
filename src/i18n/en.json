@@ -173,7 +173,9 @@
     },
     "pdf-to-jpg": {
       "name": "PDF to JPG",
-      "description": "Save each PDF page as a sharp JPG image."
+      "description": "Save each PDF page as a sharp JPG image.",
+      "title": "PDF to JPG Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert PDF to JPG for free. Save every page as a sharp JPG image, or extract the photos inside a PDF, in normal or high quality. Nothing uploaded."
     },
     "organize-pdf": {
       "name": "Organize PDF",
@@ -690,6 +692,56 @@
       "tryA4": "Show A4 with margins",
       "captionA4": "A4 with a small margin: every photo sits centred on a standard page, ready to print.",
       "captionFit": "Fit: each page takes its photo's own shape, so nothing is added around it."
+    }
+  },
+  "pdfToJpg": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to JPG",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose how to convert. Each PDF's pictures come out in the order of this list.",
+    "panelTitle": "PDF to JPG options",
+    "modeLegend": "Convert",
+    "modes": {
+      "pages": "Page to JPG",
+      "images": "Extract images"
+    },
+    "pagesInfoOne": "Every page of this PDF will be converted into a JPG file.",
+    "pagesInfoMany": "Every page of these PDFs will be converted into a JPG file.",
+    "created": "{count} JPG",
+    "createdTail": "will be created.",
+    "imagesInfo": "All embedded images inside the PDF will be extracted as JPG images.",
+    "quality": "Image quality",
+    "qualities": {
+      "normal": "Normal",
+      "high": "High"
+    },
+    "recommended": "Recommended",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipPages": "anytools_pages-to-jpg.zip",
+    "zipImages": "anytools_images-from-pdf.zip",
+    "partPage": "Page {page} of {name}",
+    "partImage": "Picture {number} from {name}",
+    "summaryOne": "Done. Saved as {output} ({size}).",
+    "summaryPages": "Done. {count} pages saved as JPG images, in one ZIP ({size}).",
+    "summaryImages": "Done. {count} pictures saved as JPG images, in one ZIP ({size}).",
+    "noImages": "No pictures were found in {name}. Choose Page to JPG to save its pages as pictures instead.",
+    "noImagesMany": "No pictures were found in these PDFs. Choose Page to JPG to save their pages as pictures instead.",
+    "tooMany": "That makes more than {max} pictures. Convert fewer pages at a time, or split the PDF first.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "brochure.pdf",
+      "pages": "{count} pages",
+      "convert": "Converted in your browser",
+      "tryImages": "Show Extract images",
+      "tryPages": "Show Page to JPG",
+      "pageName": "brochure_page-{number}.jpg",
+      "imageName": "brochure_image-{number}.jpg",
+      "captionPages": "Page to JPG: each of the 3 pages becomes its own JPG picture, text and all.",
+      "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
     }
   },
   "theme": {
