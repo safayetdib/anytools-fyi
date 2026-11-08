@@ -428,3 +428,17 @@ for (const width of [320, 375, 768, 1366]) {
     }
   });
 }
+
+for (const width of [375, 1366]) {
+  test(`split pdf - the one file has no drag grip or number, and Remove is right there at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await choose(page, [101, 102]);
+    const row = page.getByTestId("shell-file");
+    await expect(row.locator(".shell-file-grip")).toBeHidden();
+    await expect(row.locator(".shell-file-order")).toBeHidden();
+    await expect(row.getByRole("button", { name: /^More/ })).toHaveCount(0);
+    await row.getByRole("button", { name: "Remove report.pdf" }).click();
+    await expect(picker(page)).toBeAttached();
+    await expect(row).toHaveCount(0);
+  });
+}
