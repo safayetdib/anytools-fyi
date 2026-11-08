@@ -90,7 +90,7 @@ const limits = isFiles
     {
       isFiles && config.arrangeHint && (
         <p class="shell-hint shell-arrange-hint">
-          {config.multiple ? (
+          {config.multiple && config.orderMatters !== false ? (
             <>
               <span class="shell-long-hint">{config.arrangeHint}</span>
               <span class="shell-touch-hint">{t.arrangeHintPhone}</span>
