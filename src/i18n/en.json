@@ -203,7 +203,9 @@
     },
     "add-page-numbers": {
       "name": "Add page numbers",
-      "description": "Number the pages of a PDF, in the position and style you choose."
+      "description": "Number the pages of a PDF, in the position and style you choose.",
+      "title": "Add Page Numbers to PDF Online Free | AnyTools.fyi",
+      "metaDescription": "Add page numbers to a PDF for free. Choose the position, margin, first number, pages and text like Page 1 of 10, with live preview. Nothing uploaded."
     },
     "add-watermark": {
       "name": "Add watermark",
@@ -742,6 +744,84 @@
       "imageName": "brochure_image-{number}.jpg",
       "captionPages": "Page to JPG: each of the 3 pages becomes its own JPG picture, text and all.",
       "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
+    }
+  },
+  "addPageNumbers": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Add page numbers",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose where the numbers go. The pages below show them as they'll look.",
+    "panelTitle": "Page number options",
+    "pageMode": "Page mode",
+    "modes": {
+      "single": "Single page",
+      "facing": "Facing pages"
+    },
+    "cover": "First page is cover page",
+    "position": "Position",
+    "positions": {
+      "top-left": "Top left",
+      "top-center": "Top center",
+      "top-right": "Top right",
+      "middle-left": "Middle left",
+      "middle-center": "Middle center",
+      "middle-right": "Middle right",
+      "bottom-left": "Bottom left",
+      "bottom-center": "Bottom center",
+      "bottom-right": "Bottom right"
+    },
+    "margin": "Margin",
+    "margins": {
+      "small": "Small",
+      "recommended": "Recommended",
+      "big": "Big"
+    },
+    "pages": "Pages",
+    "firstNumber": "First number",
+    "whichPages": "Which pages do you want to number?",
+    "fromPage": "from page",
+    "toPage": "to",
+    "fromLabel": "Number from page",
+    "toLabel": "to page",
+    "text": "Text",
+    "texts": {
+      "number": "Insert only page number (recommended)",
+      "page": "Page {n}",
+      "pageOf": "Page {n} of {p}",
+      "custom": "Custom"
+    },
+    "customLabel": "Custom text",
+    "customHint": "Use {n} for the page number and {p} for the last number.",
+    "format": "Text format",
+    "font": "Font",
+    "fonts": {
+      "helvetica": "Helvetica (like Arial)",
+      "times": "Times (like Times New Roman)",
+      "courier": "Courier"
+    },
+    "size": "Size",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "color": "Colour",
+    "textError": "Custom text can only use Latin letters, numbers and common symbols for now. Try Page {n}, or {n} / {p}.",
+    "pagesLabel": "Pages of {name}, with their numbers",
+    "zipName": "anytools_page-numbers.zip",
+    "summaryOne": "Done. Page numbers added to {name}, saved as {output} ({size}).",
+    "summaryMany": "Done. Page numbers added to {count} PDFs, saved in one ZIP ({size}).",
+    "partLabel": "From {name}",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "thesis.pdf",
+      "pages": "{count} pages",
+      "number": "Numbered in your browser",
+      "output": "thesis_pagenumber.pdf",
+      "tryFacing": "Show facing pages",
+      "trySingle": "Show single pages",
+      "captionSingle": "Single page: every number sits in the same corner, here the bottom right.",
+      "captionFacing": "Facing pages: numbers move to the outer edge of each spread, like a printed book."
     }
   },
   "theme": {

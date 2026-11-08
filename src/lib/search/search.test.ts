@@ -68,6 +68,7 @@ describe("finds the closest tool", () => {
     ["page numbers", "add-page-numbers"],
     ["number pdf pages", "add-page-numbers"],
     ["paginate", "add-page-numbers"],
+    ["পৃষ্ঠা নম্বর", "add-page-numbers"],
     ["watermark", "add-watermark"],
     ["watermark pdf", "add-watermark"],
     ["stamp confidential", "add-watermark"],

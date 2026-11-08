@@ -154,8 +154,8 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["add-watermark", "merge-pdf", "organize-pdf", "rotate-pdf"],
-    aliases: ["number pdf pages", "pdf page numbers", "paginate pdf", "page numbering"],
-    built: false,
+    aliases: ["number pdf pages", "pdf page numbers", "paginate pdf", "page numbering", "পৃষ্ঠা নম্বর"],
+    built: true,
     runsIn: "browser",
   },
   {
