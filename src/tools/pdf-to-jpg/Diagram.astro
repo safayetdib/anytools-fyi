@@ -1,0 +1,228 @@
+---
+import en from "../../i18n/en.json";
+import { fill } from "../../i18n/format";
+
+const d = en.pdfToJpg.diagram;
+// A three-page brochure: page 1 has a photo, page 2 is text, page 3 has another photo.
+const PAGES = [{ photo: 1 }, { photo: 0 }, { photo: 2 }];
+---
+
+<figure class="jpg-diagram" aria-labelledby="jpg-diagram-caption" data-jpg-diagram data-mode="pages">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{fill(d.pages, { count: PAGES.length })}</span>
+      <span class="pages" aria-hidden="true">
+        {
+          PAGES.map((page) => (
+            <span class="page">
+              <span class="lines" />
+              {page.photo > 0 && <span class="photo" data-photo={page.photo} />}
+            </span>
+          ))
+        }
+      </span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+      </svg>
+      <span>{d.convert}</span>
+    </div>
+    <ul class="results is-pages" aria-hidden="true">
+      {
+        PAGES.map((page, index) => (
+          <li class="result">
+            <span class="page">
+              <span class="lines" />
+              {page.photo > 0 && <span class="photo" data-photo={page.photo} />}
+            </span>
+            <span class="file-name">{fill(d.pageName, { number: String(index + 1).padStart(4, "0") })}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <ul class="results is-images" aria-hidden="true">
+      {
+        [1, 2].map((photo) => (
+          <li class="result">
+            <span class="photo is-big" data-photo={photo} />
+            <span class="file-name">{fill(d.imageName, { number: String(photo).padStart(4, "0") })}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-images={d.tryImages} data-label-pages={d.tryPages}>{d.tryImages}</button>
+  </div>
+  <figcaption id="jpg-diagram-caption" aria-live="polite" data-caption-pages={d.captionPages} data-caption-images={d.captionImages}>
+    {d.captionPages}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-jpg-diagram]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  // Switches between saving every page and saving only the photos.
+  toggle?.addEventListener("click", () => {
+    if (!figure || !caption) return;
+    const images = figure.dataset.mode === "pages";
+    figure.dataset.mode = images ? "images" : "pages";
+    caption.textContent = (images ? caption.dataset.captionImages : caption.dataset.captionPages) ?? "";
+    toggle.textContent = (images ? toggle.dataset.labelPages : toggle.dataset.labelImages) ?? "";
+  });
+</script>
+
+<style>
+  .jpg-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc-name {
+    font-weight: 700;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .pages {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  /* A page: lines of text, and a photo on some pages. */
+  .page {
+    display: grid;
+    gap: 4px;
+    align-content: start;
+    width: 2.6rem;
+    height: 3.5rem;
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  .lines {
+    height: 0.9rem;
+    background: repeating-linear-gradient(#c7cfca 0 2px, transparent 2px 5px);
+  }
+
+  .photo {
+    display: block;
+    height: 1.2rem;
+    border-radius: 2px;
+  }
+
+  .photo[data-photo="1"] {
+    background: var(--color-part-1);
+  }
+
+  .photo[data-photo="2"] {
+    background: var(--color-part-3);
+  }
+
+  .photo.is-big {
+    width: 3.4rem;
+    height: 2.4rem;
+  }
+
+  .results {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .jpg-diagram[data-mode="pages"] .is-images,
+  .jpg-diagram[data-mode="images"] .is-pages {
+    display: none;
+  }
+
+  .result {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-button);
+  }
+
+  .file-name {
+    min-width: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

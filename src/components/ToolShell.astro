@@ -90,7 +90,7 @@ const limits = isFiles
     {
       isFiles && config.arrangeHint && (
         <p class="shell-hint shell-arrange-hint">
-          {config.multiple ? (
+          {config.multiple && config.orderMatters !== false ? (
             <>
               <span class="shell-long-hint">{config.arrangeHint}</span>
               <span class="shell-touch-hint">{t.arrangeHintPhone}</span>
@@ -523,6 +523,15 @@ const limits = isFiles
   .shell-primary:active,
   .shell-secondary:active {
     transform: scale(0.98);
+  }
+
+  /* Until the tool has what it needs, like a page to remove, the run button fades, as in other PDF tools. */
+  .shell-run-row .shell-run:disabled,
+  .shell-run-row .shell-run:disabled:hover {
+    opacity: 0.55;
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
   }
 
   .shell-secondary,

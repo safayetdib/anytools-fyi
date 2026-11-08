@@ -1,0 +1,530 @@
+---
+import en from "../../i18n/en.json";
+
+const t = en.jpgToPdf;
+const ORIENTATION_ICONS = {
+  portrait: '<rect x="7" y="3" width="10" height="18" rx="1"/>',
+  landscape: '<rect x="3" y="7" width="18" height="10" rx="1"/>',
+} as const;
+const MARGIN_ICONS = {
+  none: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="m3 17 5-5 4 4 3-3 6 6"/>',
+  small: '<rect x="3" y="3" width="18" height="18" rx="1" stroke-dasharray="2 2"/><rect x="6" y="6" width="12" height="12"/>',
+  big: '<rect x="3" y="3" width="18" height="18" rx="1" stroke-dasharray="2 2"/><rect x="8" y="8" width="8" height="8"/>',
+} as const;
+const orientations = ["portrait", "landscape"] as const;
+const margins = ["none", "small", "big"] as const;
+const sizes = ["fit", "a4", "letter"] as const;
+---
+
+<div class="images-layout" data-images-options data-testid="images-options">
+  <aside class="images-panel" aria-labelledby="images-panel-title">
+    <h3 class="images-panel-title" id="images-panel-title">{t.panelTitle}</h3>
+
+    <fieldset class="images-choice" data-orientation>
+      <legend>{t.orientation}</legend>
+      <div class="images-cards images-cards-2">
+        {
+          orientations.map((value) => (
+            <label class="images-option">
+              <input type="radio" name="image-orientation" value={value} checked={value === "portrait"} />
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ORIENTATION_ICONS[value]} />
+              <span>{t.orientations[value]}</span>
+            </label>
+          ))
+        }
+      </div>
+      <p class="images-note" data-fit-note hidden>{t.fitNote}</p>
+    </fieldset>
+
+    <div class="images-field">
+      <label for="image-size">{t.pageSize}</label>
+      <select id="image-size" data-size>
+        {sizes.map((value) => <option value={value} selected={value === "a4"}>{t.sizes[value]}</option>)}
+      </select>
+    </div>
+
+    <fieldset class="images-choice">
+      <legend>{t.margin}</legend>
+      <div class="images-cards images-cards-3">
+        {
+          margins.map((value) => (
+            <label class="images-option">
+              <input type="radio" name="image-margin" value={value} checked={value === "none"} />
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={MARGIN_ICONS[value]} />
+              <span>{t.margins[value]}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <label class="images-check"><input type="checkbox" data-merge checked />{t.merge}</label>
+    <p class="sr-only" data-announce aria-live="polite"></p>
+    <input type="hidden" name="layout" data-layout />
+  </aside>
+
+  <ul class="images-grid" data-grid aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { imageThumbnail } from "./images";
+  import { DEFAULT_SETTINGS, pageLayout, type Settings } from "./layout";
+
+  const t = en.jpgToPdf;
+  const THUMBNAIL_WIDTH = 320;
+  const ROTATE =
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+
+  interface Entry {
+    // Kept as a running total, so the picture always turns the short way round.
+    spin: number;
+    url: string | null;
+    width: number;
+    height: number;
+    failed: boolean;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-images-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const grid = box.querySelector("[data-grid]") as HTMLUListElement;
+    const size = box.querySelector("[data-size]") as HTMLSelectElement;
+    const merge = box.querySelector("[data-merge]") as HTMLInputElement;
+    const fitNote = box.querySelector("[data-fit-note]") as HTMLElement;
+    const layout = box.querySelector("[data-layout]") as HTMLInputElement;
+    const announce = box.querySelector("[data-announce]") as HTMLElement;
+
+    let files: File[] = [];
+    const entries = new Map<File, Entry>();
+    const turnOf = (entry: Entry) => ((entry.spin % 360) + 360) % 360;
+    const picked = (name: string) => box.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value ?? "";
+
+    function settings(): Settings {
+      return {
+        size: size.value as Settings["size"],
+        orientation: (picked("image-orientation") || DEFAULT_SETTINGS.orientation) as Settings["orientation"],
+        margin: (picked("image-margin") || DEFAULT_SETTINGS.margin) as Settings["margin"],
+        merge: merge.checked,
+      };
+    }
+
+    // Lays a card out like its page: the page's shape, the margin, and the image turned and fitted inside.
+    function paint(card: HTMLElement, entry: Entry, current: Settings) {
+      const turn = turnOf(entry);
+      card.dataset.turn = String(turn);
+      card.style.setProperty("--spin", `${entry.spin}deg`);
+      if (!entry.width) return;
+      const { page, box: area } = pageLayout(entry.width, entry.height, turn, current);
+      card.dataset.shape = page[0] > page[1] ? "landscape" : "portrait";
+      const sheet = card.querySelector<HTMLElement>(".images-sheet") as HTMLElement;
+      sheet.style.aspectRatio = `${page[0]} / ${page[1]}`;
+      const place = card.querySelector<HTMLElement>(".images-place") as HTMLElement;
+      place.style.left = `${(area.x / page[0]) * 100}%`;
+      place.style.bottom = `${(area.y / page[1]) * 100}%`;
+      place.style.width = `${(area.width / page[0]) * 100}%`;
+      place.style.height = `${(area.height / page[1]) * 100}%`;
+      // A turned picture swaps its sides before turning, so it fills its place exactly.
+      const img = place.querySelector("img");
+      if (img) {
+        const turned = turn % 180 !== 0;
+        img.style.width = turned ? `${(area.height / area.width) * 100}%` : "100%";
+        img.style.height = turned ? `${(area.width / area.height) * 100}%` : "100%";
+      }
+    }
+
+    function sync() {
+      const current = settings();
+      const fit = current.size === "fit";
+      box.querySelectorAll<HTMLInputElement>('input[name="image-orientation"]').forEach((input) => (input.disabled = fit));
+      fitNote.hidden = !fit;
+      layout.value = JSON.stringify({ ...current, rotations: files.map((file) => turnOf(entries.get(file) as Entry)) });
+      grid.querySelectorAll<HTMLElement>(".images-card").forEach((card) => {
+        const entry = entries.get(files[Number(card.dataset.index)]);
+        if (entry) paint(card, entry, current);
+      });
+    }
+
+    function draw() {
+      grid.replaceChildren(
+        ...files.map((file, index) => {
+          const entry = entries.get(file) as Entry;
+          const card = document.createElement("li");
+          card.className = "images-card";
+          card.dataset.index = String(index);
+          card.setAttribute("data-testid", "image-card");
+          const sheet = document.createElement("span");
+          sheet.className = "images-sheet";
+          const place = document.createElement("span");
+          place.className = "images-place";
+          if (entry.url) {
+            const img = document.createElement("img");
+            img.alt = "";
+            img.src = entry.url;
+            place.append(img);
+          } else if (!entry.failed) sheet.classList.add("is-loading");
+          sheet.append(place);
+          const frame = document.createElement("span");
+          frame.className = "images-frame";
+          frame.append(sheet);
+          const name = document.createElement("span");
+          name.className = "images-name";
+          name.textContent = file.name;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "images-rotate";
+          button.dataset.rotate = String(index);
+          button.setAttribute("aria-label", fill(t.rotateImage, { name: file.name }));
+          button.innerHTML = ROTATE;
+          card.append(button, frame, name);
+          return card;
+        }),
+      );
+      sync();
+    }
+
+    async function look(file: File) {
+      const entry = entries.get(file) as Entry;
+      try {
+        const thumb = await imageThumbnail(file, THUMBNAIL_WIDTH);
+        entry.url = URL.createObjectURL(thumb.image);
+        entry.width = thumb.width;
+        entry.height = thumb.height;
+      } catch {
+        entry.failed = true;
+      }
+      if (files.includes(file)) draw();
+    }
+
+    box.addEventListener("change", sync);
+    box.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-rotate]");
+      if (!button) return;
+      const file = files[Number(button.dataset.rotate)];
+      const entry = entries.get(file) as Entry;
+      entry.spin += 90;
+      sync();
+      announce.textContent = fill(t.cardLabel, { name: file.name, angle: turnOf(entry) });
+    });
+
+    shell.addEventListener("anytools:files", (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files;
+      for (const [file, entry] of entries) {
+        if (next.includes(file)) continue;
+        if (entry.url) URL.revokeObjectURL(entry.url);
+        entries.delete(file);
+      }
+      const added = next.filter((file) => !entries.has(file));
+      for (const file of added) entries.set(file, { spin: 0, url: null, width: 0, height: 0, failed: false });
+      const first = files.length === 0 && next.length > 0;
+      files = next;
+      draw();
+      added.forEach((file) => void look(file));
+      // Bring the choices into view after choosing the first images, so the next step is obvious.
+      if (first) {
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+    });
+
+    sync();
+  }
+</script>
+
+<style>
+  /* Like most PDF tools: the options in a panel on the right, the images on the left. Phones show the options first. */
+  .images-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .images-layout {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: start;
+    }
+
+    .images-grid {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .images-panel {
+      position: sticky;
+      top: calc(var(--header-height, 4rem) + var(--space-md));
+      grid-column: 2;
+    }
+  }
+
+  .images-panel {
+    display: grid;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .images-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .images-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .images-choice legend,
+  .images-field label {
+    margin: 0 0 var(--space-sm);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .images-cards {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .images-cards-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .images-cards-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Choices with pictures, like Split PDF's tabs. They are radio buttons underneath. */
+  .images-option {
+    position: relative;
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+    min-width: 0;
+    padding: var(--space-sm) 2px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    color: var(--color-text-muted);
+    font-size: clamp(0.8125rem, 3.4vw, 1rem);
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .images-option input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .images-option:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .images-option:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* With Fit, orientation doesn't apply, so its choices fade and can't be picked. */
+  .images-option:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .images-option:has(input:disabled) input {
+    cursor: not-allowed;
+  }
+
+  @media (hover: hover) {
+    .images-option:not(:has(input:checked)):not(:has(input:disabled)):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  .images-note {
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .images-note[hidden] {
+    display: none;
+  }
+
+  .images-field {
+    display: grid;
+  }
+
+  .images-field select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  .images-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .images-check input {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-accent);
+  }
+
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: var(--space-lg);
+    align-content: start;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (max-width: 599px) {
+    .images-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+  }
+
+  /* A card shows the page as it will look: its shape, its margin and the image placed on it. */
+  :global(.images-card) {
+    position: relative;
+    display: grid;
+    gap: var(--space-sm);
+    min-width: 0;
+    padding: var(--space-sm);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+
+  :global(.images-frame) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    padding: var(--space-sm);
+    border-radius: 6px;
+    background: var(--color-bg);
+  }
+
+  :global(.images-sheet) {
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    aspect-ratio: 210 / 297;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  }
+
+  :global(.images-card[data-shape="portrait"] .images-sheet) {
+    width: auto;
+    height: 100%;
+  }
+
+  :global(.images-sheet.is-loading) {
+    animation: images-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes images-pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  :global(.images-place) {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.images-place img) {
+    flex: none;
+    object-fit: fill;
+    transform: rotate(var(--spin, 0deg));
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  :global(.images-name) {
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.images-rotate) {
+    position: absolute;
+    top: var(--space-xs);
+    right: var(--space-xs);
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-accent);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    :global(.images-rotate:hover) {
+      background: var(--color-accent);
+      color: var(--color-on-accent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.images-place img) {
+      transition: none;
+    }
+
+    :global(.images-sheet.is-loading) {
+      animation: none;
+    }
+  }
+</style>

@@ -4,6 +4,8 @@ export interface FileToolConfig {
   mode: "files";
   // Shown under the file list heading, to say what the order or options mean for this tool.
   arrangeHint?: string;
+  // False when the files' order makes no difference, like rotating them, so phones don't get the reordering hint.
+  orderMatters?: boolean;
   accept?: string;
   acceptLabel: string;
   multiple: boolean;

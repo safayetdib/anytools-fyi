@@ -43,12 +43,6 @@ test("ratings - the tool page shows the average and gives it to search engines",
   });
 });
 
-test("ratings - coming-soon tools neither show nor ask for ratings", async ({ page }) => {
-  await page.goto("/rotate-pdf/");
-  await expect(page.getByTestId("tool-rating")).toHaveCount(0);
-  await expect(page.getByTestId("shell-rate")).toHaveCount(0);
-});
-
 test("ratings - one tap on the result screen sends the rating", async ({ page }) => {
   const bodies = await fakeApi(page, ok);
   await page.goto(PAGE);

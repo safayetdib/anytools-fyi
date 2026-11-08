@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import en from "../i18n/en.json";
 import { iconFor } from "./icons";
@@ -69,7 +70,7 @@ describe("launch registry", () => {
       "add-watermark",
     ]);
     expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
-    expect(TOOLS.filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf"]);
+    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "jpg-to-pdf", "pdf-to-jpg", "organize-pdf", "rotate-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark"]);
   });
 
   it("publishes only the PDF hub", () => {
@@ -84,6 +85,18 @@ describe("launch registry", () => {
       expect(strings[t.slug]?.description, t.slug).toBeTruthy();
       expect(iconFor(t), t.slug).toBeTruthy();
     }
+  });
+
+  // Each image type gets its own page, running the JPG to PDF tool, with its own guide so it isn't a copy.
+  it("gives each image type its own page that runs JPG to PDF", () => {
+    const formats = TOOLS.filter((t) => t.variantOf === "jpg-to-pdf");
+    expect(formats.map((t) => t.slug)).toEqual(["image-to-pdf", "png-to-pdf", "heic-to-pdf", "webp-to-pdf"]);
+    for (const format of formats) {
+      expect(format.built, format.slug).toBe(true);
+      expect(existsSync(`src/content/tools/${format.slug}.md`), format.slug).toBe(true);
+      expect(existsSync(`src/tools/${format.slug}`), format.slug).toBe(false);
+    }
+    expect(listedTools().some((t) => t.variantOf)).toBe(false);
   });
 
   // Unbuilt tools are kept out of search page by page, so the site only needs one working tool to go live.

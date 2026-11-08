@@ -14,12 +14,13 @@ import { HUBS, TOOLS, toolBySlug, type Tool } from "./tools";
 
 const site = new URL("https://anytools.fyi");
 const merge = toolBySlug("merge-pdf") as Tool;
-const rotate = toolBySlug("rotate-pdf") as Tool;
+// Every listed tool is built now, so the unbuilt case uses a made-up one.
+const unbuilt: Tool = { ...merge, slug: "not-built-yet", built: false };
 
 describe("indexing", () => {
   it("indexes built tools only", () => {
     expect(isToolIndexable(merge)).toBe(true);
-    expect(isToolIndexable(rotate)).toBe(false);
+    expect(isToolIndexable(unbuilt)).toBe(false);
     expect(indexableTools().every((tool) => tool.built)).toBe(true);
   });
 

@@ -1,0 +1,208 @@
+---
+import en from "../../i18n/en.json";
+import { fill } from "../../i18n/format";
+
+const d = en.extractPdfPages.diagram;
+const PAGES = 6;
+const PICKED = [2, 4, 5];
+---
+
+<figure class="extract-diagram" aria-labelledby="extract-diagram-caption" data-extract-diagram data-merged="false">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{fill(d.pages, { count: PAGES })}</span>
+      <span class="pages">
+        {
+          Array.from({ length: PAGES }, (_, i) => (
+            <span class="page" data-picked={PICKED.includes(i + 1) ? "" : undefined}>
+              {i + 1}
+            </span>
+          ))
+        }
+      </span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="8" height="12" rx="1" /><path d="M14 10h7" /><path d="m18 7 3 3-3 3" /><path d="M7 16v4h10" />
+      </svg>
+      <span>{d.extract}</span>
+    </div>
+    <ol class="results" data-results></ol>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-merged={d.tryMerged} data-label-separate={d.trySeparate}>
+      {d.tryMerged}
+    </button>
+  </div>
+  <figcaption id="extract-diagram-caption" aria-live="polite" data-caption-merged={d.captionMerged} data-caption-separate={d.captionSeparate}>
+    {d.captionSeparate}
+  </figcaption>
+</figure>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+
+  const d = en.extractPdfPages.diagram;
+  const PICKED = [2, 4, 5];
+  const figure = document.querySelector<HTMLElement>("[data-extract-diagram]");
+  const results = figure?.querySelector<HTMLOListElement>("[data-results]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  function file(name: string, pages: number[]) {
+    const item = document.createElement("li");
+    item.className = "doc result";
+    const label = document.createElement("span");
+    label.className = "doc-name";
+    label.textContent = name;
+    const row = document.createElement("span");
+    row.className = "pages";
+    for (const page of pages) {
+      const tile = document.createElement("span");
+      tile.className = "page";
+      tile.toggleAttribute("data-picked", true);
+      tile.textContent = String(page);
+      row.append(tile);
+    }
+    item.append(label, row);
+    return item;
+  }
+
+  // The picked pages become one PDF each, or one PDF together when merged.
+  function draw(merged: boolean) {
+    if (!figure || !results || !toggle || !caption) return;
+    figure.dataset.merged = String(merged);
+    results.replaceChildren(...(merged ? [file(d.merged, PICKED)] : PICKED.map((page) => file(fill(d.partName, { page }), [page]))));
+    caption.textContent = (merged ? caption.dataset.captionMerged : caption.dataset.captionSeparate) ?? "";
+    toggle.textContent = (merged ? toggle.dataset.labelSeparate : toggle.dataset.labelMerged) ?? "";
+  }
+
+  draw(false);
+  toggle?.addEventListener("click", () => draw(figure?.dataset.merged !== "true"));
+</script>
+
+<style>
+  /* The new files are drawn by the script below, so their styles reach past this component's own markup. */
+  .extract-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .extract-diagram :global(.doc) {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .extract-diagram :global(.result) {
+    border: 2px solid var(--color-accent);
+    padding-block: var(--space-sm);
+  }
+
+  .extract-diagram :global(.doc-name) {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .extract-diagram :global(.pages) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--space-xs);
+  }
+
+  /* Picked pages are filled, the rest stay outlined, so it's clear which pages are taken. */
+  .extract-diagram :global(.page) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2.6rem;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .extract-diagram :global(.page[data-picked]) {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .results {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

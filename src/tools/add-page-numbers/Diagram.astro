@@ -1,0 +1,170 @@
+---
+import en from "../../i18n/en.json";
+import { fill } from "../../i18n/format";
+
+const d = en.addPageNumbers.diagram;
+const PAGES = 4;
+---
+
+<figure class="numbers-diagram" aria-labelledby="numbers-diagram-caption" data-numbers-diagram data-mode="single">
+  <div class="doc">
+    <span class="doc-name">{d.output}</span>
+    <span class="doc-meta">{fill(d.pages, { count: PAGES })}</span>
+    <ol class="pages" aria-hidden="true">
+      {
+        Array.from({ length: PAGES }, (_, index) => (
+          <li class="page" data-side={index % 2 === 0 ? "left" : "right"}>
+            <span class="lines" />
+            <span class="number">{index + 1}</span>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-facing={d.tryFacing} data-label-single={d.trySingle}>{d.tryFacing}</button>
+    <span class="cut">{d.number}</span>
+  </div>
+  <figcaption id="numbers-diagram-caption" aria-live="polite" data-caption-single={d.captionSingle} data-caption-facing={d.captionFacing}>
+    {d.captionSingle}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-numbers-diagram]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  // Switches between numbers in one corner and numbers on the outer edge of each spread.
+  toggle?.addEventListener("click", () => {
+    if (!figure || !caption) return;
+    const facing = figure.dataset.mode === "single";
+    figure.dataset.mode = facing ? "facing" : "single";
+    caption.textContent = (facing ? caption.dataset.captionFacing : caption.dataset.captionSingle) ?? "";
+    toggle.textContent = (facing ? toggle.dataset.labelSingle : toggle.dataset.labelFacing) ?? "";
+  });
+</script>
+
+<style>
+  .numbers-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: var(--space-xs) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* In facing mode, pages pair up into spreads, like an open book. */
+  .numbers-diagram[data-mode="facing"] .pages {
+    gap: var(--space-sm) 0;
+  }
+
+  .numbers-diagram[data-mode="facing"] .page[data-side="right"] {
+    margin-right: var(--space-md);
+  }
+
+  .page {
+    position: relative;
+    width: 3.4rem;
+    height: 4.6rem;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  .lines {
+    display: block;
+    height: 2.2rem;
+    background: repeating-linear-gradient(#c7cfca 0 2px, transparent 2px 6px);
+  }
+
+  .number {
+    position: absolute;
+    right: 6px;
+    bottom: 4px;
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    transition:
+      left var(--dur-base) var(--ease-out),
+      right var(--dur-base) var(--ease-out);
+  }
+
+  .numbers-diagram[data-mode="facing"] .page[data-side="left"] .number {
+    right: auto;
+    left: 6px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+  }
+
+  .cut {
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .number {
+      transition: none;
+    }
+  }
+</style>

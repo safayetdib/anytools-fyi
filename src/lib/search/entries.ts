@@ -10,5 +10,6 @@ export function buildSearchEntries(): SearchEntry[] {
     description: tools[tool.slug].description,
     category: en.hubs[hubFor(tool).id].name,
     aliases: tool.aliases,
+    parent: tool.variantOf,
   }));
 }

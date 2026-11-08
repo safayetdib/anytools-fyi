@@ -69,7 +69,7 @@ function toolArt(tool) {
 }
 
 const siteArt = `<svg width="340" height="400" viewBox="0 0 340 400">
-  ${["merge-pdf", "split-pdf", "organize-pdf", "jpg-to-pdf"]
+  ${["merge-pdf", "split-pdf", "remove-pdf-pages", "jpg-to-pdf"]
     .map((slug, i) => {
       const tool = TOOLS.find((t) => t.slug === slug);
       const hub = tool.hub;

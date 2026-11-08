@@ -2,7 +2,8 @@ import { rearrangePdf } from "../../lib/pdf/rearrange";
 import type { PagePlan } from "../../lib/shell/types";
 import { serveJobs } from "../../lib/worker/host";
 import type { SplitRequest } from "./plan";
-import { splitPdf, zipParts } from "./split";
+import { zipParts } from "../../lib/zip";
+import { splitPdf } from "./split";
 
 export type SplitJob =
   | { op: "split"; bytes: Uint8Array; name: string; request: SplitRequest }

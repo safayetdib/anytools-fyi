@@ -32,7 +32,7 @@ interface Props {
 
 const { tool } = Astro.props;
 const site = Astro.site as URL;
-const tools = en.tools as Record<string, { name: string; description: string; size?: string }>;
+const tools = en.tools as Record<string, { name: string; description: string; size?: string; variantsTitle?: string }>;
 const p = en.toolPage;
 const strings = tools[tool.slug];
 const path = `/${tool.slug}/`;
@@ -45,7 +45,10 @@ const crumbs = [
   ...(parent ? [{ name: tools[parent.slug].name, path: `/${parent.slug}/` }] : []),
   { name: strings.name, path },
 ];
-const sizes = variantsOf(parent ?? tool);
+// A tool and its variants link to each other: the parent first, so a variant page can lead back to it.
+const family = parent ?? tool;
+const sizes = variantsOf(family).length ? [family, ...variantsOf(family)] : [];
+const sizesTitle = tools[family.slug].variantsTitle ?? p.sizes;
 const related = tool.related.map((slug) => toolBySlug(slug) as Tool);
 // The privacy promise is made only by tools that do all their work in the browser.
 const local = staysOnDevice(tool);
@@ -55,8 +58,9 @@ const indexable = isToolIndexable(tool);
 const image = indexable
   ? { path: `/og/${tool.slug}.png`, alt: fill(en.meta.toolImageAlt, { name: strings.name, description: strings.description }) }
   : undefined;
-const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`];
-const Diagram = diagrams[`../tools/${tool.slug}/Diagram.astro`];
+// A variant runs its parent's tool, with its own page, title and guide.
+const ToolUi = toolModules[`../tools/${tool.slug}/Tool.astro`] ?? (parent && toolModules[`../tools/${parent.slug}/Tool.astro`]);
+const Diagram = diagrams[`../tools/${tool.slug}/Diagram.astro`] ?? (parent && diagrams[`../tools/${parent.slug}/Diagram.astro`]);
 const help = await getEntry("tools", tool.slug);
 // Real ratings only, shown once there are enough of them. The same numbers go to search engines.
 const rating = indexable ? shownRating((await loadRatings())[tool.slug]) : null;
@@ -141,15 +145,15 @@ const updatedLabel = help
 
     {
       sizes.length > 0 && (
-        <nav class="sizes" aria-label={p.sizes}>
+        <nav class="sizes" aria-label={sizesTitle}>
           <p class="sizes-title" aria-hidden="true">
-            {p.sizes}
+            {sizesTitle}
           </p>
           <ul>
             {sizes.map((size) => (
               <li>
                 <a href={`/${size.slug}/`} aria-current={size.slug === tool.slug ? "page" : undefined}>
-                  {tools[size.slug].size}
+                  {tools[size.slug].size ?? tools[size.slug].name}
                 </a>
               </li>
             ))}

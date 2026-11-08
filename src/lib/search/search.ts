@@ -4,6 +4,8 @@ export interface SearchEntry {
   description: string;
   category: string;
   aliases: string[];
+  // Set on a page for one image type, which shows only when it fits the search better than its main tool.
+  parent?: string;
 }
 
 const BANGLA_DIGITS = "০১২৩৪৫৬৭৮৯";
@@ -19,7 +21,7 @@ const SYNONYMS: Record<string, string[]> = {
   watermark: ["stamp", "confidential", "draft"],
   number: ["numbering", "numbers", "paginate", "pagination"],
   page: ["pages", "sheet"],
-  image: ["photo", "picture", "pic", "img", "ছবি", "chobi", "foto", "png", "scan"],
+  image: ["photo", "picture", "pic", "img", "ছবি", "chobi", "foto", "scan"],
   jpg: ["jpeg"],
   pdf: ["পিডিএফ"],
 };
@@ -204,9 +206,10 @@ export function createSearch(entries: SearchEntry[]) {
 
     const complete = scored.filter((s) => s.coverage === 1);
     const pool = complete.length ? complete : scored.filter((s) => s.coverage >= 0.5);
-    return pool
-      .sort((a, b) => b.coverage - a.coverage || b.score - a.score || a.item.order - b.item.order)
-      .slice(0, limit)
-      .map((s) => s.item.entry);
+    const ranked = pool.sort((a, b) => b.coverage - a.coverage || b.score - a.score || a.item.order - b.item.order).map((s) => s.item.entry);
+    const position = new Map(ranked.map((entry, index) => [entry.slug, index]));
+    return ranked
+      .filter((entry, index) => !entry.parent || index < (position.get(entry.parent) ?? Infinity))
+      .slice(0, limit);
   };
 }

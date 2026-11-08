@@ -85,8 +85,7 @@ describe("POST /api/ratings/{slug}", () => {
     expect(row.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
-  it("refuses tools that aren't built or don't exist", async () => {
-    expect((await rate("rotate-pdf", { score: 5, voter: VOTER })).status).toBe(404);
+  it("refuses tools that don't exist", async () => {
     expect((await rate("no-such-tool", { score: 5, voter: VOTER })).status).toBe(404);
   });
 

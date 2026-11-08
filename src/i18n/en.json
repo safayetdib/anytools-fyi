@@ -137,35 +137,81 @@
     },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
-      "description": "Turn JPG and PNG images into one PDF, in the order you choose."
+      "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
+      "title": "JPG to PDF: Convert Images to PDF Online Free | AnyTools.fyi",
+      "metaDescription": "Convert JPG to PDF, or any image to PDF: photos, PNG, WebP and scans. Choose A4, Letter or Fit, add margins, merge into one PDF. Free, no upload.",
+      "size": "JPG",
+      "variantsTitle": "Convert other image types"
+    },
+    "image-to-pdf": {
+      "name": "Image to PDF",
+      "description": "Convert photos, pictures and scans to PDF, as one file or one per image.",
+      "title": "Image to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert any image to PDF for free: photos, screenshots and scans in JPG, PNG or WebP. Merge them into one PDF, on A4, Letter or Fit. Nothing uploaded.",
+      "size": "Any image"
+    },
+    "png-to-pdf": {
+      "name": "PNG to PDF",
+      "description": "Convert PNG images and screenshots to PDF, keeping transparent backgrounds.",
+      "title": "PNG to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert PNG to PDF for free. Screenshots, logos and transparent PNGs keep their full quality, as one PDF or one per image. No signup, nothing uploaded.",
+      "size": "PNG"
+    },
+    "heic-to-pdf": {
+      "name": "HEIC to PDF",
+      "description": "Convert iPhone HEIC photos to PDF, in any browser, on any phone or computer.",
+      "title": "HEIC to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert HEIC to PDF for free. iPhone photos open in any browser on Windows, Android or Mac and become one PDF, upright and full quality. Nothing uploaded.",
+      "size": "HEIC"
+    },
+    "webp-to-pdf": {
+      "name": "WebP to PDF",
+      "description": "Convert WebP images saved from websites into a PDF you can open anywhere.",
+      "title": "WebP to PDF Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert WebP to PDF for free. Turn WebP images saved from websites into a PDF that opens on any device, merged or one per image. Nothing uploaded.",
+      "size": "WebP"
     },
     "pdf-to-jpg": {
       "name": "PDF to JPG",
-      "description": "Save each PDF page as a sharp JPG image."
+      "description": "Save each PDF page as a sharp JPG image.",
+      "title": "PDF to JPG Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert PDF to JPG for free. Save every page as a sharp JPG image, or extract the photos inside a PDF, in normal or high quality. Nothing uploaded."
     },
     "organize-pdf": {
       "name": "Organize PDF",
-      "description": "Reorder, rotate and delete pages to put a PDF in order."
+      "description": "Reorder, rotate and delete pages to put a PDF in order.",
+      "title": "Organize PDF Pages Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Organize PDF pages for free. Drag pages into order, rotate or delete them, add blank pages, and combine several PDFs. No signup, no watermark, nothing uploaded."
     },
     "rotate-pdf": {
       "name": "Rotate PDF",
-      "description": "Turn sideways or upside-down pages the right way up."
+      "description": "Turn sideways or upside-down pages the right way up.",
+      "title": "Rotate PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Rotate PDF files for free. Turn one PDF or many at once, right or left, or only the portrait or landscape ones. No signup, no watermark, nothing uploaded."
     },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
-      "description": "Delete the pages you don't need and keep the rest."
+      "description": "Delete the pages you don't need and keep the rest.",
+      "title": "Remove PDF Pages Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Remove pages from a PDF for free. Tap the pages you don't need, or type them like 2,5-8, and download the rest. No signup, no watermark, nothing uploaded."
     },
     "extract-pdf-pages": {
       "name": "Extract PDF pages",
-      "description": "Save just the pages you choose as a new PDF."
+      "description": "Save every page as its own PDF, or just the pages you choose.",
+      "title": "Extract PDF Pages Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Extract pages from a PDF for free. Save every page as its own PDF, or pick pages like 2,5-8 and merge them into one. No signup, no watermark, nothing uploaded."
     },
     "add-page-numbers": {
       "name": "Add page numbers",
-      "description": "Number the pages of a PDF, in the position and style you choose."
+      "description": "Number the pages of a PDF, in the position and style you choose.",
+      "title": "Add Page Numbers to PDF Online Free | AnyTools.fyi",
+      "metaDescription": "Add page numbers to a PDF for free. Choose the position, margin, first number, pages and text like Page 1 of 10, with live preview. Nothing uploaded."
     },
     "add-watermark": {
       "name": "Add watermark",
-      "description": "Stamp text like Draft or Confidential across your PDF pages."
+      "description": "Stamp text like Draft or Confidential across your PDF pages.",
+      "title": "Add Watermark to PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Add a watermark to a PDF for free: text like CONFIDENTIAL or DRAFT, or your logo. Set position, transparency, rotation and layer, with live preview."
     }
   },
   "shell": {
@@ -472,6 +518,402 @@
     "movedRange": "Range moved to position {position}.",
     "createdTail": "will be created."
   },
+  "removePdfPages": {
+    "selectLabel": "Select a PDF file",
+    "runLabel": "Remove pages",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Select the pages to remove. The pages below show what will be removed.",
+    "panelTitle": "Remove pages",
+    "info": "Select the pages you want to remove. Hold Shift to select a range.",
+    "totalPages": "Total pages:",
+    "pagesLabel": "Pages to remove",
+    "pagesPlaceholder": "example: 1,5-8",
+    "allError": "Keep at least one page. A PDF can't be empty.",
+    "summary": "Done. Removed {removed} pages from {name}. {output} has {pages} pages ({size}).",
+    "summaryOne": "Done. Removed 1 page from {name}. {output} has {pages} pages ({size}).",
+    "summaryLeftOne": "Done. Removed {removed} pages from {name}. {output} has 1 page ({size}).",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "empty": "Select at least one page to remove.",
+    "encrypted": "{name} has a password. Remove the password, then try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged.",
+    "diagram": {
+      "file": "application.pdf",
+      "pages": "{count} pages",
+      "remove": "Removed in your browser",
+      "output": "application_removed.pdf",
+      "tryOther": "Remove pages 2 and 5 instead",
+      "tryFirst": "Remove page 3 only",
+      "captionFirst": "Page 3 is marked, so the new file keeps the other 5 pages in the same order.",
+      "captionOther": "Pages 2 and 5 are marked, so the new file keeps the other 4 pages. Your original file isn't changed."
+    }
+  },
+  "extractPdfPages": {
+    "selectLabel": "Select a PDF file",
+    "runLabel": "Extract pages",
+    "arrangeHint": "Choose the pages to extract. The pages below show what each new PDF will hold.",
+    "diagram": {
+      "file": "certificates.pdf",
+      "pages": "{count} pages",
+      "extract": "Extracted in your browser",
+      "partName": "certificates-{page}.pdf",
+      "merged": "certificates-extracted.pdf",
+      "tryMerged": "Merge them into one PDF",
+      "trySeparate": "Keep them as separate PDFs",
+      "captionSeparate": "Pages 2, 4 and 5 are selected, so each becomes its own PDF. Your original file isn't changed.",
+      "captionMerged": "With Merge extracted pages into one PDF file, the same 3 pages become one PDF, in page order."
+    }
+  },
+  "rotatePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Rotate PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Turn each file with its rotate button, or turn them all at once.",
+    "panelTitle": "Rotate PDF",
+    "info": "Select the rotate button on a file to turn it, or turn every file at once.",
+    "filterLegend": "Select files to rotate",
+    "filters": {
+      "all": "All",
+      "portrait": "Portrait",
+      "landscape": "Landscape"
+    },
+    "rotation": "Rotation",
+    "right": "Right",
+    "left": "Left",
+    "rightLabel": "Turn the chosen files right",
+    "leftLabel": "Turn the chosen files left",
+    "resetAll": "Reset all",
+    "rotateFile": "Rotate {name}",
+    "cardsLabel": "Your files and how they will be turned",
+    "turned": "{name}, turned {angle}°",
+    "notTurned": "{name}, not turned",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipName": "anytools_rotated.zip",
+    "summaryOne": "Done. Every page of {name} is turned. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs turned, saved in one ZIP ({size}).",
+    "skippedOne": "{name} wasn't turned, so it isn't included.",
+    "skippedMany": "{count} files weren't turned, so they aren't included.",
+    "partTurn": "Turned {angle}°",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "empty": "Turn at least one file first.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "scan.pdf",
+      "before": "Sideways scan",
+      "after": "scan_rotated.pdf",
+      "rotate": "Turned in your browser",
+      "tryLeft": "Turn it left instead",
+      "tryRight": "Turn it right instead",
+      "captionRight": "Right turns every page a quarter turn clockwise, so a sideways scan reads the right way up.",
+      "captionLeft": "Left turns every page a quarter turn the other way. Your original file isn't changed."
+    }
+  },
+  "organizePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Organize",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Drag pages into order, and turn, delete or add pages below.",
+    "panelTitle": "Organize PDF",
+    "info": "Drag pages to reorder them. Use the buttons on each page to turn it, delete it or add a blank page before it.",
+    "filesHeading": "Files:",
+    "fileLetter": "{letter}: {name}",
+    "resetAll": "Reset all",
+    "pagesLabel": "Pages of the new PDF, in order",
+    "page": "Page {label}",
+    "blank": "Blank page",
+    "turned": "turned {angle}°",
+    "rotate": "Rotate page {label}",
+    "delete": "Delete page {label}",
+    "deleteBlank": "Delete this blank page",
+    "zoom": "See page {label} larger",
+    "addBlank": "Add a blank page before page {label}",
+    "addBlankBefore": "Add a blank page before this blank page",
+    "move": "Move page {label}. Drag, or use Alt with the arrow keys.",
+    "moveBlank": "Move this blank page. Drag, or use Alt with the arrow keys.",
+    "moved": "Page {label} moved to position {position}.",
+    "deleted": "Page {label} deleted. Reset all brings it back.",
+    "added": "Blank page added at position {position}.",
+    "allError": "Keep at least one page. A PDF can't be empty.",
+    "tooMany": "That's more than {max} pages. Organize fewer files at once.",
+    "outputName": "organized.pdf",
+    "summary": "Done. {pages} pages saved as organized.pdf ({size}).",
+    "summaryOne": "Done. 1 page saved as organized.pdf ({size}).",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "empty": "Keep at least one page. A PDF can't be empty.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "application.pdf",
+      "before": "Pages as scanned",
+      "after": "organized.pdf",
+      "organize": "Organized in your browser",
+      "tryAfter": "Show the organized file",
+      "tryBefore": "Show the scan again",
+      "captionBefore": "A scan with the pages out of order, page 3 upside down and an unneeded page 5.",
+      "captionAfter": "After organizing: pages in order, page 3 turned the right way up, page 5 deleted and a blank page added before the appendix."
+    }
+  },
+  "jpgToPdf": {
+    "selectLabel": "Select images",
+    "runLabel": "Convert to PDF",
+    "acceptLabel": "JPG, PNG and other images",
+    "arrangeHint": "The order of this list is the order of the pages. Choose how each page looks below.",
+    "panelTitle": "Image to PDF options",
+    "orientation": "Page orientation",
+    "orientations": {
+      "portrait": "Portrait",
+      "landscape": "Landscape"
+    },
+    "fitNote": "With Fit, each page takes its image's shape.",
+    "pageSize": "Page size",
+    "sizes": {
+      "fit": "Fit (same size as image)",
+      "a4": "A4 (297×210 mm)",
+      "letter": "US Letter (215.9×279.4 mm)"
+    },
+    "margin": "Margin",
+    "margins": {
+      "none": "No margin",
+      "small": "Small",
+      "big": "Big"
+    },
+    "merge": "Merge all images in one PDF file",
+    "cardsLabel": "Your images, as their pages will look",
+    "rotateImage": "Rotate {name}",
+    "cardLabel": "{name}, turned {angle}°",
+    "zipName": "anytools_images.zip",
+    "summaryOne": "Done. {count} images saved as {output}, one per page ({size}).",
+    "summaryOneImage": "Done. {name} saved as {output} ({size}).",
+    "summaryMany": "Done. {count} images saved as {count} PDFs in one ZIP ({size}).",
+    "partLabel": "From {name}",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "unreadable": "{name} couldn't be read as an image. Try saving it as JPG or PNG first.",
+    "diagram": {
+      "photos": "Your photos",
+      "convert": "Converted in your browser",
+      "output": "photos.pdf",
+      "tryFit": "Show Fit size",
+      "tryA4": "Show A4 with margins",
+      "captionA4": "A4 with a small margin: every photo sits centred on a standard page, ready to print.",
+      "captionFit": "Fit: each page takes its photo's own shape, so nothing is added around it."
+    }
+  },
+  "pdfToJpg": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to JPG",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose how to convert. Each PDF's pictures come out in the order of this list.",
+    "panelTitle": "PDF to JPG options",
+    "modeLegend": "Convert",
+    "modes": {
+      "pages": "Page to JPG",
+      "images": "Extract images"
+    },
+    "pagesInfoOne": "Every page of this PDF will be converted into a JPG file.",
+    "pagesInfoMany": "Every page of these PDFs will be converted into a JPG file.",
+    "created": "{count} JPG",
+    "createdTail": "will be created.",
+    "imagesInfo": "All embedded images inside the PDF will be extracted as JPG images.",
+    "quality": "Image quality",
+    "qualities": {
+      "normal": "Normal",
+      "high": "High"
+    },
+    "recommended": "Recommended",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipPages": "anytools_pages-to-jpg.zip",
+    "zipImages": "anytools_images-from-pdf.zip",
+    "partPage": "Page {page} of {name}",
+    "partImage": "Picture {number} from {name}",
+    "summaryOne": "Done. Saved as {output} ({size}).",
+    "summaryPages": "Done. {count} pages saved as JPG images, in one ZIP ({size}).",
+    "summaryImages": "Done. {count} pictures saved as JPG images, in one ZIP ({size}).",
+    "noImages": "No pictures were found in {name}. Choose Page to JPG to save its pages as pictures instead.",
+    "noImagesMany": "No pictures were found in these PDFs. Choose Page to JPG to save their pages as pictures instead.",
+    "tooMany": "That makes more than {max} pictures. Convert fewer pages at a time, or split the PDF first.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "brochure.pdf",
+      "pages": "{count} pages",
+      "convert": "Converted in your browser",
+      "tryImages": "Show Extract images",
+      "tryPages": "Show Page to JPG",
+      "pageName": "brochure_page-{number}.jpg",
+      "imageName": "brochure_image-{number}.jpg",
+      "captionPages": "Page to JPG: each of the 3 pages becomes its own JPG picture, text and all.",
+      "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
+    }
+  },
+  "addPageNumbers": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Add page numbers",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose where the numbers go. The pages below show them as they'll look.",
+    "panelTitle": "Page number options",
+    "pageMode": "Page mode",
+    "modes": {
+      "single": "Single page",
+      "facing": "Facing pages"
+    },
+    "cover": "First page is cover page",
+    "position": "Position",
+    "positions": {
+      "top-left": "Top left",
+      "top-center": "Top center",
+      "top-right": "Top right",
+      "middle-left": "Middle left",
+      "middle-center": "Middle center",
+      "middle-right": "Middle right",
+      "bottom-left": "Bottom left",
+      "bottom-center": "Bottom center",
+      "bottom-right": "Bottom right"
+    },
+    "margin": "Margin",
+    "margins": {
+      "small": "Small",
+      "recommended": "Recommended",
+      "big": "Big"
+    },
+    "pages": "Pages",
+    "firstNumber": "First number",
+    "whichPages": "Which pages do you want to number?",
+    "fromPage": "from page",
+    "toPage": "to",
+    "fromLabel": "Number from page",
+    "toLabel": "to page",
+    "text": "Text",
+    "texts": {
+      "number": "Insert only page number (recommended)",
+      "page": "Page {n}",
+      "pageOf": "Page {n} of {p}",
+      "custom": "Custom"
+    },
+    "customLabel": "Custom text",
+    "customHint": "Use {n} for the page number and {p} for the last number.",
+    "format": "Text format",
+    "font": "Font",
+    "fonts": {
+      "helvetica": "Helvetica (like Arial)",
+      "times": "Times (like Times New Roman)",
+      "courier": "Courier"
+    },
+    "size": "Size",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "color": "Colour",
+    "textError": "Custom text can only use Latin letters, numbers and common symbols for now. Try Page {n}, or {n} / {p}.",
+    "pagesLabel": "Pages of {name}, with their numbers",
+    "zipName": "anytools_page-numbers.zip",
+    "summaryOne": "Done. Page numbers added to {name}, saved as {output} ({size}).",
+    "summaryMany": "Done. Page numbers added to {count} PDFs, saved in one ZIP ({size}).",
+    "partLabel": "From {name}",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "thesis.pdf",
+      "pages": "{count} pages",
+      "number": "Numbered in your browser",
+      "output": "thesis_pagenumber.pdf",
+      "tryFacing": "Show facing pages",
+      "trySingle": "Show single pages",
+      "captionSingle": "Single page: every number sits in the same corner, here the bottom right.",
+      "captionFacing": "Facing pages: numbers move to the outer edge of each spread, like a printed book."
+    }
+  },
+  "addWatermark": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Add watermark",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose your watermark. The pages below show it as it'll look.",
+    "panelTitle": "Watermark options",
+    "kindLegend": "Watermark type",
+    "kinds": {
+      "text": "Place text",
+      "image": "Place image"
+    },
+    "text": "Text",
+    "format": "Text format",
+    "font": "Font",
+    "fonts": {
+      "helvetica": "Helvetica (like Arial)",
+      "times": "Times (like Times New Roman)",
+      "courier": "Courier"
+    },
+    "size": "Size",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "color": "Colour",
+    "image": "Image",
+    "chooseImage": "Choose an image",
+    "changeImage": "Change image",
+    "imageHint": "JPG, PNG, WebP or GIF. See-through parts of a PNG logo stay see-through.",
+    "imageUnreadable": "That image couldn't be opened. Try a JPG or PNG.",
+    "position": "Position",
+    "positions": {
+      "top-left": "Top left",
+      "top-center": "Top center",
+      "top-right": "Top right",
+      "middle-left": "Middle left",
+      "middle-center": "Middle center",
+      "middle-right": "Middle right",
+      "bottom-left": "Bottom left",
+      "bottom-center": "Bottom center",
+      "bottom-right": "Bottom right"
+    },
+    "mosaic": "Mosaic",
+    "transparency": "Transparency",
+    "transparencies": {
+      "0": "No transparency",
+      "75": "75%",
+      "50": "50%",
+      "25": "25%"
+    },
+    "rotation": "Rotation",
+    "rotations": {
+      "0": "Do not rotate",
+      "45": "45 degrees",
+      "90": "90 degrees",
+      "180": "180 degrees",
+      "270": "270 degrees"
+    },
+    "pages": "Pages",
+    "fromPage": "from page",
+    "toPage": "to",
+    "fromLabel": "Watermark from page",
+    "toLabel": "to page",
+    "layer": "Layer",
+    "layers": {
+      "over": "Over the PDF content",
+      "below": "Below the PDF content"
+    },
+    "textError": "The watermark can only use Latin letters, numbers and common symbols for now. Try CONFIDENTIAL or DRAFT.",
+    "emptyText": "Type the watermark text first.",
+    "needImage": "Choose an image first.",
+    "pagesLabel": "Pages of {name}, with the watermark",
+    "zipName": "anytools_watermark.zip",
+    "summaryOne": "Done. Watermark added to {name}, saved as {output} ({size}).",
+    "summaryMany": "Done. Watermark added to {count} PDFs, saved in one ZIP ({size}).",
+    "partLabel": "From {name}",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "contract.pdf",
+      "stamp": "Stamped in your browser",
+      "output": "contract_watermark.pdf",
+      "tryMosaic": "Show Mosaic",
+      "tryCentre": "Show one in the middle",
+      "captionCentre": "One diagonal watermark across the middle of each page, at 50% transparency.",
+      "captionMosaic": "Mosaic repeats the watermark across the whole page, so no part can be cropped out cleanly."
+    }
+  },
   "theme": {
     "label": "Dark theme"
   },
@@ -526,7 +968,7 @@
     "rangeSummary": "Range {number}: pages {from} to {to}",
     "rangeSummaryOne": "Range {number}: page {page}",
     "loading": "Loading pages…",
-    "failed": "The pages couldn't be shown. You can still split the file.",
+    "failed": "The pages couldn't be shown. You can still type page numbers.",
     "zoom": "See page {page} larger"
   }
 }

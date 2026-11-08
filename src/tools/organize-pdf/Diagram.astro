@@ -1,0 +1,179 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.organizePdf.diagram;
+// The scan as it came out: pages out of order, page 3 upside down, and a page 5 that isn't needed.
+const BEFORE = [
+  { label: "2", state: "" },
+  { label: "1", state: "" },
+  { label: "3", state: "upside" },
+  { label: "5", state: "unneeded" },
+  { label: "4", state: "" },
+];
+const AFTER = [
+  { label: "1", state: "" },
+  { label: "2", state: "" },
+  { label: "3", state: "fixed" },
+  { label: "", state: "blank" },
+  { label: "4", state: "" },
+];
+---
+
+<figure class="organize-diagram" aria-labelledby="organize-diagram-caption" data-organize-diagram data-view="before">
+  <div class="doc">
+    <span class="doc-name" data-name-before={d.file} data-name-after={d.after}>{d.file}</span>
+    <span class="doc-meta" data-meta>{d.before}</span>
+    <ol class="pages is-before" aria-hidden="true">
+      {BEFORE.map((page) => <li class="page" data-state={page.state}>{page.label}</li>)}
+    </ol>
+    <ol class="pages is-after" aria-hidden="true">
+      {AFTER.map((page) => <li class="page" data-state={page.state}>{page.label}</li>)}
+    </ol>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-after={d.tryAfter} data-label-before={d.tryBefore}>{d.tryAfter}</button>
+    <span class="cut">{d.organize}</span>
+  </div>
+  <figcaption id="organize-diagram-caption" aria-live="polite" data-caption-before={d.captionBefore} data-caption-after={d.captionAfter}>
+    {d.captionBefore}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-organize-diagram]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+  const name = figure?.querySelector<HTMLElement>("[data-name-before]");
+  const meta = figure?.querySelector<HTMLElement>("[data-meta]");
+
+  // Switches between the scan as it came out and the organized file.
+  toggle?.addEventListener("click", () => {
+    if (!figure || !caption || !name || !meta) return;
+    const after = figure.dataset.view === "before";
+    figure.dataset.view = after ? "after" : "before";
+    caption.textContent = (after ? caption.dataset.captionAfter : caption.dataset.captionBefore) ?? "";
+    toggle.textContent = (after ? toggle.dataset.labelBefore : toggle.dataset.labelAfter) ?? "";
+    name.textContent = (after ? name.dataset.nameAfter : name.dataset.nameBefore) ?? "";
+    meta.hidden = after;
+  });
+</script>
+
+<style>
+  .organize-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .organize-diagram[data-view="after"] .doc {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: var(--space-xs) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .organize-diagram[data-view="before"] .is-after,
+  .organize-diagram[data-view="after"] .is-before {
+    display: none;
+  }
+
+  .page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 3.4rem;
+    border: 2px solid var(--color-accent);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .page[data-state="upside"] {
+    transform: rotate(180deg);
+  }
+
+  /* The unneeded page is crossed out; the turned page and the new blank page are outlined to show the change. */
+  .page[data-state="unneeded"] {
+    border: 2px dashed var(--color-danger);
+    color: var(--color-danger);
+    text-decoration: line-through;
+  }
+
+  .page[data-state="fixed"] {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .page[data-state="blank"] {
+    border-style: dashed;
+    border-color: var(--color-border);
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+  }
+
+  .cut {
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+</style>
