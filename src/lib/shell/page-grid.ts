@@ -27,11 +27,13 @@ interface PageGridOptions {
   onZoom?(page: number, from: HTMLElement): void;
   // How chosen pages look: a tick for pages to keep, or faded with a ✕ for pages to remove.
   mark?: "tick" | "remove";
+  // A layer drawn over a page's picture, such as where its page number will go.
+  overlay?(page: number): HTMLElement | null;
 }
 
 // The pages of one file, shown either as ranges (first page … last page in a dashed box)
 // or as every page with a tick. Thumbnails render only as they scroll into view, and are kept for reuse.
-export function createPageGrid({ list, status, open, onToggle, onZoom, mark = "tick" }: PageGridOptions) {
+export function createPageGrid({ list, status, open, onToggle, onZoom, mark = "tick", overlay }: PageGridOptions) {
   let preview: OutputPreview | null = null;
   let observer: IntersectionObserver | null = null;
   let token = 0;
@@ -136,7 +138,16 @@ export function createPageGrid({ list, status, open, onToggle, onZoom, mark = "t
     caption.className = "page-grid-caption";
     caption.textContent = String(page);
     card.append(frame, caption);
+    const layer = layerFor(page);
+    if (layer) card.append(layer);
     return card;
+  }
+
+  function layerFor(page: number): HTMLElement | null {
+    const layer = overlay?.(page) ?? null;
+    layer?.classList.add("page-grid-overlay");
+    layer?.setAttribute("aria-hidden", "true");
+    return layer;
   }
 
   list.addEventListener("click", (event) => {
@@ -265,6 +276,16 @@ export function createPageGrid({ list, status, open, onToggle, onZoom, mark = "t
       if (label) label.textContent = fileName;
       const caption = list.querySelector(".page-grid-caption");
       if (caption) caption.textContent = fileName;
+    },
+
+    // Redraws each page's layer in place, so changes show without redrawing the pictures.
+    decorate() {
+      list.querySelectorAll<HTMLElement>(".page-grid-card").forEach((card) => {
+        card.querySelector(".page-grid-overlay")?.remove();
+        const page = Number(card.querySelector<HTMLElement>("[data-thumb]")?.dataset.thumb);
+        const layer = layerFor(page);
+        if (layer) card.append(layer);
+      });
     },
 
     // Outlines the range being edited, so its box is easy to find.

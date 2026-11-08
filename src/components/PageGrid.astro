@@ -43,6 +43,20 @@ const { name } = Astro.props;
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
   }
 
+  /* A layer over the page's picture, the same size and shape as its frame. */
+  .page-grid-card {
+    position: relative;
+  }
+
+  .page-grid-overlay {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    left: var(--space-sm);
+    aspect-ratio: 3 / 4;
+    pointer-events: none;
+  }
+
   .page-grid-frame {
     display: flex;
     align-items: center;
