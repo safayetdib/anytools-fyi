@@ -104,8 +104,8 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["split-pdf", "remove-pdf-pages", "pdf-to-jpg", "merge-pdf"],
-    aliases: ["extract pages", "save pdf pages", "copy pages from pdf", "pull pages out of pdf"],
-    built: false,
+    aliases: ["extract pages", "save pdf pages", "copy pages from pdf", "pull pages out of pdf", "পিডিএফ পৃষ্ঠা আলাদা করুন"],
+    built: true,
     runsIn: "browser",
   },
   {

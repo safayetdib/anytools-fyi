@@ -159,7 +159,9 @@
     },
     "extract-pdf-pages": {
       "name": "Extract PDF pages",
-      "description": "Save just the pages you choose as a new PDF."
+      "description": "Save every page as its own PDF, or just the pages you choose.",
+      "title": "Extract PDF Pages Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Extract pages from a PDF for free. Save every page as its own PDF, or pick pages like 2,5-8 and merge them into one. No signup, no watermark, nothing uploaded."
     },
     "add-page-numbers": {
       "name": "Add page numbers",
@@ -501,6 +503,22 @@
       "tryFirst": "Remove page 3 only",
       "captionFirst": "Page 3 is marked, so the new file keeps the other 5 pages in the same order.",
       "captionOther": "Pages 2 and 5 are marked, so the new file keeps the other 4 pages. Your original file isn't changed."
+    }
+  },
+  "extractPdfPages": {
+    "selectLabel": "Select a PDF file",
+    "runLabel": "Extract pages",
+    "arrangeHint": "Choose the pages to extract. The pages below show what each new PDF will hold.",
+    "diagram": {
+      "file": "certificates.pdf",
+      "pages": "{count} pages",
+      "extract": "Extracted in your browser",
+      "partName": "certificates-{page}.pdf",
+      "merged": "certificates-extracted.pdf",
+      "tryMerged": "Merge them into one PDF",
+      "trySeparate": "Keep them as separate PDFs",
+      "captionSeparate": "Pages 2, 4 and 5 are selected, so each becomes its own PDF. Your original file isn't changed.",
+      "captionMerged": "With Merge extracted pages into one PDF file, the same 3 pages become one PDF, in page order."
     }
   },
   "theme": {

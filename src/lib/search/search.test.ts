@@ -34,6 +34,7 @@ describe("finds the closest tool", () => {
     ["divide a pdf", "split-pdf"],
     ["splt pdf", "split-pdf"],
     ["পৃষ্ঠা মুছুন", "remove-pdf-pages"],
+    ["পৃষ্ঠা আলাদা করুন", "extract-pdf-pages"],
     ["jpg to pdf", "jpg-to-pdf"],
     ["jpeg to pdf", "jpg-to-pdf"],
     ["png to pdf", "jpg-to-pdf"],
