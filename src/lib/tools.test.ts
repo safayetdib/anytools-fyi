@@ -56,10 +56,11 @@ describe("liveHubs", () => {
 
 describe("launch registry", () => {
   // The site offers PDF tools only, launched one at a time. Other categories come back when they're built.
-  it("offers the ten browser-based PDF tools, with Merge PDF live", () => {
+  it("offers the eleven browser-based PDF tools, with Merge PDF live", () => {
     expect(listedTools().map((t) => t.slug)).toEqual([
       "merge-pdf",
       "split-pdf",
+      "compress-pdf",
       "jpg-to-pdf",
       "pdf-to-jpg",
       "organize-pdf",
@@ -70,12 +71,12 @@ describe("launch registry", () => {
       "add-watermark",
     ]);
     expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
-    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "jpg-to-pdf", "pdf-to-jpg", "organize-pdf", "rotate-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark"]);
+    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "jpg-to-pdf", "pdf-to-jpg", "organize-pdf", "rotate-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark"]);
   });
 
   it("publishes only the PDF hub", () => {
     expect(liveHubs().map((h) => h.slug)).toEqual(["pdf-tools"]);
-    expect(toolsForHub("pdf")).toHaveLength(10);
+    expect(toolsForHub("pdf")).toHaveLength(11);
   });
 
   it("has strings and an icon for every tool", () => {

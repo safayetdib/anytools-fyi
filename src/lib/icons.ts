@@ -5,6 +5,7 @@ import type { Tool } from "./tools";
 export const TOOL_ICONS: Record<string, string> = {
   "merge-pdf": '<path d="M4 5h5l5 7-5 7H4"/><path d="M14 12h6"/><path d="m17 9 3 3-3 3"/>',
   "split-pdf": '<path d="M20 5h-5l-5 7 5 7h5"/><path d="M10 12H4"/><path d="m17 2 3 3-3 3"/><path d="m17 16 3 3-3 3"/>',
+  "compress-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="m10 9 2.5 2.5L15 9"/><path d="m10 18 2.5-2.5L15 18"/>',
   "jpg-to-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="m9 18 3-4 2 2 1-1 1 3z"/>',
   "pdf-to-jpg": '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5-9 10"/>',
   "organize-pdf":

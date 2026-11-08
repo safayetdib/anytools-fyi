@@ -15,7 +15,7 @@ test("navbar - desktop shows quick links and an All tools menu", async ({ page }
   await expect(menuButton(page)).toHaveText(/All tools/);
   await menuButton(page).click();
   await expect(panel(page)).toBeVisible();
-  await expect(panel(page).locator(".tool-link")).toHaveCount(10);
+  await expect(panel(page).locator(".tool-link")).toHaveCount(11);
   await expect(panel(page).getByRole("link", { name: "PDF tools" })).toHaveAttribute("href", "/pdf-tools/");
   await expect(panel(page).getByRole("link", { name: "See all tools" })).toBeVisible();
   await page.waitForTimeout(400);
@@ -57,7 +57,7 @@ test("navbar - menu works with JavaScript turned off", async ({ browser }) => {
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4329/");
   await menuButton(page).click();
-  await expect(panel(page).locator(".tool-link")).toHaveCount(10);
+  await expect(panel(page).locator(".tool-link")).toHaveCount(11);
   await context.close();
 });
 
@@ -98,8 +98,8 @@ test("routes - every internal link leads to a working page", async ({ request })
       }
     }
   }
-  // Home, 10 PDF tools, the PDF hub, All tools and the 8 info pages.
-  expect(seen.size).toBeGreaterThanOrEqual(1 + 10 + 1 + 1 + 8);
+  // Home, 11 PDF tools, the PDF hub, All tools and the 8 info pages.
+  expect(seen.size).toBeGreaterThanOrEqual(1 + 11 + 1 + 1 + 8);
 });
 
 const ROUTES = ["/", "/pdf-tools/", "/tools/", "/merge-pdf/", "/split-pdf/", "/about/", "/no-such-page/"];

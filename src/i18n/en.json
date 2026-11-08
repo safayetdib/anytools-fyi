@@ -135,6 +135,12 @@
       "title": "Split PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Split a PDF into separate files for free: by page range, every page, the pages you pick, or by file size. No signup, no watermark, nothing uploaded."
     },
+    "compress-pdf": {
+      "name": "Compress PDF",
+      "description": "Make a PDF smaller so it's easy to email, upload or share.",
+      "title": "Compress PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Compress PDF files for free and reduce their size for email or upload forms. Choose Extreme, Recommended or Less compression. No signup, nothing uploaded."
+    },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
       "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
@@ -696,6 +702,60 @@
       "tryA4": "Show A4 with margins",
       "captionA4": "A4 with a small margin: every photo sits centred on a standard page, ready to print.",
       "captionFit": "Fit: each page takes its photo's own shape, so nothing is added around it."
+    }
+  },
+  "compressPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Compress PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose a compression level. Each PDF is compressed on its own.",
+    "panelTitle": "Compression level",
+    "levelLegend": "Compression level",
+    "levels": {
+      "extreme": "Extreme compression",
+      "recommended": "Recommended compression",
+      "less": "Less compression"
+    },
+    "levelNotes": {
+      "extreme": "Less quality, high compression",
+      "recommended": "Good quality, good compression",
+      "less": "High quality, less compression"
+    },
+    "info": "Photos and scans are where most of the size is, so they're made smaller. Text stays sharp.",
+    "total": "Total size",
+    "cardsLabel": "Your PDFs",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipName": "anytools_compressed.zip",
+    "summaryOne": "Done. {name} is now {percent}% smaller: {before} to {after}.",
+    "alreadyOne": "{name} is already well compressed, so it couldn't be made smaller. It's ready to download as it was ({size}).",
+    "summaryMany": "Done. {count} PDFs are {percent}% smaller in total: {before} to {after}. Saved in one ZIP.",
+    "alreadyMany": "These PDFs are already well compressed, so they couldn't be made smaller. They're in one ZIP as they were ({size}).",
+    "partSmaller": "{percent}% smaller",
+    "partAlready": "Already compressed",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "scan.pdf",
+      "before": "8.4 MB",
+      "compress": "Compressed in your browser",
+      "output": "scan_compressed.pdf",
+      "sizes": {
+        "extreme": "0.9 MB",
+        "recommended": "2.1 MB",
+        "less": "4.0 MB"
+      },
+      "levels": {
+        "extreme": "Extreme",
+        "recommended": "Recommended",
+        "less": "Less"
+      },
+      "levelLegend": "Show a compression level",
+      "captions": {
+        "extreme": "Extreme: photos are saved at screen resolution. Smallest file, fine for reading on a screen.",
+        "recommended": "Recommended: photos stay sharp on screen and in print at home, at a fraction of the size.",
+        "less": "Less: photos keep most of their detail for printing. The file still gets smaller."
+      }
     }
   },
   "pdfToJpg": {

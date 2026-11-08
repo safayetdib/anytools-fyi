@@ -1,0 +1,219 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.compressPdf.diagram;
+const levels = ["extreme", "recommended", "less"] as const;
+---
+
+<figure class="squeeze-diagram" aria-labelledby="squeeze-diagram-caption" data-squeeze-diagram data-level="recommended">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="sheet" aria-hidden="true"><span class="photo"></span><span class="lines"></span></span>
+      <span class="size">{d.before}</span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+      </svg>
+      <span>{d.compress}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.output}</span>
+      <span class="sheet" aria-hidden="true"><span class="photo"></span><span class="lines"></span></span>
+      <span class="size" data-size data-sizes={JSON.stringify(d.sizes)}>{d.sizes.recommended}</span>
+    </div>
+  </div>
+  <fieldset class="controls">
+    <legend class="sr-only">{d.levelLegend}</legend>
+    {
+      levels.map((level) => (
+        <label class="choice">
+          <input type="radio" name="squeeze-diagram-level" value={level} checked={level === "recommended"} />
+          <span>{d.levels[level]}</span>
+        </label>
+      ))
+    }
+  </fieldset>
+  <figcaption id="squeeze-diagram-caption" aria-live="polite" data-captions={JSON.stringify(d.captions)}>
+    {d.captions.recommended}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-squeeze-diagram]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+  const size = figure?.querySelector<HTMLElement>("[data-size]");
+
+  // Shows what each level does to the same scanned file.
+  figure?.addEventListener("change", (event) => {
+    const level = (event.target as HTMLInputElement).value;
+    if (!caption || !size) return;
+    figure.dataset.level = level;
+    caption.textContent = JSON.parse(caption.dataset.captions ?? "{}")[level] ?? "";
+    size.textContent = JSON.parse(size.dataset.sizes ?? "{}")[level] ?? "";
+  });
+</script>
+
+<style>
+  .squeeze-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .size {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .result .size {
+    color: var(--color-accent);
+  }
+
+  .sheet {
+    display: grid;
+    grid-template-rows: 3.25rem 1fr;
+    gap: 8px;
+    width: 6rem;
+    height: 8rem;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  /* A photo: a sky, a sun and hills, drawn with gradients. */
+  .photo {
+    display: block;
+    background:
+      radial-gradient(circle at 75% 30%, #f2c14e 0 12%, transparent 13%),
+      linear-gradient(160deg, transparent 55%, #4f8a5b 56%),
+      linear-gradient(#9cc7e4, #d7ecf7);
+  }
+
+  .lines {
+    display: block;
+    background: repeating-linear-gradient(#c7cfca 0 2px, transparent 2px 8px);
+  }
+
+  /* Each level makes the result's photo coarser, to show what happens to pictures. */
+  .result .photo {
+    transition: filter 0.2s ease;
+  }
+
+  .squeeze-diagram[data-level="extreme"] .result .photo {
+    filter: blur(1.5px) saturate(0.85);
+  }
+
+  .squeeze-diagram[data-level="recommended"] .result .photo {
+    filter: blur(0.5px);
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    min-width: 0;
+    margin: var(--space-lg) 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .choice {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .choice input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .choice:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+  }
+
+  .choice:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .choice:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .result .photo {
+      transition: none;
+    }
+  }
+</style>
