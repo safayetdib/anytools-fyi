@@ -56,6 +56,7 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const controller = createToolController(tool);
   const { state } = controller;
   const isText = tool.config.mode === "text";
+  const isMultiple = tool.config.mode === "files" && tool.config.multiple;
   const hasFilePreviews = Boolean(tool.previewFile);
   const canPreviewFiles = hasFilePreviews && Boolean(tool.previewOutput);
   mountRating(root);
@@ -142,6 +143,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     info.append(name, meta);
     const actions = document.createElement("span");
     actions.className = "shell-file-actions";
+    // With one file there's no order to change, so the grip and number stay out of the way.
+    grip.hidden = order.hidden = !isMultiple;
     item.append(grip, order, thumb, info, actions);
     return item;
   }
@@ -177,12 +180,14 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
       buttons.push(button(fill(t.moveDown, { name: file.name }), "↓", { action: "down", id }));
     }
     buttons.push(button(fill(t.remove, { name: file.name }), "×", { action: "remove", id }));
-    // Phones show one More button instead, which opens these actions in a sheet.
-    const more = button(fill(t.moreFor, { name: file.name }), "", { action: "more", id });
-    more.classList.add("shell-file-more");
-    more.innerHTML = MORE_ICON;
-    more.setAttribute("aria-haspopup", "dialog");
-    buttons.push(more);
+    // Phones show one More button instead, which opens these actions in a sheet. With one file, Remove is all there is.
+    if (isMultiple) {
+      const more = button(fill(t.moreFor, { name: file.name }), "", { action: "more", id });
+      more.classList.add("shell-file-more");
+      more.innerHTML = MORE_ICON;
+      more.setAttribute("aria-haspopup", "dialog");
+      buttons.push(more);
+    }
     const signature = buttons.map((b) => b.dataset.action).join();
     if (actions.dataset.signature !== signature) {
       actions.dataset.signature = signature;

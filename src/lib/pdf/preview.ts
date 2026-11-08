@@ -1,15 +1,16 @@
 import { toScreen, type CropRect } from "../shell/crop";
 import type { FilePreview, OutputPreview, RenderedPage } from "../shell/types";
 
-type Pdfjs = typeof import("pdfjs-dist");
+type Pdfjs = typeof import("pdfjs-dist/legacy/build/pdf.mjs");
 type LoadingTask = ReturnType<Pdfjs["getDocument"]>;
 type PdfDocument = Awaited<LoadingTask["promise"]>;
 
 let pdfjs: Promise<Pdfjs> | undefined;
 
 // pdf.js is large, so it loads only when a visitor starts working with PDFs.
+// The legacy build carries fallbacks for newer JavaScript that Safari on iPhone lacks.
 export function loadPdfjs(): Promise<Pdfjs> {
-  pdfjs ??= Promise.all([import("pdfjs-dist"), import("pdfjs-dist/build/pdf.worker.min.mjs?url")]).then(
+  pdfjs ??= Promise.all([import("pdfjs-dist/legacy/build/pdf.mjs"), import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")]).then(
     ([lib, worker]) => {
       lib.GlobalWorkerOptions.workerSrc = worker.default;
       return lib;

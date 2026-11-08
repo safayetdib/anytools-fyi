@@ -105,7 +105,7 @@ const limits = isFiles
       {
         isFiles ? (
           <>
-            <ol class="shell-files" data-el="list" />
+            <ol class="shell-files" data-el="list" data-single={config.multiple ? undefined : ""} />
           </>
         ) : (
           <div class="shell-field">
@@ -2641,5 +2641,23 @@ const limits = isFiles
     [data-el="viewer-edit"] [data-el="viewer-remove"] {
       grid-column: auto;
     }
+  }
+
+  /* One-file tools: no grip or number, and the remove button stays visible on phones instead of a More menu. */
+  .shell-files[data-single] .shell-file {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .shell-file-grip[hidden],
+  .shell-file-order[hidden] {
+    display: none;
+  }
+
+  .shell-files[data-single] .shell-file-actions {
+    grid-column: auto;
+  }
+
+  .shell-files[data-single] .shell-file-actions [data-action="remove"] {
+    display: inline-flex;
   }
 </style>
