@@ -1,0 +1,154 @@
+---
+// Before and after for Protect PDF and Unlock PDF: an open document and a locked one.
+interface Props {
+  file: string;
+  before: string;
+  after: string;
+  action: string;
+  caption: string;
+  // True when the result is locked.
+  locking: boolean;
+}
+
+const { file, before, after, action, caption, locking } = Astro.props;
+const id = locking ? "protect-diagram-caption" : "unlock-diagram-caption";
+---
+
+<figure class="lock-diagram" aria-labelledby={id}>
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{file}</span>
+      <span class="doc-meta">{before}</span>
+      <span class:list={["sheet", { "is-locked": !locking }]} aria-hidden="true"><span class="lines"></span><span class="lock"></span></span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+      </svg>
+      <span>{action}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{file}</span>
+      <span class="doc-meta">{after}</span>
+      <span class:list={["sheet", { "is-locked": locking }]} aria-hidden="true"><span class="lines"></span><span class="lock"></span></span>
+    </div>
+  </div>
+  <figcaption id={id}>{caption}</figcaption>
+</figure>
+
+<style>
+  .lock-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .sheet {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.6rem;
+    height: 4.6rem;
+    margin-top: var(--space-xs);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+  }
+
+  .lines {
+    width: 70%;
+    height: 60%;
+    background: repeating-linear-gradient(var(--color-border) 0 3px, transparent 3px 9px);
+  }
+
+  .is-locked .lines {
+    filter: blur(2px);
+    opacity: 0.6;
+  }
+
+  /* A padlock drawn on the locked page. */
+  .lock {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    width: 1.6rem;
+    height: 1.25rem;
+    translate: -50% -50%;
+    border-radius: 4px;
+    background: var(--color-accent);
+  }
+
+  .lock::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    width: 1rem;
+    height: 0.8rem;
+    translate: -50% 2px;
+    border: 3px solid var(--color-accent);
+    border-bottom: 0;
+    border-radius: 0.6rem 0.6rem 0 0;
+  }
+
+  .is-locked .lock {
+    display: block;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

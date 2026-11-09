@@ -239,6 +239,18 @@
       "description": "Stamp text like Draft or Confidential across your PDF pages.",
       "title": "Add Watermark to PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Add a watermark to a PDF for free: text like CONFIDENTIAL or DRAFT, or your logo. Set position, transparency, rotation and layer, with live preview."
+    },
+    "protect-pdf": {
+      "name": "Protect PDF",
+      "description": "Add a password to a PDF, so only people with it can open the file.",
+      "title": "Protect PDF with Password Online Free | AnyTools.fyi",
+      "metaDescription": "Password protect a PDF for free with AES-256 encryption. Lock one PDF or many at once with your password. No signup, and nothing is uploaded."
+    },
+    "unlock-pdf": {
+      "name": "Unlock PDF",
+      "description": "Remove a PDF's password and its limits on printing and copying.",
+      "title": "Unlock PDF: Remove PDF Password Online Free | AnyTools.fyi",
+      "metaDescription": "Unlock PDF files for free. Remove the open password, or limits on printing, copying and editing, from PDFs you own. No signup, nothing uploaded."
     }
   },
   "shell": {
@@ -950,6 +962,83 @@
       "after": "After",
       "crop": "Cropped in your browser",
       "caption": "The white border around the poster is cut away. Only the part inside the box is kept, on every page."
+    }
+  },
+  "protectPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Protect PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Set a password. Every PDF in the list gets the same one.",
+    "panelTitle": "Set a password to protect your PDF",
+    "password": "Password",
+    "repeat": "Repeat password",
+    "show": "Show password",
+    "hide": "Hide password",
+    "match": "The passwords match.",
+    "mismatch": "The passwords don't match yet.",
+    "tooLong": "Use 127 characters or fewer.",
+    "empty": "Type a password, then type it again to check it.",
+    "note": "Keep it safe. Nobody, including us, can open the file without it, and it can't be recovered.",
+    "strength": "Strength",
+    "strengths": {
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong"
+    },
+    "strengthHint": "Longer is stronger: try three or four unrelated words.",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "cardsLabel": "Your PDFs",
+    "locked": "Has a password already",
+    "summaryOne": "Done. {name} is protected with your password. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs are protected with your password, in one ZIP ({size}).",
+    "zipName": "anytools_protected.zip",
+    "partLabel": "{name}, protected",
+    "needPassword": "Type the same password in both boxes first.",
+    "alreadyLocked": "{name} already has a password. Unlock it first, or remove it from the list.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "contract.pdf",
+      "open": "Opens for anyone",
+      "locked": "Asks for the password",
+      "protect": "Locked in your browser",
+      "caption": "The PDF is encrypted with AES-256. Any PDF reader asks for the password before showing a page."
+    }
+  },
+  "unlockPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Unlock PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Type the password for any PDF that asks for one.",
+    "panelTitle": "Unlock PDF options",
+    "intro": "Removes the password and any limits on printing, copying or editing.",
+    "needsPassword": "Needs its password",
+    "restrictedOnly": "No password needed: limits will be removed",
+    "notLocked": "Not protected",
+    "checking": "Checking…",
+    "passwordFor": "Password for {name}",
+    "show": "Show password",
+    "hide": "Hide password",
+    "ownNote": "Only unlock files you own or have permission to change.",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "cardsLabel": "Your PDFs",
+    "summaryOne": "Done. {name} is unlocked. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs are unlocked, in one ZIP ({size}).",
+    "zipName": "anytools_unlocked.zip",
+    "partLabel": "{name}, unlocked",
+    "missing": "Type the password for {name} first.",
+    "wrongPassword": "That password doesn't open {name}. Check it, including capital letters, and try again.",
+    "notProtected": "{name} isn't protected, so there's nothing to unlock. Remove it from the list.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "statement.pdf",
+      "locked": "Asks for a password",
+      "open": "Opens for anyone",
+      "unlock": "Unlocked in your browser",
+      "caption": "Type the password once. The new PDF opens, prints and copies without it."
     }
   },
   "pdfToJpg": {

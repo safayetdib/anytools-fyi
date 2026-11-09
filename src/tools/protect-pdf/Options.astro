@@ -1,0 +1,108 @@
+---
+import PasswordInput from "../../components/PasswordInput.astro";
+import en from "../../i18n/en.json";
+import "../../styles/password-tools.css";
+
+const t = en.protectPdf;
+---
+
+<div class="pw-layout" data-protect-options data-testid="protect-options">
+  <aside class="pw-panel" aria-labelledby="protect-panel-title">
+    <h3 class="pw-panel-title" id="protect-panel-title">{t.panelTitle}</h3>
+
+    <div class="pw-field">
+      <label for="protect-password">{t.password}</label>
+      <PasswordInput id="protect-password" autocomplete="new-password" data-password aria-describedby="protect-strength-text" />
+      <div class="pw-strength" data-strength data-level="0" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="pw-text" id="protect-strength-text" data-strength-text>{t.strengthHint}</p>
+    </div>
+
+    <div class="pw-field">
+      <label for="protect-repeat">{t.repeat}</label>
+      <PasswordInput id="protect-repeat" autocomplete="new-password" data-repeat aria-describedby="protect-check" />
+      <p class="pw-check" id="protect-check" data-check data-testid="protect-check" aria-live="polite">{t.empty}</p>
+    </div>
+
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+    <input type="hidden" name="password" data-value />
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { wireShowButton, strengthOf } from "../../lib/shell/password-input";
+  import { cardElement, trackPdfCards } from "../../lib/shell/pdf-cards";
+  import { passwordProblem } from "./password";
+
+  const t = en.protectPdf;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-protect-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
+    const password = $<HTMLInputElement>("[data-password]");
+    const repeat = $<HTMLInputElement>("[data-repeat]");
+    const check = $<HTMLElement>("[data-check]");
+    const strength = $<HTMLElement>("[data-strength]");
+    const strengthText = $<HTMLElement>("[data-strength-text]");
+    const value = $<HTMLInputElement>("[data-value]");
+    const cards = $<HTMLUListElement>("[data-cards]");
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+
+    box.querySelectorAll<HTMLButtonElement>("[data-show]").forEach(wireShowButton);
+
+    function sync() {
+      const problem = passwordProblem(password.value, repeat.value);
+      const level = strengthOf(password.value);
+      strength.dataset.level = String(level);
+      strengthText.textContent = level ? `${t.strength}: ${t.strengths[(["weak", "fair", "strong"] as const)[level - 1]]}. ${t.strengthHint}` : t.strengthHint;
+      // The match is only judged once something is typed in the second box.
+      const judged = repeat.value.length > 0 || problem === "long";
+      check.textContent = !password.value ? t.empty : problem === "long" ? t.tooLong : !judged ? "" : problem === "mismatch" ? t.mismatch : t.match;
+      check.classList.toggle("is-good", !problem);
+      check.classList.toggle("is-bad", judged && Boolean(problem));
+      repeat.setAttribute("aria-invalid", String(judged && problem === "mismatch"));
+      password.setAttribute("aria-invalid", String(problem === "long"));
+      value.value = problem ? "" : password.value;
+      if (runButton) runButton.disabled = Boolean(problem);
+    }
+
+    password.addEventListener("input", sync);
+    repeat.addEventListener("input", sync);
+
+    let first = true;
+    trackPdfCards(shell, THUMBNAIL_WIDTH, (files, entries) => {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file);
+          if (!card) return document.createElement("li");
+          const meta = card.status === "locked" ? t.locked : card.pages === null ? "" : card.pages === 1 ? t.pageOne : fill(t.pageMany, { count: card.pages });
+          const item = cardElement(file, card, { meta, unreadable: t.unreadablePreview });
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", card.status === "locked");
+          item.setAttribute("data-testid", "protect-card");
+          return item;
+        }),
+      );
+      // After the first files, bring the password boxes into view.
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+      sync();
+    });
+
+    sync();
+  }
+</script>

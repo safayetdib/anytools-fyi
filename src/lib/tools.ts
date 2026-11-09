@@ -204,6 +204,15 @@ export const TOOLS: Tool[] = [
     built: true,
     runsIn: "browser",
   },
+  {
+    slug: "protect-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["sign-pdf", "add-watermark", "compress-pdf", "merge-pdf"],
+    aliases: ["password protect pdf", "encrypt pdf", "lock pdf", "add password to pdf", "secure pdf", "pdf password", "পিডিএফে পাসওয়ার্ড"],
+    built: true,
+    runsIn: "browser",
+  },
 ];
 
 export function validateRegistry(tools: Tool[]): void {
