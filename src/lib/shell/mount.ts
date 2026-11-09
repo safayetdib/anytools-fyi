@@ -626,7 +626,9 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
 
   sheet?.addEventListener("close", () => {
     const more = list?.querySelector<HTMLElement>(`[data-id="${sheetFile}"][data-action="more"]`);
-    if (more && document.activeElement === document.body) focus(more);
+    // Safari doesn't focus a button when it's tapped, so it can't hand focus back on its own: the button that opened
+    // the sheet gets it, unless an action already moved focus within the list.
+    if (more && !list?.contains(document.activeElement)) focus(more);
   });
 
   // Alt with an up or down arrow moves the focused row, like the page editor.
