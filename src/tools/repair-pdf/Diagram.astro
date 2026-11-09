@@ -1,0 +1,8 @@
+---
+import LockDiagram from "../../components/help/LockDiagram.astro";
+import en from "../../i18n/en.json";
+
+const d = en.repairPdf.diagram;
+---
+
+<LockDiagram file={d.file} before={d.before} after={d.after} action={d.repair} caption={d.caption} locking={false} broken />

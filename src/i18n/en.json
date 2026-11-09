@@ -251,6 +251,12 @@
       "description": "Remove a PDF's password and its limits on printing and copying.",
       "title": "Unlock PDF: Remove PDF Password Online Free | AnyTools.fyi",
       "metaDescription": "Unlock PDF files for free. Remove the open password, or limits on printing, copying and editing, from PDFs you own. No signup, nothing uploaded."
+    },
+    "repair-pdf": {
+      "name": "Repair PDF",
+      "description": "Fix damaged PDFs that won't open, so you can read and use them again.",
+      "title": "Repair PDF Online Free: Fix Damaged PDFs | AnyTools.fyi",
+      "metaDescription": "Repair damaged or corrupt PDF files for free. Fix PDFs that won't open or were cut short by a failed download. No signup, nothing uploaded."
     }
   },
   "shell": {
@@ -1039,6 +1045,38 @@
       "open": "Opens for anyone",
       "unlock": "Unlocked in your browser",
       "caption": "Type the password once. The new PDF opens, prints and copies without it."
+    }
+  },
+  "repairPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Repair PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Add damaged PDFs. Each one is repaired on its own.",
+    "panelTitle": "Repair PDF",
+    "intro": "Fixes PDFs that won't open, show blank pages or report errors, such as files cut short by a failed download.",
+    "note": "Parts of a file that are missing can't be brought back, but everything still inside it is kept.",
+    "opens": "Opens now; will be tidied",
+    "damaged": "Damaged; will be repaired",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "locked": "{name} needs its password. Unlock it first with Unlock PDF, then repair it.",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Can't be shown yet",
+    "summaryFixed": "Done. {name} is repaired. Saved as {output} ({size}).",
+    "summaryClean": "Done. {name} had no damage to repair. Saved a clean copy as {output} ({size}).",
+    "summaryMany": "Done. {fixed} of {count} PDFs needed repairs. All saved in one ZIP ({size}).",
+    "partFixed": "{name}, repaired",
+    "partClean": "{name}, no damage found",
+    "zipName": "anytools_repaired.zip",
+    "unreadable": "{name} is too damaged to repair, or isn't a PDF. Try the original source of the file again.",
+    "diagram": {
+      "file": "invoice.pdf",
+      "before": "Won't open",
+      "after": "Opens again",
+      "repair": "Repaired in your browser",
+      "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
     }
   },
   "pdfToJpg": {

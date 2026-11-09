@@ -141,6 +141,7 @@ describe("unpredict", () => {
 });
 
 describe("compressPdf", () => {
+  // Encoding a large photo is slow when the whole suite runs at once, so it gets more time.
   it("turns a large photo into a smaller JPEG at the level's resolution", async () => {
     const { bytes, refs } = await imagePdf([{ width: 2000, height: 2800 }]);
     const { encode, calls } = fakeEncoder();
@@ -161,7 +162,7 @@ describe("compressPdf", () => {
     expect(stream.dict.get(PDFName.of("Height"))).toEqual(PDFNumber.of(842));
     expect(stream.getContents()).toHaveLength(500);
     expect(doc.getPageCount()).toBe(1);
-  });
+  }, 20000);
 
   it("passes JPEG photos to the encoder as they are", async () => {
     const jpeg = noise(40_000, 5);

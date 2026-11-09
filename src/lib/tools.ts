@@ -222,6 +222,15 @@ export const TOOLS: Tool[] = [
     built: true,
     runsIn: "browser",
   },
+  {
+    slug: "repair-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["unlock-pdf", "compress-pdf", "merge-pdf", "split-pdf"],
+    aliases: ["fix pdf", "corrupt pdf", "damaged pdf", "pdf won't open", "recover pdf", "broken pdf", "pdf repair tool", "নষ্ট পিডিএফ ঠিক করুন"],
+    built: true,
+    runsIn: "browser",
+  },
 ];
 
 export function validateRegistry(tools: Tool[]): void {

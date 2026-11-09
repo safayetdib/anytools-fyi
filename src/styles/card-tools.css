@@ -1,4 +1,4 @@
-/* Shared by Protect PDF and Unlock PDF: files as cards on the left, the options in a panel on the right.
+/* Shared by Protect PDF, Unlock PDF and Repair PDF: files as cards on the left, the options in a panel on the right.
    Phones show the options first. */
 .pw-layout {
   scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));

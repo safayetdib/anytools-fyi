@@ -1,5 +1,5 @@
 ---
-// Before and after for Protect PDF and Unlock PDF: an open document and a locked one.
+// Before and after for Protect PDF, Unlock PDF and Repair PDF: an open document, and a locked or damaged one.
 interface Props {
   file: string;
   before: string;
@@ -8,10 +8,12 @@ interface Props {
   caption: string;
   // True when the result is locked.
   locking: boolean;
+  // True when the file before is damaged rather than locked.
+  broken?: boolean;
 }
 
-const { file, before, after, action, caption, locking } = Astro.props;
-const id = locking ? "protect-diagram-caption" : "unlock-diagram-caption";
+const { file, before, after, action, caption, locking, broken = false } = Astro.props;
+const id = locking ? "protect-diagram-caption" : broken ? "repair-diagram-caption" : "unlock-diagram-caption";
 ---
 
 <figure class="lock-diagram" aria-labelledby={id}>
@@ -19,7 +21,7 @@ const id = locking ? "protect-diagram-caption" : "unlock-diagram-caption";
     <div class="doc">
       <span class="doc-name">{file}</span>
       <span class="doc-meta">{before}</span>
-      <span class:list={["sheet", { "is-locked": !locking }]} aria-hidden="true"><span class="lines"></span><span class="lock"></span></span>
+      <span class:list={["sheet", { "is-locked": !locking && !broken, "is-broken": broken }]} aria-hidden="true"><span class="lines"></span><span class="lock"></span></span>
     </div>
     <div class="cut">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -126,6 +128,16 @@ const id = locking ? "protect-diagram-caption" : "unlock-diagram-caption";
 
   .is-locked .lock {
     display: block;
+  }
+
+  /* A torn page: the lower part is missing and a jagged edge runs across it. */
+  .is-broken .lines {
+    clip-path: polygon(0 0, 100% 0, 100% 48%, 80% 58%, 62% 46%, 40% 62%, 22% 50%, 0 60%);
+  }
+
+  .is-broken {
+    border-style: dashed;
+    border-color: var(--color-danger);
   }
 
   .cut {
