@@ -160,7 +160,8 @@ function thicken(image: Pixels, radius: number): Pixels {
   return { width, height, data: pass(pass(image.data, true), false) };
 }
 
-function crop(image: Pixels): Pixels | null {
+// Cuts away the see-through edges, keeping a small margin around the ink.
+export function cropToInk(image: Pixels): Pixels | null {
   const { data, width, height } = image;
   let [left, top, right, bottom] = [width, height, -1, -1];
   for (let y = 0; y < height; y++) {
@@ -225,6 +226,6 @@ export function cleanSignature(source: Pixels, settings: CleanSettings): Pixels 
     out.data[at + 3] = Math.round(alpha * 255);
   }
   const radius = settings.thickness * Math.max(1, Math.round(Math.max(source.width, source.height) / 500));
-  const cropped = crop(radius ? thicken(out, radius) : out);
+  const cropped = cropToInk(radius ? thicken(out, radius) : out);
   return cropped && rotate(cropped, settings.turn);
 }

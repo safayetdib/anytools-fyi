@@ -127,7 +127,7 @@ export const TOOLS: Tool[] = [
     hub: "pdf",
     input: "files",
     related: ["add-watermark", "merge-pdf", "compress-pdf", "jpg-to-pdf"],
-    aliases: ["esign pdf", "add signature to pdf", "electronic signature", "signature on pdf", "sign document", "fill and sign", "পিডিএফে স্বাক্ষর", "সই করুন"],
+    aliases: ["esign pdf", "add signature to pdf", "electronic signature", "signature on pdf", "sign document", "fill and sign", "draw signature", "type signature", "add initials", "add date to pdf", "পিডিএফে স্বাক্ষর", "সই করুন"],
     built: true,
     runsIn: "browser",
   },

@@ -1,98 +1,33 @@
 ---
 import en from "../../i18n/en.json";
-import { DEFAULT_CLEAN } from "./clean";
+import DateEditor from "./DateEditor.astro";
+import MarkEditor from "./MarkEditor.astro";
+import { MARKS } from "./marks";
 
 const t = en.signPdf;
-const filters = ["original", "clean", "bold"] as const;
-// The pen's own colour, then the colours most signatures are written in.
-const inks = [
-  { key: "original", value: "original" },
-  { key: "black", value: "#111111" },
-  { key: "blue", value: "#1f3fbf" },
-  { key: "red", value: "#c42b2b" },
-  { key: "green", value: "#1d7a3e" },
-] as const;
 ---
 
 <div class="sign-layout" data-sign-options data-testid="sign-options">
   <aside class="sign-panel" aria-labelledby="sign-panel-title">
     <h3 class="sign-panel-title" id="sign-panel-title">{t.panelTitle}</h3>
 
-    <section class="sign-section" aria-labelledby="sign-signature-heading">
-      <h4 id="sign-signature-heading">{t.signatureHeading}</h4>
-      <label class="sign-pick">
-        <input class="sr-only" type="file" accept="image/*,.heic,.heif" data-image aria-label={t.upload} />
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 16V4" /><path d="m7 9 5-5 5 5" /><path d="M4 20h16" />
-        </svg>
-        <span data-pick-text>{t.upload}</span>
-      </label>
-      <p class="sign-hint">{t.uploadHint}</p>
-      <div class="sign-preview" data-preview hidden>
-        <img data-preview-image alt={t.previewLabel} />
-      </div>
-      <p class="sign-error" data-error data-testid="sign-error" role="alert" hidden></p>
-
-      <div class="sign-controls" data-controls hidden>
-        <fieldset class="sign-filters">
-          <legend>{t.filterLegend}</legend>
-          <div class="sign-chips">
-            {
-              filters.map((filter) => (
-                <label class="sign-chip">
-                  <input type="radio" name="sign-filter" value={filter} checked={filter === DEFAULT_CLEAN.filter} />
-                  <span>{t.filters[filter]}</span>
-                </label>
-              ))
-            }
-          </div>
-        </fieldset>
-        <p class="sign-hint" data-original-note hidden>{t.originalNote}</p>
-
-        <div class="sign-sliders" data-sliders>
-          <label class="sign-slider">
-            <span>{t.removal}</span>
-            <input type="range" min="0" max="100" step="5" value={DEFAULT_CLEAN.removal} data-removal />
-          </label>
-          <label class="sign-slider">
-            <span>{t.contrast}</span>
-            <input type="range" min="0" max="100" step="5" value={DEFAULT_CLEAN.contrast} data-contrast />
-          </label>
-          <label class="sign-slider">
-            <span>{t.thickness}</span>
-            <input type="range" min="0" max="3" step="1" value={DEFAULT_CLEAN.thickness} data-thickness />
-          </label>
-        </div>
-
-        <fieldset class="sign-inks" data-inks>
-          <legend>{t.inkLegend}</legend>
-          <div class="sign-swatches">
-            {
-              inks.map(({ key, value }) => (
-                <label class="sign-swatch" title={t.inks[key]}>
-                  <input type="radio" name="sign-ink" value={value} checked={key === "original"} aria-label={t.inks[key]} />
-                  <span class:list={["sign-swatch-dot", { "is-pen": key === "original" }]} style={key === "original" ? undefined : `background:${value}`} />
-                </label>
-              ))
-            }
-            <label class="sign-swatch" title={t.inks.custom} data-custom-swatch>
-              <input type="color" value="#6b2fb3" data-custom aria-label={t.inks.custom} />
-              <span class="sign-swatch-dot is-custom" data-custom-dot></span>
+    <fieldset class="sign-marks">
+      <legend>{t.markLegend}</legend>
+      <div class="sign-mark-tabs">
+        {
+          MARKS.map((mark) => (
+            <label class="sign-mark-tab">
+              <input type="radio" name="sign-mark" value={mark} checked={mark === "signature"} />
+              <span>{t.marks[mark]}</span>
             </label>
-          </div>
-        </fieldset>
-
-        <div class="sign-tools">
-          <button type="button" class="sign-tool" data-rotate aria-label={t.rotateLabel}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" />
-            </svg>
-            <span>{t.rotate}</span>
-          </button>
-          <button type="button" class="sign-tool" data-reset>{t.reset}</button>
-        </div>
+          ))
+        }
       </div>
-    </section>
+    </fieldset>
+
+    <MarkEditor mark="signature" />
+    <MarkEditor mark="initials" />
+    <DateEditor />
 
     <section class="sign-section" aria-labelledby="sign-place-heading" data-place hidden>
       <h4 id="sign-place-heading">{t.placeHeading}</h4>
@@ -104,7 +39,6 @@ const inks = [
       <p class="sign-hint" id="sign-place-hint">{t.placeHint}</p>
     </section>
 
-    <input type="hidden" name="clean" data-clean-value />
     <input type="hidden" name="placements" data-placements-value />
   </aside>
 
@@ -116,14 +50,19 @@ const inks = [
   import { fill } from "../../i18n/format";
   import { previewPdfOutput } from "../../lib/pdf/preview";
   import type { OutputPreview } from "../../lib/shell/types";
-  import { chooseSignature, cleaned, chosenSignature, toPng } from "./chosen-signature";
-  import { DEFAULT_CLEAN, FILTERS, readClean, type CleanSettings, type Filter } from "./clean";
+  import { onPicture, pictureOf } from "./mark-store";
+  import { MARKS, type Mark } from "./marks";
 
   const t = en.signPdf;
-  // A new signature starts at this share of the page's width, in the bottom-right corner, like a signature line.
-  const START_WIDTH = 0.3;
+  // Where a new mark starts, as shares of the page: a signature in the bottom-right corner like a signature line,
+  // initials small in the corner below it, the date on the left.
+  const START: Record<Mark, { width: number; left: boolean; bottom: number }> = {
+    signature: { width: 0.3, left: false, bottom: 0.1 },
+    initials: { width: 0.08, left: false, bottom: 0.03 },
+    date: { width: 0.15, left: true, bottom: 0.1 },
+  };
   const EDGE = 0.06;
-  const MIN_WIDTH = 0.05;
+  const MIN_WIDTH = 0.04;
   const STEP = 0.01;
   const BIG_STEP = 0.05;
   // Pages are drawn sharp enough for their shown size, but never huge.
@@ -131,6 +70,7 @@ const inks = [
 
   interface Placed {
     id: number;
+    mark: Mark;
     page: number;
     x: number;
     y: number;
@@ -144,65 +84,38 @@ const inks = [
     const box: HTMLElement = found;
     const shell: HTMLElement = root;
     const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
-    const imageInput = $<HTMLInputElement>("[data-image]");
-    const preview = $<HTMLElement>("[data-preview]");
-    const previewImage = $<HTMLImageElement>("[data-preview-image]");
-    const error = $<HTMLElement>("[data-error]");
-    const controls = $<HTMLElement>("[data-controls]");
     const placeSection = $<HTMLElement>("[data-place]");
     const addPage = $<HTMLButtonElement>("[data-add-page]");
     const addAll = $<HTMLButtonElement>("[data-add-all]");
     const count = $<HTMLElement>("[data-count]");
     const pagesList = $<HTMLOListElement>("[data-pages]");
-    const removal = $<HTMLInputElement>("[data-removal]");
-    const contrast = $<HTMLInputElement>("[data-contrast]");
-    const thickness = $<HTMLInputElement>("[data-thickness]");
-    const custom = $<HTMLInputElement>("[data-custom]");
-    const customSwatch = $<HTMLElement>("[data-custom-swatch]");
-    const cleanValue = $<HTMLInputElement>("[data-clean-value]");
     const placementsValue = $<HTMLInputElement>("[data-placements-value]");
     const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
 
-    // True once a colour is picked from the colour picker, until a ready-made colour is chosen again.
-    let customInk = false;
     let file: File | null = null;
     let document_: OutputPreview | null = null;
-    let turn: CleanSettings["turn"] = 0;
-    let signatureUrl: string | null = null;
-    // Width divided by height of the cleaned signature, so placed copies keep its shape.
-    let ratio = 1;
+    // Width divided by height of each mark's picture, so placed copies keep its shape. Kept when a mark is emptied.
+    const ratios: Record<Mark, number> = { signature: 3, initials: 1.5, date: 4 };
     let placed: Placed[] = [];
     let nextId = 1;
     let currentPage = 1;
-    let lastMoved: Placed | null = null;
+    // The copy of each mark moved last, so "Add to every page" uses its spot.
+    const lastMoved = new Map<Mark, Placed>();
     const visible = new Map<number, number>();
     let renderObserver: IntersectionObserver | null = null;
     let viewObserver: IntersectionObserver | null = null;
 
-    const picked = (name: string) => box.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value ?? "";
-
-    function settings(): CleanSettings {
-      return readClean(
-        JSON.stringify({
-          filter: picked("sign-filter"),
-          removal: removal.value,
-          contrast: contrast.value,
-          thickness: thickness.value,
-          ink: customInk ? custom.value : picked("sign-ink"),
-          turn,
-        }),
-      );
-    }
+    const chosenMark = () => (box.querySelector<HTMLInputElement>('input[name="sign-mark"]:checked')?.value ?? "signature") as Mark;
 
     function sheetOf(page: number) {
       return pagesList.querySelector<HTMLElement>(`[data-page="${page}"] .sign-sheet`);
     }
 
-    // The signature's height as a share of its page's height.
+    // The mark's height as a share of its page's height.
     function heightShare(item: Placed): number {
       const sheet = sheetOf(item.page);
       const aspect = sheet && sheet.clientWidth ? sheet.clientHeight / sheet.clientWidth : Math.SQRT2;
-      return item.width / ratio / aspect;
+      return item.width / ratios[item.mark] / aspect;
     }
 
     function keepInside(item: Placed) {
@@ -212,14 +125,14 @@ const inks = [
     }
 
     function sync() {
-      const ready = Boolean(chosenSignature() && signatureUrl);
-      cleanValue.value = JSON.stringify(settings());
-      placementsValue.value = JSON.stringify(placed.map(({ page, x, y, width }) => ({ page, x, y, width })));
-      placeSection.hidden = !ready || !file;
+      const ready = Boolean(pictureOf(chosenMark()));
+      placementsValue.value = JSON.stringify(placed.map(({ page, mark, x, y, width }) => ({ page, mark, x, y, width })));
+      placeSection.hidden = !file;
       addPage.textContent = fill(t.addToPage, { page: currentPage });
       addPage.disabled = addAll.disabled = !ready || !document_;
       count.textContent = placed.length === 0 ? t.placedNone : placed.length === 1 ? t.placedOne : fill(t.placedMany, { count: placed.length });
-      if (runButton) runButton.disabled = !ready || placed.length === 0;
+      // Every placed mark needs a picture to sign with.
+      if (runButton) runButton.disabled = placed.length === 0 || placed.some((item) => !pictureOf(item.mark));
     }
 
     function drawPlaced(item: Placed) {
@@ -228,10 +141,11 @@ const inks = [
         element = document.createElement("div");
         element.className = "sign-placed";
         element.dataset.placed = String(item.id);
+        element.dataset.mark = item.mark;
         element.setAttribute("data-testid", "sign-placed");
         element.tabIndex = 0;
         element.setAttribute("role", "group");
-        element.setAttribute("aria-label", fill(t.placedLabel, { page: item.page }));
+        element.setAttribute("aria-label", fill(t.placedLabels[item.mark], { page: item.page }));
         element.setAttribute("aria-describedby", "sign-place-hint");
         const img = document.createElement("img");
         img.alt = "";
@@ -239,7 +153,7 @@ const inks = [
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "sign-remove";
-        remove.setAttribute("aria-label", t.remove);
+        remove.setAttribute("aria-label", t.removeLabels[item.mark]);
         remove.textContent = "×";
         remove.addEventListener("click", () => removePlaced(item));
         const handle = document.createElement("span");
@@ -250,37 +164,32 @@ const inks = [
         sheetOf(item.page)?.append(element);
       }
       const img = element.querySelector("img") as HTMLImageElement;
-      if (signatureUrl && img.src !== signatureUrl) img.src = signatureUrl;
+      const url = pictureOf(item.mark)?.url;
+      img.hidden = !url;
+      if (url && img.src !== url) img.src = url;
       element.style.left = `${item.x * 100}%`;
       element.style.top = `${item.y * 100}%`;
       element.style.width = `${item.width * 100}%`;
-      element.style.aspectRatio = String(ratio);
-    }
-
-    function redrawAll() {
-      for (const item of placed) {
-        keepInside(item);
-        drawPlaced(item);
-      }
-      sync();
+      element.style.aspectRatio = String(ratios[item.mark]);
     }
 
     function removePlaced(item: Placed) {
       placed = placed.filter((other) => other !== item);
-      if (lastMoved === item) lastMoved = null;
+      if (lastMoved.get(item.mark) === item) lastMoved.delete(item.mark);
       pagesList.querySelector(`[data-placed="${item.id}"]`)?.remove();
       sync();
       addPage.focus({ preventScroll: true });
     }
 
-    function add(page: number, spot?: { x: number; y: number; width: number }) {
-      const item: Placed = { id: nextId++, page, x: 0, y: 0, width: spot?.width ?? START_WIDTH };
+    function add(mark: Mark, page: number, spot?: { x: number; y: number; width: number }) {
+      const start = START[mark];
+      const item: Placed = { id: nextId++, mark, page, x: 0, y: 0, width: spot?.width ?? start.width };
       if (spot) {
         item.x = spot.x;
         item.y = spot.y;
       } else {
-        item.x = 1 - item.width - EDGE;
-        item.y = 1 - heightShare(item) - EDGE;
+        item.x = start.left ? EDGE : 1 - item.width - EDGE;
+        item.y = 1 - heightShare(item) - start.bottom;
       }
       keepInside(item);
       placed.push(item);
@@ -316,7 +225,7 @@ const inks = [
           element.removeEventListener("pointerup", end);
           element.removeEventListener("pointercancel", end);
           element.classList.remove("is-moving");
-          lastMoved = item;
+          lastMoved.set(item.mark, item);
           sync();
         };
         element.addEventListener("pointermove", move);
@@ -347,42 +256,32 @@ const inks = [
         action();
         keepInside(item);
         drawPlaced(item);
-        lastMoved = item;
+        lastMoved.set(item.mark, item);
         sync();
       });
     }
 
-    // Cleans the preview-sized copy and shows it on the panel and on every placed copy.
-    let pending = 0;
-    async function refresh() {
-      const ticket = ++pending;
-      const current = settings();
-      $<HTMLElement>("[data-original-note]").hidden = current.filter !== "original";
-      $<HTMLElement>("[data-sliders]").hidden = current.filter === "original";
-      $<HTMLElement>("[data-inks]").hidden = current.filter === "original";
-      const pixels = cleaned(current, "preview");
-      if (!pixels) {
-        if (chosenSignature()) {
-          error.textContent = t.noInk;
-          error.hidden = false;
-        }
-        preview.hidden = true;
-        if (signatureUrl) URL.revokeObjectURL(signatureUrl);
-        signatureUrl = null;
-        sync();
-        return;
+    // A mark's editor made a new picture: every placed copy shows it, at its shape.
+    onPicture((mark) => {
+      const picture = pictureOf(mark);
+      if (picture) ratios[mark] = picture.ratio;
+      for (const item of placed) {
+        if (item.mark !== mark) continue;
+        keepInside(item);
+        drawPlaced(item);
       }
-      const blob = await toPng(pixels);
-      if (ticket !== pending) return;
-      error.hidden = true;
-      const old = signatureUrl;
-      signatureUrl = URL.createObjectURL(blob);
-      ratio = pixels.width / pixels.height;
-      previewImage.src = signatureUrl;
-      preview.hidden = false;
-      redrawAll();
-      if (old) URL.revokeObjectURL(old);
-    }
+      sync();
+    });
+
+    // Only the chosen mark's editor shows.
+    box.addEventListener("change", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.name !== "sign-mark") return;
+      for (const editor of box.querySelectorAll<HTMLElement>("[data-mark-editor], [data-date-editor]")) {
+        editor.hidden = (editor.dataset.markEditor ?? "date") !== target.value;
+      }
+      sync();
+    });
 
     // Draws pages as they come near the screen, and tracks which page is most in view.
     function watchPages(pageCount: number) {
@@ -451,7 +350,7 @@ const inks = [
         sheet.style.aspectRatio = `${rendered.width} / ${rendered.height}`;
         sheet.classList.remove("is-loading");
         sheet.prepend(img);
-        // The page's real shape is known now, so keep its signatures inside it.
+        // The page's real shape is known now, so keep its marks inside it.
         for (const placedItem of placed) if (placedItem.page === Number(item.dataset.page)) keepInside(placedItem), drawPlaced(placedItem);
       } catch {
         sheet.classList.remove("is-loading");
@@ -464,67 +363,9 @@ const inks = [
       document_?.close();
       document_ = null;
       placed = [];
-      lastMoved = null;
+      lastMoved.clear();
       currentPage = 1;
     }
-
-    imageInput.addEventListener("change", async () => {
-      const picture = imageInput.files?.[0];
-      imageInput.value = "";
-      if (!picture) return;
-      try {
-        await chooseSignature(picture);
-      } catch {
-        error.textContent = t.unreadableImage;
-        error.hidden = false;
-        return;
-      }
-      controls.hidden = false;
-      $<HTMLElement>("[data-pick-text]").textContent = t.change;
-      await refresh();
-    });
-
-    box.addEventListener("change", (event) => {
-      const target = event.target as HTMLInputElement;
-      if (target === imageInput || target.name === "clean" || target.name === "placements") return;
-      // A filter sets the sliders to its own starting values.
-      if (target.name === "sign-filter") {
-        const values = FILTERS[target.value as Filter];
-        removal.value = String(values.removal);
-        contrast.value = String(values.contrast);
-        thickness.value = String(values.thickness);
-      }
-      if (target.name === "sign-ink") pickCustom(false);
-      void refresh();
-    });
-    for (const slider of [removal, contrast, thickness]) slider.addEventListener("input", () => void refresh());
-    function pickCustom(on: boolean) {
-      customInk = on;
-      customSwatch.classList.toggle("is-picked", on);
-      if (on) for (const radio of box.querySelectorAll<HTMLInputElement>('input[name="sign-ink"]')) radio.checked = false;
-    }
-
-    custom.addEventListener("input", () => {
-      pickCustom(true);
-      $<HTMLElement>("[data-custom-dot]").style.background = custom.value;
-      void refresh();
-    });
-
-    $<HTMLButtonElement>("[data-rotate]").addEventListener("click", () => {
-      turn = ((turn + 90) % 360) as CleanSettings["turn"];
-      void refresh();
-    });
-
-    $<HTMLButtonElement>("[data-reset]").addEventListener("click", () => {
-      turn = DEFAULT_CLEAN.turn;
-      (box.querySelector(`input[name="sign-filter"][value="${DEFAULT_CLEAN.filter}"]`) as HTMLInputElement).checked = true;
-      pickCustom(false);
-      (box.querySelector('input[name="sign-ink"][value="original"]') as HTMLInputElement).checked = true;
-      removal.value = String(DEFAULT_CLEAN.removal);
-      contrast.value = String(DEFAULT_CLEAN.contrast);
-      thickness.value = String(DEFAULT_CLEAN.thickness);
-      void refresh();
-    });
 
     function reveal(item: Placed) {
       const element = pagesList.querySelector<HTMLElement>(`[data-placed="${item.id}"]`);
@@ -534,19 +375,21 @@ const inks = [
     }
 
     addPage.addEventListener("click", () => {
-      const item = add(currentPage);
-      lastMoved = item;
+      const item = add(chosenMark(), currentPage);
+      lastMoved.set(item.mark, item);
       sync();
       reveal(item);
     });
 
     addAll.addEventListener("click", () => {
+      const mark = chosenMark();
       const pages = Number(pagesList.children.length);
-      // Every page gets it at the spot of the signature moved last, or the usual corner.
-      const spot = lastMoved ? { x: lastMoved.x, y: lastMoved.y, width: lastMoved.width } : undefined;
+      // Every page gets it at the spot of the copy moved last, or where it usually starts.
+      const last = lastMoved.get(mark);
+      const spot = last ? { x: last.x, y: last.y, width: last.width } : undefined;
       for (let page = 1; page <= pages; page++) {
-        const already = placed.some((item) => item.page === page && spot && item.x === spot.x && item.y === spot.y);
-        if (!already) add(page, spot);
+        const already = placed.some((item) => item.mark === mark && item.page === page && spot && item.x === spot.x && item.y === spot.y);
+        if (!already) add(mark, page, spot);
       }
       sync();
     });
@@ -574,6 +417,27 @@ const inks = [
       box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
     });
 
+    // A panel taller than the screen moves with the page and stops at either end: scrolling down shows its bottom, with the
+    // Add buttons, just above the Sign PDF bar; scrolling up brings its top back below the header. It never scrolls inside itself.
+    const panel = $<HTMLElement>(".sign-panel");
+    const GAP = 16;
+    let panelTop: number | null = null;
+    let lastScroll = window.scrollY;
+    function placePanel() {
+      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 64;
+      const bar = shell.querySelector<HTMLElement>('[data-testid="shell-action-bar"]')?.getBoundingClientRect().height ?? 0;
+      const highest = header + GAP;
+      const lowest = Math.min(highest, window.innerHeight - bar - GAP * 2 - panel.offsetHeight);
+      const scrolled = window.scrollY - lastScroll;
+      lastScroll = window.scrollY;
+      panelTop = Math.min(highest, Math.max(lowest, (panelTop ?? highest) - scrolled));
+      panel.style.setProperty("--sign-panel-top", `${Math.round(panelTop)}px`);
+    }
+    new ResizeObserver(placePanel).observe(panel);
+    window.addEventListener("resize", placePanel);
+    window.addEventListener("scroll", placePanel, { passive: true });
+
+    for (const mark of MARKS) if (pictureOf(mark)) ratios[mark] = (pictureOf(mark) as { ratio: number }).ratio;
     sync();
   }
 </script>
@@ -598,12 +462,11 @@ const inks = [
       grid-row: 1;
     }
 
+    /* The panel scrolls with the page, never inside itself. A tall panel stops once its bottom, with the Add buttons, is in view. */
     .sign-panel {
       position: sticky;
-      top: calc(var(--header-height, 4rem) + var(--space-md));
+      top: var(--sign-panel-top, calc(var(--header-height, 4rem) + var(--space-md)));
       grid-column: 2;
-      max-height: calc(100vh - var(--header-height, 4rem) - var(--space-xl));
-      overflow-y: auto;
     }
   }
 
@@ -634,11 +497,7 @@ const inks = [
     gap: var(--space-sm);
   }
 
-  .sign-section[hidden],
-  .sign-controls[hidden],
-  .sign-preview[hidden],
-  .sign-sliders[hidden],
-  .sign-inks[hidden] {
+  .sign-section[hidden] {
     display: none;
   }
 
@@ -660,29 +519,43 @@ const inks = [
     font-weight: 700;
   }
 
-  .sign-pick {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-    min-height: 56px;
-    padding: var(--space-sm);
-    border: 2px dashed var(--color-accent);
+  /* Signature, Initials, Date: what the editor below makes and the buttons add. */
+  .sign-mark-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  .sign-mark-tab {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 48px;
+    padding: 0 var(--space-xs);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-button);
-    color: var(--color-accent);
+    color: var(--color-text);
     font-weight: 700;
     cursor: pointer;
   }
 
-  .sign-pick:has(input:focus-visible) {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
+  .sign-mark-tab input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
   }
 
-  @media (hover: hover) {
-    .sign-pick:hover {
-      background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
-    }
+  .sign-mark-tab:has(input:checked) {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .sign-mark-tab:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   .sign-hint {
@@ -692,156 +565,6 @@ const inks = [
     line-height: 1.5;
   }
 
-  /* A checkered background, so the see-through parts of the signature are easy to see. */
-  .sign-preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 7rem;
-    padding: var(--space-md);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-button);
-    background: repeating-conic-gradient(#e9ece9 0 25%, #ffffff 0 50%) 0 0 / 16px 16px;
-  }
-
-  .sign-preview img {
-    display: block;
-    max-width: 100%;
-    max-height: 9rem;
-    object-fit: contain;
-  }
-
-  .sign-error {
-    margin: 0;
-    color: var(--color-danger);
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.5;
-  }
-
-  .sign-controls {
-    display: grid;
-    gap: var(--space-md);
-  }
-
-  .sign-chips {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-xs);
-  }
-
-  .sign-chip {
-    position: relative;
-    display: grid;
-    place-items: center;
-    min-height: 44px;
-    padding: 0 var(--space-xs);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-button);
-    color: var(--color-text-muted);
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .sign-chip input,
-  .sign-swatch input[type="radio"] {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  .sign-chip:has(input:checked) {
-    border-color: var(--color-accent);
-    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
-    color: var(--color-accent);
-    box-shadow: 0 0 0 1px var(--color-accent);
-  }
-
-  .sign-chip:has(input:focus-visible),
-  .sign-swatch:has(input:focus-visible) {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-  }
-
-  .sign-sliders {
-    display: grid;
-    gap: var(--space-sm);
-  }
-
-  .sign-slider {
-    display: grid;
-    gap: 2px;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  .sign-slider input {
-    width: 100%;
-    min-height: 32px;
-    accent-color: var(--color-accent);
-  }
-
-  .sign-swatches {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-xs);
-  }
-
-  .sign-swatch {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 2px solid transparent;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  .sign-swatch:has(input:checked),
-  .sign-swatch.is-picked {
-    border-color: var(--color-accent);
-  }
-
-  /* The colour picker covers its swatch, so tapping the rainbow opens it. */
-  .sign-swatch input[type="color"] {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  .sign-swatch-dot {
-    width: 28px;
-    height: 28px;
-    border: 1px solid rgb(0 0 0 / 0.2);
-    border-radius: 50%;
-  }
-
-  /* The pen's own colour: half dark blue, half black, like a mix of pens. */
-  .sign-swatch-dot.is-pen {
-    background: linear-gradient(135deg, #2a3f8f 50%, #222222 50%);
-  }
-
-  .sign-swatch-dot.is-custom {
-    background: conic-gradient(#e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935);
-  }
-
-  .sign-tools {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-  }
-
-  .sign-tool,
   .sign-add {
     display: inline-flex;
     align-items: center;
@@ -869,22 +592,19 @@ const inks = [
     color: var(--color-on-accent);
   }
 
-  .sign-tool:disabled,
   .sign-add:disabled {
     opacity: 0.55;
     cursor: not-allowed;
   }
 
-  .sign-tool:focus-visible,
   .sign-add:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
 
   @media (hover: hover) {
-    .sign-tool:hover,
     .sign-add:not(.is-main):not(:disabled):hover,
-    .sign-chip:not(:has(input:checked)):hover {
+    .sign-mark-tab:not(:has(input:checked)):hover {
       border-color: var(--color-accent);
       color: var(--color-accent);
     }
@@ -950,6 +670,10 @@ const inks = [
     outline: 1px dashed color-mix(in srgb, var(--color-accent) 70%, transparent);
     cursor: move;
     touch-action: none;
+  }
+
+  :global(.sign-placed img[hidden]) {
+    display: none;
   }
 
   :global(.sign-placed img) {

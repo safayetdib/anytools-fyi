@@ -1,17 +1,16 @@
 import { decode } from "../jpg-to-pdf/images";
-import { cleanSignature, type CleanSettings, type Pixels } from "./clean";
+import type { Pixels } from "./clean";
 
-// The signature picture chosen in the panel, kept here so the run can use it. It's a file, so it can't travel in the form's text fields.
+// Opening a photo of a signature, and turning cleaned pixels into PNGs.
 
 // Plenty for a signature printed at any size, and quick to clean.
 const FULL_SIDE = 1600;
 // The live preview is cleaned at this size, so sliders respond at once.
 const PREVIEW_SIDE = 480;
 
-let chosen: { full: Pixels; preview: Pixels } | null = null;
-
-export function chosenSignature() {
-  return chosen;
+export interface Photo {
+  full: Pixels;
+  preview: Pixels;
 }
 
 function pixelsOf(bitmap: ImageBitmap, longest: number): Pixels {
@@ -29,10 +28,10 @@ function pixelsOf(bitmap: ImageBitmap, longest: number): Pixels {
 }
 
 // Opens any picture the browser can (and iPhone HEIC photos), upright, at the two working sizes.
-export async function chooseSignature(file: File) {
+export async function openPhoto(file: File): Promise<Photo> {
   const bitmap = await decode(file);
   try {
-    chosen = { full: pixelsOf(bitmap, FULL_SIDE), preview: pixelsOf(bitmap, PREVIEW_SIDE) };
+    return { full: pixelsOf(bitmap, FULL_SIDE), preview: pixelsOf(bitmap, PREVIEW_SIDE) };
   } finally {
     bitmap.close();
   }
@@ -50,9 +49,4 @@ export function toPng(image: Pixels): Promise<Blob> {
       else reject(new Error("Encode failed"));
     }, "image/png"),
   );
-}
-
-// The cleaned signature at preview or full size, or null when no ink could be found.
-export function cleaned(settings: CleanSettings, size: "preview" | "full"): Pixels | null {
-  return chosen ? cleanSignature(chosen[size], settings) : null;
 }

@@ -6,14 +6,14 @@ steps:
     title: "Select your PDF"
     text: "Choose the PDF to sign, or drop it onto the page. Its pages show large, one under another."
   - icon: page
-    title: "Upload your signature"
-    text: "Sign a plain sheet of paper and take a photo, or use a scan. The paper is removed and the ink made solid."
+    title: "Make your signature"
+    text: "Type your name and pick a handwriting font, draw it with your finger or mouse, or upload a photo of it on paper. Photos are cleaned: the paper is removed and the ink made solid."
   - icon: gear
-    title: "Make it look right"
-    text: "Pick a filter, then fine-tune background removal, contrast and thickness. Choose black, blue or any ink colour."
+    title: "Add initials and the date"
+    text: "Switch to Initials or Date to make those too. Choose black, blue or any ink colour, and for a photo fine-tune background removal, contrast and thickness."
   - icon: arrange
     title: "Place it"
-    text: "Select Add to page, then drag the signature onto the signature line and drag its corner to resize it. Add it to every page if you need to."
+    text: "Select Add to page, then drag it onto the signature line and drag its corner to resize it. Add it to every page if you need to."
   - icon: download
     title: "Sign PDF"
     text: "Select Sign PDF and download the signed copy. Your original file isn't changed."
@@ -27,9 +27,9 @@ limits:
     label: "File size"
     note: "Very large files may fail on phones with little memory."
   - icon: page
-    value: "Photo, scan"
-    label: "Signature picture"
-    note: "JPG, PNG, WebP or HEIC. A signature on plain white paper cleans up best."
+    value: "3 ways"
+    label: "Your signature"
+    note: "Type it, draw it, or upload a photo or scan (JPG, PNG, WebP or HEIC). On plain white paper, photos clean up best."
   - icon: lock
     value: "Not yet"
     label: "Password-protected PDFs"
@@ -63,10 +63,10 @@ faq:
     answer: "Upload the photo and keep the Clean filter. The paper, its grey tint and light shadows become see-through, so only the ink lands on the page. Raise Background removal for darker paper."
   - question: "Can I change the colour of my signature?"
     answer: "Yes. Keep your pen's own colour, or choose black, blue, red, green, or any colour you like. Blue is a common choice, so a signed copy is easy to tell from a photocopy."
-  - question: "Can I sign every page?"
-    answer: "Yes. Place the signature where you want it on one page, then select Add to every page to put it in the same spot on all of them. Useful for initialling each page."
-  - question: "Can I use my phone?"
-    answer: "Yes. Take a photo of your signature with the phone's camera, choose it here, and drag it into place with your finger. iPhone HEIC photos work too."
+  - question: "Can I type or draw my signature instead?"
+    answer: "Yes. Type your name and choose one of five handwriting fonts, including Galada, which writes Bangla too. Or choose Draw and sign with your finger on a phone, a pen or the mouse. Both are added as a crisp picture with a see-through background."
+  - question: "Can I add my initials and the date, or sign every page?"
+    answer: "Yes. Choose Initials or Date at the top of the signing options. Initials are made the same three ways as a signature and fill in from your typed name; the date starts as today, in the format you choose. Place any of them on one page, then select Add to every page to put it in the same spot on all of them."
 ---
 
-Signing a PDF puts your handwritten signature on the document without printing and scanning it. Take a photo of your signature on paper, and it's cleaned up right here: the paper and shadows are removed, faint ink is made solid, and you can choose its colour. Then place it on the signature line, resize it, and download the signed PDF. Nothing leaves your device.
+Signing a PDF puts your signature on the document without printing and scanning it. Type your name in a handwriting font, draw it, or take a photo of your signature on paper, and it's cleaned up right here: the paper and shadows are removed, faint ink is made solid, and you can choose its colour. Add your initials and the date too, place them on the lines, resize them, and download the signed PDF. Nothing leaves your device.

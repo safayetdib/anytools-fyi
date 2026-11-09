@@ -1,0 +1,750 @@
+---
+import en from "../../i18n/en.json";
+import { DEFAULT_CLEAN } from "./clean";
+import { FONTS } from "./fonts";
+import InkPicker from "./InkPicker.astro";
+import { PEN_SIZES } from "./marks";
+
+interface Props {
+  mark: "signature" | "initials";
+}
+
+const { mark } = Astro.props;
+const t = en.signPdf;
+const e = t.editors[mark];
+// The signature's choices keep the names they had before there were initials.
+const prefix = mark === "signature" ? "sign" : "initials";
+// Like iLovePDF: type, draw or upload.
+const methods = ["type", "draw", "upload"] as const;
+const filters = ["original", "clean", "bold"] as const;
+const penSizes = Object.keys(PEN_SIZES) as (keyof typeof PEN_SIZES)[];
+---
+
+<div class="mark-editor" data-mark-editor={mark} hidden={mark !== "signature"}>
+  <fieldset>
+    <legend class="sr-only">{t.methodLegend}</legend>
+    <div class="mark-methods">
+      {
+        methods.map((method) => (
+          <label class="mark-method">
+            <input type="radio" name={`${prefix}-method`} value={method} checked={method === "type"} />
+            <span>{t.methods[method]}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <div class="mark-pane" data-pane="type">
+    <label class="mark-field">
+      <span>{e.type}</span>
+      <input type="text" data-type-text maxlength={mark === "signature" ? 60 : 8} autocomplete={mark === "signature" ? "name" : "off"} spellcheck="false" placeholder={e.placeholder} />
+    </label>
+    <fieldset>
+      <legend>{t.fontLegend}</legend>
+      <div class="mark-fonts">
+        {
+          FONTS.map((font, index) => (
+            <label class="mark-font">
+              <input type="radio" name={`${prefix}-font`} value={font.key} checked={index === 0} />
+              <span class="mark-font-sample" style={`font-family:${font.family}`} data-sample aria-hidden="true">
+                {e.placeholder}
+              </span>
+              <span class="mark-font-name">
+                {font.name}
+                {"bangla" in font && <span class="mark-font-note">{t.bangla}</span>}
+              </span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="mark-pane" data-pane="draw" hidden>
+    <div class="mark-pad-box">
+      <canvas class="mark-pad" data-pad role="img" aria-label={e.draw}></canvas>
+      <span class="mark-pad-prompt" data-pad-prompt aria-hidden="true">{e.drawPrompt}</span>
+    </div>
+    <div class="mark-pad-tools">
+      <fieldset>
+        <legend class="sr-only">{t.penSizeLegend}</legend>
+        <div class="mark-pen-sizes">
+          {
+            penSizes.map((size) => (
+              <label class="mark-pen-size" title={t.penSizes[size]}>
+                <input type="radio" name={`${prefix}-pen-size`} value={size} checked={size === "medium"} aria-label={`${t.penSizeLegend}: ${t.penSizes[size]}`} />
+                <span class="mark-pen-dot" style={`width:${PEN_SIZES[size] * 2.5}px;height:${PEN_SIZES[size] * 2.5}px`} />
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+      <button type="button" class="mark-tool" data-undo disabled>{t.undo}</button>
+      <button type="button" class="mark-tool" data-clear disabled>{t.clear}</button>
+    </div>
+    <p class="mark-hint">{t.drawHint}</p>
+  </div>
+
+  <div data-pen-ink>
+    <InkPicker name={`${prefix}-pen`} />
+  </div>
+
+  <div class="mark-pane" data-pane="upload" hidden>
+    <label class="mark-pick">
+      <input class="sr-only" type="file" accept="image/*,.heic,.heif" data-image aria-label={e.upload} />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M4 20h16"></path>
+      </svg>
+      <span data-pick-text>{e.upload}</span>
+    </label>
+    <p class="mark-hint">{e.uploadHint}</p>
+    <div class="mark-preview" data-preview hidden>
+      <img data-preview-image alt={e.previewLabel} />
+    </div>
+    <p class="mark-error" data-error data-testid="sign-error" role="alert" hidden></p>
+
+    <div class="mark-controls" data-controls hidden>
+      <fieldset>
+        <legend>{t.filterLegend}</legend>
+        <div class="mark-chips">
+          {
+            filters.map((filter) => (
+              <label class="mark-chip">
+                <input type="radio" name={`${prefix}-filter`} value={filter} checked={filter === DEFAULT_CLEAN.filter} />
+                <span>{t.filters[filter]}</span>
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+      <p class="mark-hint" data-original-note hidden>{t.originalNote}</p>
+
+      <div class="mark-sliders" data-sliders>
+        <label class="mark-slider">
+          <span>{t.removal}</span>
+          <input type="range" min="0" max="100" step="5" value={DEFAULT_CLEAN.removal} data-removal />
+        </label>
+        <label class="mark-slider">
+          <span>{t.contrast}</span>
+          <input type="range" min="0" max="100" step="5" value={DEFAULT_CLEAN.contrast} data-contrast />
+        </label>
+        <label class="mark-slider">
+          <span>{t.thickness}</span>
+          <input type="range" min="0" max="3" step="1" value={DEFAULT_CLEAN.thickness} data-thickness />
+        </label>
+      </div>
+
+      <div data-photo-ink>
+        <InkPicker name={`${prefix}-ink`} withPen />
+      </div>
+
+      <div class="mark-pad-tools">
+        <button type="button" class="mark-tool" data-rotate aria-label={e.rotateLabel}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path>
+          </svg>
+          <span>{t.rotate}</span>
+        </button>
+        <button type="button" class="mark-tool" data-reset>{t.reset}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { DEFAULT_CLEAN, FILTERS, cleanSignature, readClean, type CleanSettings, type Filter, type Pixels } from "./clean";
+  import { fontOf } from "./fonts";
+  import { readInk, resetInk } from "./ink";
+  import { publish } from "./mark-store";
+  import { PEN_SIZES, initialsOf, type PenSize, type Stroke } from "./marks";
+  import { openPhoto, toPng, type Photo } from "./photo";
+  import { renderStrokes, renderText, traceStrokes } from "./render";
+
+  const t = en.signPdf;
+  // Typed marks: drawn this tall on the pages while choosing, and this tall in the PDF.
+  const TEXT_PREVIEW = 80;
+  const TEXT_FULL = 240;
+  // Drawn marks: the longer side on the pages while choosing, and in the PDF.
+  const DRAW_PREVIEW = 480;
+  const DRAW_FULL = 1600;
+
+  type Method = "type" | "draw" | "upload";
+  const editors = new Map<string, { suggest: (text: string) => void }>();
+
+  function setup(editor: HTMLElement) {
+    const mark = editor.dataset.markEditor as "signature" | "initials";
+    const e = t.editors[mark];
+    const $ = <T extends Element>(selector: string) => editor.querySelector(selector) as T;
+    const picked = (name: string) => editor.querySelector<HTMLInputElement>(`input[name$="-${name}"]:checked`)?.value ?? "";
+    const text = $<HTMLInputElement>("[data-type-text]");
+    const pad = $<HTMLCanvasElement>("[data-pad]");
+    const penInk = $<HTMLElement>("[data-pen-ink] [data-ink-row]");
+    const photoInk = $<HTMLElement>("[data-photo-ink] [data-ink-row]");
+    const undo = $<HTMLButtonElement>("[data-undo]");
+    const clear = $<HTMLButtonElement>("[data-clear]");
+    const imageInput = $<HTMLInputElement>("[data-image]");
+    const preview = $<HTMLElement>("[data-preview]");
+    const previewImage = $<HTMLImageElement>("[data-preview-image]");
+    const error = $<HTMLElement>("[data-error]");
+    const removal = $<HTMLInputElement>("[data-removal]");
+    const contrast = $<HTMLInputElement>("[data-contrast]");
+    const thickness = $<HTMLInputElement>("[data-thickness]");
+
+    const method = () => picked("method") as Method;
+    let strokes: Stroke[] = [];
+    let drawing: Stroke | null = null;
+    let photo: Photo | null = null;
+    let turn: CleanSettings["turn"] = 0;
+    // Initials follow the typed signature until someone types their own.
+    let typedByHand = false;
+
+    function cleanSettings(): CleanSettings {
+      return readClean(
+        JSON.stringify({ filter: picked("filter"), removal: removal.value, contrast: contrast.value, thickness: thickness.value, ink: readInk(photoInk), turn }),
+      );
+    }
+
+    function showPanes() {
+      const current = method();
+      for (const pane of editor.querySelectorAll<HTMLElement>("[data-pane]")) pane.hidden = pane.dataset.pane !== current;
+      $<HTMLElement>("[data-pen-ink]").hidden = current === "upload";
+    }
+
+    function showSamples() {
+      for (const sample of editor.querySelectorAll<HTMLElement>("[data-sample]")) sample.textContent = text.value.trim() || e.placeholder;
+    }
+
+    // The pad keeps what's drawn in its own pixels, sharp on high-density screens.
+    function drawPad() {
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.round(pad.clientWidth * ratio);
+      const height = Math.round(pad.clientHeight * ratio);
+      if (pad.width !== width || pad.height !== height) [pad.width, pad.height] = [width, height];
+      const context = pad.getContext("2d") as CanvasRenderingContext2D;
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.clearRect(0, 0, pad.width, pad.height);
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      traceStrokes(context, strokes, PEN_SIZES[picked("pen-size") as PenSize] ?? PEN_SIZES.medium, readInk(penInk));
+      $<HTMLElement>("[data-pad-prompt]").hidden = strokes.length > 0;
+      undo.disabled = clear.disabled = strokes.length === 0;
+    }
+
+    // Makes the picture for the chosen way and shares it with the pages. Only the newest request counts.
+    let pending = 0;
+    async function refresh() {
+      const ticket = ++pending;
+      const current = method();
+      let pixels: Pixels | null = null;
+      let full: () => Promise<Pixels | null> = async () => null;
+      if (current === "type") {
+        const value = text.value;
+        const { family } = fontOf(picked("font"));
+        const colour = readInk(penInk);
+        pixels = await renderText(value, family, colour, TEXT_PREVIEW);
+        full = () => renderText(value, family, colour, TEXT_FULL);
+      } else if (current === "draw") {
+        const lines = strokes.map((points) => points.slice());
+        const pen = PEN_SIZES[picked("pen-size") as PenSize] ?? PEN_SIZES.medium;
+        const colour = readInk(penInk);
+        pixels = renderStrokes(lines, pen, colour, DRAW_PREVIEW);
+        full = async () => renderStrokes(lines, pen, colour, DRAW_FULL);
+      } else if (photo) {
+        const source = photo;
+        const settings = cleanSettings();
+        $<HTMLElement>("[data-original-note]").hidden = settings.filter !== "original";
+        $<HTMLElement>("[data-sliders]").hidden = settings.filter === "original";
+        $<HTMLElement>("[data-photo-ink]").hidden = settings.filter === "original";
+        pixels = cleanSignature(source.preview, settings);
+        full = async () => cleanSignature(source.full, settings);
+        error.textContent = t.noInk;
+        error.hidden = Boolean(pixels);
+        if (!pixels) preview.hidden = true;
+      }
+      if (ticket !== pending) return;
+      if (!pixels) {
+        publish(mark, null);
+        return;
+      }
+      const ratio = pixels.width / pixels.height;
+      const url = URL.createObjectURL(await toPng(pixels));
+      if (ticket !== pending) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+      if (current === "upload") {
+        previewImage.src = url;
+        preview.hidden = false;
+      }
+      publish(mark, { url, ratio, full });
+    }
+
+    editor.addEventListener("change", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target === imageInput || target === text) return;
+      if (target.name.endsWith("-method")) showPanes();
+      // A filter sets the sliders to its own starting values.
+      if (target.name.endsWith("-filter")) {
+        const values = FILTERS[target.value as Filter];
+        removal.value = String(values.removal);
+        contrast.value = String(values.contrast);
+        thickness.value = String(values.thickness);
+      }
+      if (target.name.endsWith("-pen-size") || target.name.endsWith("-pen")) drawPad();
+      void refresh();
+    });
+    editor.addEventListener("input", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target === text) {
+        typedByHand = text.value.trim() !== "";
+        showSamples();
+        if (mark === "signature") editors.get("initials")?.suggest(initialsOf(text.value));
+      } else if (target.type === "color" && penInk.contains(target)) drawPad();
+      else if (target.type !== "range" && target.type !== "color") return;
+      void refresh();
+    });
+
+    // Pointer events cover finger, mouse and pen alike.
+    const pointAt = (event: PointerEvent) => {
+      const rect = pad.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    };
+    pad.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      event.preventDefault();
+      pad.setPointerCapture(event.pointerId);
+      drawing = [pointAt(event)];
+      strokes.push(drawing);
+      drawPad();
+    });
+    pad.addEventListener("pointermove", (event) => {
+      if (!drawing) return;
+      for (const step of event.getCoalescedEvents?.() ?? [event]) drawing.push(pointAt(step));
+      drawPad();
+    });
+    const lift = () => {
+      if (!drawing) return;
+      drawing = null;
+      void refresh();
+    };
+    pad.addEventListener("pointerup", lift);
+    pad.addEventListener("pointercancel", lift);
+    // Redrawn whenever the pad changes size, like when it first shows or the phone turns.
+    new ResizeObserver(drawPad).observe(pad);
+
+    undo.addEventListener("click", () => {
+      strokes.pop();
+      drawPad();
+      void refresh();
+    });
+    clear.addEventListener("click", () => {
+      strokes = [];
+      drawPad();
+      void refresh();
+    });
+
+    imageInput.addEventListener("change", async () => {
+      const picture = imageInput.files?.[0];
+      imageInput.value = "";
+      if (!picture) return;
+      try {
+        photo = await openPhoto(picture);
+      } catch {
+        error.textContent = t.unreadableImage;
+        error.hidden = false;
+        return;
+      }
+      $<HTMLElement>("[data-controls]").hidden = false;
+      $<HTMLElement>("[data-pick-text]").textContent = e.change;
+      await refresh();
+    });
+
+    $<HTMLButtonElement>("[data-rotate]").addEventListener("click", () => {
+      turn = ((turn + 90) % 360) as CleanSettings["turn"];
+      void refresh();
+    });
+
+    $<HTMLButtonElement>("[data-reset]").addEventListener("click", () => {
+      turn = DEFAULT_CLEAN.turn;
+      (editor.querySelector(`input[name$="-filter"][value="${DEFAULT_CLEAN.filter}"]`) as HTMLInputElement).checked = true;
+      resetInk(photoInk);
+      removal.value = String(DEFAULT_CLEAN.removal);
+      contrast.value = String(DEFAULT_CLEAN.contrast);
+      thickness.value = String(DEFAULT_CLEAN.thickness);
+      void refresh();
+    });
+
+    editors.set(mark, {
+      suggest(value) {
+        if (typedByHand) return;
+        text.value = value;
+        showSamples();
+        if (method() === "type") void refresh();
+      },
+    });
+    showPanes();
+  }
+
+  for (const editor of document.querySelectorAll<HTMLElement>("[data-mark-editor]")) setup(editor);
+</script>
+
+<style>
+  .mark-editor {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .mark-editor[hidden],
+  .mark-pane[hidden],
+  .mark-controls[hidden],
+  .mark-preview[hidden],
+  .mark-sliders[hidden],
+  [data-pen-ink][hidden],
+  [data-photo-ink][hidden] {
+    display: none;
+  }
+
+  .mark-pane,
+  .mark-controls {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin: 0 0 var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  /* Type, Draw, Upload: one bar, like a switch. */
+  .mark-methods {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 3px;
+    border-radius: var(--radius-button);
+    background: var(--color-surface-muted, color-mix(in srgb, var(--color-text) 7%, var(--color-surface)));
+  }
+
+  .mark-method {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 40px;
+    border-radius: calc(var(--radius-button) - 2px);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mark-method:has(input:checked) {
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.16);
+  }
+
+  .mark-method input,
+  .mark-chip input,
+  .mark-font input,
+  .mark-pen-size input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .mark-method:has(input:focus-visible),
+  .mark-chip:has(input:focus-visible),
+  .mark-font:has(input:focus-visible),
+  .mark-pen-size:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .mark-field {
+    display: grid;
+    gap: var(--space-xs);
+    font-weight: 700;
+  }
+
+  .mark-field input {
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 400;
+  }
+
+  .mark-field input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  /* Two to a row, so the panel stays short enough to fit on a laptop screen. */
+  .mark-fonts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  /* Each font shows what was typed, on white like paper. */
+  .mark-font {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--space-xs);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    cursor: pointer;
+  }
+
+  .mark-font:has(input:checked) {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .mark-font-sample {
+    overflow: hidden;
+    padding: 0 var(--space-xs);
+    border-radius: 4px;
+    background: #ffffff;
+    color: #1a1a1a;
+    font-size: 1.375rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .mark-font-name {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .mark-font-note {
+    font-weight: 400;
+  }
+
+  /* The pad looks like paper with a line to sign on. */
+  .mark-pad-box {
+    position: relative;
+  }
+
+  .mark-pad {
+    display: block;
+    width: 100%;
+    height: 10rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: linear-gradient(transparent calc(75% - 1px), #c9cdc9 calc(75% - 1px), #c9cdc9 75%, transparent 75%) #ffffff;
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .mark-pad-prompt {
+    position: absolute;
+    inset: 0 0 25%;
+    display: grid;
+    place-items: center;
+    color: #5f665f;
+    font-size: 0.9375rem;
+    pointer-events: none;
+  }
+
+  .mark-pad-prompt[hidden] {
+    display: none;
+  }
+
+  .mark-pad-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .mark-pen-sizes {
+    display: flex;
+    gap: 2px;
+  }
+
+  .mark-pen-size {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-button);
+    cursor: pointer;
+  }
+
+  .mark-pen-size:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+  }
+
+  .mark-pen-dot {
+    border-radius: 50%;
+    background: var(--color-text);
+  }
+
+  .mark-tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mark-tool:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .mark-tool:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .mark-hint {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .mark-pick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    min-height: 56px;
+    padding: var(--space-sm);
+    border: 2px dashed var(--color-accent);
+    border-radius: var(--radius-button);
+    color: var(--color-accent);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mark-pick:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* A checkered background, so the see-through parts of the signature are easy to see. */
+  .mark-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 7rem;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: repeating-conic-gradient(#e9ece9 0 25%, #ffffff 0 50%) 0 0 / 16px 16px;
+  }
+
+  .mark-preview img {
+    display: block;
+    max-width: 100%;
+    max-height: 9rem;
+    object-fit: contain;
+  }
+
+  .mark-error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .mark-error[hidden] {
+    display: none;
+  }
+
+  .mark-chips {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  .mark-chip {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-xs);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mark-chip:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .mark-sliders {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .mark-slider {
+    display: grid;
+    gap: 2px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .mark-slider input {
+    width: 100%;
+    min-height: 32px;
+    accent-color: var(--color-accent);
+  }
+
+  @media (hover: hover) {
+    .mark-pick:hover {
+      background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    }
+
+    .mark-tool:not(:disabled):hover,
+    .mark-chip:not(:has(input:checked)):hover,
+    .mark-font:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+
+    .mark-method:not(:has(input:checked)):hover,
+    .mark-tool:not(:disabled):hover {
+      color: var(--color-accent);
+    }
+  }
+</style>

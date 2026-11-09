@@ -185,9 +185,9 @@
     },
     "sign-pdf": {
       "name": "Sign PDF",
-      "description": "Add your signature to a PDF from a photo, cleaned up so it looks crisp.",
+      "description": "Type, draw or upload your signature, and add it to any page of a PDF.",
       "title": "Sign PDF Online Free: Add Your Signature | AnyTools.fyi",
-      "metaDescription": "Sign a PDF for free with a photo of your signature. Remove the paper background, boost contrast, pick the ink colour, and place it on any page. No upload."
+      "metaDescription": "Sign a PDF for free: type, draw or upload your signature, add initials and the date, and place them on any page. Photos are cleaned up. No upload."
     },
     "organize-pdf": {
       "name": "Organize PDF",
@@ -768,13 +768,57 @@
     "selectLabel": "Select PDF file",
     "runLabel": "Sign PDF",
     "acceptLabel": "PDF file",
-    "arrangeHint": "Add your signature, then place it on the pages.",
+    "arrangeHint": "Make your signature, then place it on the pages.",
     "panelTitle": "Signing options",
-    "signatureHeading": "Your signature",
-    "upload": "Upload signature",
-    "change": "Change signature",
-    "uploadHint": "A photo or scan of your signature on plain paper. JPG, PNG, WebP or HEIC.",
-    "previewLabel": "Your signature, as it will look",
+    "markLegend": "What to add",
+    "marks": {
+      "signature": "Signature",
+      "initials": "Initials",
+      "date": "Date"
+    },
+    "methodLegend": "Make it by",
+    "methods": {
+      "type": "Type",
+      "draw": "Draw",
+      "upload": "Upload"
+    },
+    "editors": {
+      "signature": {
+        "type": "Your name",
+        "placeholder": "Your name",
+        "draw": "Drawing pad. Draw your signature with a finger, mouse or pen.",
+        "drawPrompt": "Draw your signature here",
+        "upload": "Upload signature",
+        "change": "Change signature",
+        "uploadHint": "A photo or scan of your signature on plain paper. JPG, PNG, WebP or HEIC.",
+        "previewLabel": "Your signature, as it will look",
+        "rotateLabel": "Rotate the signature a quarter turn clockwise"
+      },
+      "initials": {
+        "type": "Your initials",
+        "placeholder": "AB",
+        "draw": "Drawing pad. Draw your initials with a finger, mouse or pen.",
+        "drawPrompt": "Draw your initials here",
+        "upload": "Upload initials",
+        "change": "Change initials",
+        "uploadHint": "A photo or scan of your initials on plain paper. JPG, PNG, WebP or HEIC.",
+        "previewLabel": "Your initials, as they will look",
+        "rotateLabel": "Rotate the initials a quarter turn clockwise"
+      }
+    },
+    "fontLegend": "Font",
+    "bangla": "Also writes Bangla",
+    "penSizeLegend": "Pen size",
+    "penSizes": {
+      "thin": "Thin",
+      "medium": "Medium",
+      "thick": "Thick"
+    },
+    "undo": "Undo",
+    "clear": "Clear",
+    "drawHint": "No mouse or touch screen? Type or upload it instead.",
+    "dateLabel": "Date",
+    "formatLegend": "Format",
     "filterLegend": "Filter",
     "filters": {
       "original": "Original",
@@ -795,23 +839,19 @@
     },
     "originalNote": "Original keeps the photo as it is, paper and all. Choose Clean or Bold to remove the paper.",
     "rotate": "Rotate",
-    "rotateLabel": "Rotate the signature a quarter turn clockwise",
     "reset": "Reset",
     "placeHeading": "Place it",
     "addToPage": "Add to page {page}",
     "addToAll": "Add to every page",
     "placedNone": "Nothing placed yet.",
-    "placedOne": "1 signature placed.",
-    "placedMany": "{count} signatures placed.",
-    "placeHint": "Drag a signature to move it, or drag its corner to resize it. With a keyboard, arrow keys move it, + and − resize it, and Delete removes it.",
+    "placedOne": "1 placed on the pages.",
+    "placedMany": "{count} placed on the pages.",
+    "placeHint": "Drag anything you placed to move it, or drag its corner to resize it. With a keyboard, arrow keys move it, + and − resize it, and Delete removes it.",
     "pagesLabel": "Pages of your PDF",
     "pageLabel": "Page {page}",
-    "placedLabel": "Signature on page {page}",
-    "remove": "Remove signature",
     "noInk": "No signature could be found in this picture. Try a clearer photo of it on plain paper, or choose the Original filter.",
     "unreadableImage": "This picture couldn't be opened. Try a JPG or PNG.",
-    "needSignature": "Upload your signature first.",
-    "needPlacement": "Place your signature on at least one page first.",
+    "needPlacement": "Place your signature, initials or date on at least one page first.",
     "summaryOne": "Done. {name} is signed on 1 page. Saved as {output} ({size}).",
     "summaryMany": "Done. {name} is signed on {pages} pages. Saved as {output} ({size}).",
     "editedSummary": "Done. {name} now has {pages} pages ({size}).",
@@ -826,6 +866,21 @@
       "tryClean": "Show it cleaned",
       "captionClean": "Clean removes the grey paper and shadow, and makes the ink solid, so only your signature lands on the page.",
       "captionOriginal": "Without cleaning, the photo's grey paper and shadow land on the page too, as a box around your signature."
+    },
+    "placedLabels": {
+      "signature": "Signature on page {page}",
+      "initials": "Initials on page {page}",
+      "date": "Date on page {page}"
+    },
+    "removeLabels": {
+      "signature": "Remove signature",
+      "initials": "Remove initials",
+      "date": "Remove date"
+    },
+    "needMark": {
+      "signature": "Make your signature first: type, draw or upload it.",
+      "initials": "Make your initials first: type, draw or upload them.",
+      "date": "Choose a date first."
     }
   },
   "pdfToJpg": {
@@ -1001,9 +1056,9 @@
     "transparency": "Transparency",
     "transparencies": {
       "0": "No transparency",
-      "75": "75%",
+      "25": "25%",
       "50": "50%",
-      "25": "25%"
+      "75": "75%"
     },
     "rotation": "Rotation",
     "rotations": {

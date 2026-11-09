@@ -79,6 +79,8 @@ describe("finds the closest tool", () => {
     ["add signature to pdf", "sign-pdf"],
     ["esign", "sign-pdf"],
     ["electronic signature", "sign-pdf"],
+    ["draw signature", "sign-pdf"],
+    ["add initials", "sign-pdf"],
     ["পিডিএফে স্বাক্ষর", "sign-pdf"],
     ["reduce pdf size", "compress-pdf"],
     ["make pdf smaller", "compress-pdf"],

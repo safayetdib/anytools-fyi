@@ -4,9 +4,10 @@ import { formatSize } from "../../lib/files";
 import { loadPdfjs, previewPdfFile, previewPdfOutput } from "../../lib/pdf/preview";
 import { ToolError, type ToolDefinition } from "../../lib/shell/types";
 import { WorkerJobFailed, createWorkerRunner } from "../../lib/worker/client";
-import { chosenSignature, cleaned, toPng } from "./chosen-signature";
-import { readClean } from "./clean";
-import { readPlacements } from "./sign";
+import { pictureOf } from "./mark-store";
+import type { Mark } from "./marks";
+import { toPng } from "./photo";
+import { readPlacements, type SignatureImage } from "./sign";
 import type { SignJob, SignResult } from "./worker";
 
 const t = en.signPdf;
@@ -46,19 +47,22 @@ export const tool: ToolDefinition = {
     };
   },
   async run({ files }, options, context) {
-    if (!chosenSignature()) throw new ToolError(t.needSignature);
     const placements = readPlacements(options.placements ?? "");
     if (!placements.length) throw new ToolError(t.needPlacement);
-    const signature = cleaned(readClean(options.clean ?? ""), "full");
-    if (!signature) throw new ToolError(t.noInk);
-    const png = new Uint8Array(await (await toPng(signature)).arrayBuffer());
+    // Each placed mark's picture at full size, made once however many pages it goes on.
+    const images: Partial<Record<Mark, SignatureImage>> = {};
+    for (const mark of new Set(placements.map((place) => place.mark))) {
+      const pixels = await pictureOf(mark)?.full();
+      if (!pixels) throw new ToolError(t.needMark[mark]);
+      images[mark] = { bytes: new Uint8Array(await (await toPng(pixels)).arrayBuffer()), width: pixels.width, height: pixels.height };
+    }
     const file = files[0];
     const bytes = new Uint8Array(await file.arrayBuffer());
     let result: SignResult;
     try {
       result = await runner.run(
-        { op: "sign", name: file.name, bytes, image: { bytes: png, width: signature.width, height: signature.height }, placements },
-        [bytes.buffer, png.buffer],
+        { op: "sign", name: file.name, bytes, images, placements },
+        [bytes.buffer, ...Object.values(images).map((image) => image.bytes.buffer)],
         context,
       );
     } catch (error) {

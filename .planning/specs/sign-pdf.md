@@ -49,3 +49,40 @@ Photos of signatures on paper have grey paper, shadows and faint ink. We clean t
 ## Tests
 - Unit: settings parsing, paper removed and ink kept, contrast, colour, thickness, crop, turn, no-ink case, placement maths, the PDF gets the image on the right pages, rotated pages, names.
 - Browser: upload and preview, controls change the preview, add to a page, drag and resize, keyboard, remove, add to every page, the signed PDF shows ink at the placed spot (checked by rendering it), axe light and dark, 320, 375, 768, 1366 px, Safari.
+
+---
+
+# Stage 2: type, draw, initials and date
+
+Status: asked for on 2026-11-09 ("Build stage 2").
+
+## Following iLovePDF
+iLovePDF's signature details have Signature and Initials, each made by **Type** (a name in a choice of handwriting fonts), **Draw** or **Upload**, in black, red, blue or green; a Date can be placed on the page too. We follow that order and add our own photo cleanup to Upload, plus any colour.
+
+## Journey
+- The panel starts with **What to add**: Signature, Initials, Date (one at a time; each keeps its own choices).
+- **Signature** and **Initials** each have **Type**, **Draw** and **Upload**:
+  - **Type**: a text box (your name, or your initials), and font cards showing what you typed in each font: four handwriting fonts and Galada, which also writes Bangla. Bangla names in the other fonts fall back to the device's Bangla font.
+  - **Draw**: a pad drawn with finger, mouse or pen; **Pen size** thin, medium or thick; **Clear** and **Undo**. Keyboard users get a note that Type or Upload works without a pointer.
+  - **Upload**: stage 1 as it is (filters, sliders, pen colour, rotate, reset).
+  - Type and Draw share one **Ink colour** row: black, blue, red, green or any colour.
+  - Typing a name for the signature fills the initials with its first letters, until the initials are typed by hand.
+- **Date**: a date picker (today by default) and a **Format** choice: 09/11/2026, 11/09/2026, 2026-11-09, 9 November 2026. Same ink colours.
+- **Add to page N** and **Add to every page** add the mark chosen in What to add. Every placed mark moves, resizes and is removed the same way as before. Changing a mark (new font, new colour, new date) changes every placed copy of it.
+- **Sign PDF** works once something is placed and every placed mark has a picture.
+
+## Rules
+- Every mark goes into the PDF as a PNG with a see-through background, cropped to the ink, so typed names in any script look exactly as previewed. The font files stay on the device; nothing is uploaded.
+- Fonts are free (SIL Open Font License; Satisfy is Apache 2.0), bundled with the site, credited on the Credits page, and only downloaded when the Type tab is used.
+- Drawn strokes are recorded as points and redrawn at full size for the PDF, so they stay sharp.
+
+## Technical
+- `sign.ts`: placements gain `mark` (signature, initials, date; old placements without it are signatures). `signPdf` takes one picture per mark and embeds each once.
+- `marks.ts` (new, pure): date formats, initials from a name, stroke bounds and scaling, tested in Node.
+- `render.ts` (new, page): draws strokes and text onto a canvas and crops to the ink.
+- `MarkEditor.astro` (new): the Type, Draw and Upload editor, used for Signature and Initials.
+- `chosen-signature.ts` keeps one picture source per mark, which the run turns into full-size PNGs.
+
+## Tests
+- Unit: placements with marks, a PDF with signature, initials and date on different pages, each picture embedded once, date formats, initials, stroke maths.
+- Browser: type a name, the fonts show it, the preview changes with font and colour; initials follow the name; draw on the pad, undo and clear; date formats; place one of each and the signed file has three different pictures where they were placed; Upload still cleans photos; axe, widths, Safari.

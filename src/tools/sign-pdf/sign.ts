@@ -1,10 +1,12 @@
-import { PDFDocument, degrees } from "pdf-lib";
+import { PDFDocument, degrees, type PDFImage } from "pdf-lib";
 import { shownSize, toPage } from "../../lib/pdf/stamp";
 import { JobError } from "../../lib/worker/host";
+import { MARKS, type Mark } from "./marks";
 
-// Where a signature goes: its top-left corner and width as fractions of the page as shown. Its height follows the picture.
+// Where a mark goes: its top-left corner and width as fractions of the page as shown. Its height follows the picture.
 export interface Placement {
   page: number;
+  mark: Mark;
   x: number;
   y: number;
   width: number;
@@ -42,9 +44,11 @@ export function readPlacements(text: string): Placement[] {
   const share = (value: unknown, min = 0) => Math.min(1, Math.max(min, Number(value)));
   return raw.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
-    const { page, x, y, width } = item as Record<string, unknown>;
+    const { page, mark, x, y, width } = item as Record<string, unknown>;
     if (!Number.isInteger(page) || (page as number) < 1 || ![x, y, width].every((value) => Number.isFinite(Number(value)) && value !== null)) return [];
-    return [{ page: page as number, x: share(x), y: share(y), width: share(width, MIN_WIDTH) }];
+    // Placements made before there were other marks are signatures.
+    const kind = MARKS.find((name) => name === mark) ?? "signature";
+    return [{ page: page as number, mark: kind, x: share(x), y: share(y), width: share(width, MIN_WIDTH) }];
   });
 }
 
@@ -56,18 +60,26 @@ export function placedRect(pageWidth: number, pageHeight: number, place: Placeme
   return { x: place.x * pageWidth, y: pageHeight - place.y * pageHeight - height, width, height };
 }
 
-export async function signPdf(bytes: Uint8Array, image: SignatureImage, placements: Placement[]): Promise<Uint8Array> {
-  if (!placements.length) throw new SignError("empty");
+// Each mark's picture is embedded once, however many pages it is placed on.
+export async function signPdf(bytes: Uint8Array, images: Partial<Record<Mark, SignatureImage>>, placements: Placement[]): Promise<Uint8Array> {
+  const drawable = placements.filter((place) => images[place.mark]);
+  if (!drawable.length) throw new SignError("empty");
   let doc: PDFDocument;
   try {
     doc = await PDFDocument.load(bytes, { updateMetadata: false });
   } catch (error) {
     throw new SignError(isEncrypted(error) ? "encrypted" : "unreadable");
   }
-  const picture = await doc.embedPng(image.bytes);
-  const ratio = image.width / image.height;
-  for (const place of placements) {
+  const pictures = new Map<Mark, { picture: PDFImage; ratio: number }>();
+  for (const place of drawable) {
     if (place.page > doc.getPageCount()) continue;
+    const image = images[place.mark] as SignatureImage;
+    let embedded = pictures.get(place.mark);
+    if (!embedded) {
+      embedded = { picture: await doc.embedPng(image.bytes), ratio: image.width / image.height };
+      pictures.set(place.mark, embedded);
+    }
+    const { picture, ratio } = embedded;
     const page = doc.getPage(place.page - 1);
     const [width, height] = shownSize(page);
     const box = placedRect(width, height, place, ratio);
