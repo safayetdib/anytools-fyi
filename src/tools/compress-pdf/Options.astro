@@ -1,0 +1,326 @@
+---
+import en from "../../i18n/en.json";
+
+const t = en.compressPdf;
+const levels = ["extreme", "recommended", "less"] as const;
+---
+
+<div class="squeeze-layout" data-compress-options data-testid="compress-options">
+  <aside class="squeeze-panel" aria-labelledby="squeeze-panel-title">
+    <h3 class="squeeze-panel-title" id="squeeze-panel-title">{t.panelTitle}</h3>
+
+    <fieldset class="squeeze-levels">
+      <legend class="sr-only">{t.levelLegend}</legend>
+      {
+        levels.map((level) => (
+          <label class="squeeze-level">
+            <input type="radio" name="level" value={level} checked={level === "recommended"} />
+            <span class="squeeze-level-title">{t.levels[level]}</span>
+            <span class="squeeze-level-note">{t.levelNotes[level]}</span>
+          </label>
+        ))
+      }
+    </fieldset>
+
+    <p class="squeeze-info">{t.info}</p>
+    <p class="squeeze-total" data-total hidden>
+      <span>{t.total}</span>
+      <strong data-total-size></strong>
+    </p>
+  </aside>
+
+  <ul class="squeeze-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { formatSize } from "../../lib/files";
+  import { previewPdfFile } from "../../lib/pdf/preview";
+
+  const t = en.compressPdf;
+  const THUMBNAIL_WIDTH = 240;
+
+  interface Entry {
+    url: string | null;
+    failed: boolean;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-compress-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+    const total = box.querySelector("[data-total]") as HTMLElement;
+    const totalSize = box.querySelector("[data-total-size]") as HTMLElement;
+
+    let files: File[] = [];
+    const entries = new Map<File, Entry>();
+
+    function draw() {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const entry = entries.get(file) as Entry;
+          const card = document.createElement("li");
+          card.className = "squeeze-card";
+          card.setAttribute("data-testid", "compress-card");
+          const frame = document.createElement("span");
+          frame.className = "squeeze-card-frame";
+          if (entry.url) {
+            const img = document.createElement("img");
+            img.alt = "";
+            img.src = entry.url;
+            frame.append(img);
+          } else if (entry.failed) frame.textContent = t.unreadablePreview;
+          else frame.classList.add("is-loading");
+          const name = document.createElement("span");
+          name.className = "squeeze-card-name";
+          name.textContent = file.name;
+          const size = document.createElement("span");
+          size.className = "squeeze-card-meta";
+          size.textContent = formatSize(file.size);
+          card.append(frame, name, size);
+          return card;
+        }),
+      );
+      total.hidden = files.length < 2;
+      totalSize.textContent = formatSize(files.reduce((sum, file) => sum + file.size, 0));
+    }
+
+    async function look(file: File) {
+      const entry = entries.get(file) as Entry;
+      const preview = await previewPdfFile(file, THUMBNAIL_WIDTH);
+      if (preview.status === "ready" && preview.image) entry.url = URL.createObjectURL(preview.image);
+      else entry.failed = true;
+      if (files.includes(file)) draw();
+    }
+
+    shell.addEventListener("anytools:files", (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files;
+      for (const [file, entry] of entries) {
+        if (next.includes(file)) continue;
+        if (entry.url) URL.revokeObjectURL(entry.url);
+        entries.delete(file);
+      }
+      const added = next.filter((file) => !entries.has(file));
+      for (const file of added) entries.set(file, { url: null, failed: false });
+      const first = files.length === 0 && next.length > 0;
+      files = next;
+      draw();
+      added.forEach((file) => void look(file));
+      // Bring the choices into view after choosing the first files, so the next step is obvious.
+      if (first) {
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+    });
+  }
+</script>
+
+<style>
+  /* Like most PDF tools: the options in a panel on the right, the files on the left. Phones show the options first. */
+  .squeeze-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .squeeze-layout {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: start;
+    }
+
+    .squeeze-cards {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .squeeze-panel {
+      position: sticky;
+      top: calc(var(--header-height, 4rem) + var(--space-md));
+      grid-column: 2;
+    }
+  }
+
+  .squeeze-panel {
+    min-width: 0;
+    display: grid;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .squeeze-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .squeeze-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .squeeze-levels {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  /* Each level is a card with a radio, its name and what it trades, like other PDF tools. */
+  .squeeze-level {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px var(--space-sm);
+    align-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    cursor: pointer;
+  }
+
+  .squeeze-level input {
+    grid-row: span 2;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 2px 0 0;
+    accent-color: var(--color-accent);
+  }
+
+  .squeeze-level:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .squeeze-level:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .squeeze-level:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+  }
+
+  .squeeze-level-title {
+    font-weight: 700;
+  }
+
+  .squeeze-level-note {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .squeeze-info {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .squeeze-total {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin: 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .squeeze-total[hidden] {
+    display: none;
+  }
+
+  .squeeze-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: var(--space-lg);
+    align-content: start;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (max-width: 599px) {
+    .squeeze-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+  }
+
+  :global(.squeeze-card) {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    padding: var(--space-sm);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+
+  :global(.squeeze-card-frame) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    margin-bottom: var(--space-xs);
+    border-radius: 6px;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+
+  :global(.squeeze-card-frame img) {
+    max-width: 80%;
+    max-height: 80%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  }
+
+  :global(.squeeze-card-frame.is-loading) {
+    animation: squeeze-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes squeeze-pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  :global(.squeeze-card-name) {
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.squeeze-card-meta) {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.squeeze-card-frame.is-loading) {
+      animation: none;
+    }
+  }
+</style>

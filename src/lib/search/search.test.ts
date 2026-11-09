@@ -74,6 +74,18 @@ describe("finds the closest tool", () => {
     ["stamp confidential", "add-watermark"],
     ["watermrk", "add-watermark"],
     ["জলছাপ", "add-watermark"],
+    ["compress pdf", "compress-pdf"],
+    ["sign pdf", "sign-pdf"],
+    ["add signature to pdf", "sign-pdf"],
+    ["esign", "sign-pdf"],
+    ["electronic signature", "sign-pdf"],
+    ["draw signature", "sign-pdf"],
+    ["add initials", "sign-pdf"],
+    ["পিডিএফে স্বাক্ষর", "sign-pdf"],
+    ["reduce pdf size", "compress-pdf"],
+    ["make pdf smaller", "compress-pdf"],
+    ["compres pdf", "compress-pdf"],
+    ["পিডিএফ ছোট করুন", "compress-pdf"],
   ])("%s finds %s", (query, slug) => {
     expect(top(query)).toBe(slug);
   });
@@ -82,7 +94,7 @@ describe("finds the closest tool", () => {
 describe("result lists", () => {
   it("lists every PDF tool for the category word", () => {
     const all = search("pdf", 20).map((r) => r.slug);
-    expect(all).toHaveLength(10);
+    expect(all).toHaveLength(12);
     expect(all[0]).toBe("merge-pdf");
   });
 

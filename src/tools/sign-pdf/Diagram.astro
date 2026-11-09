@@ -1,0 +1,204 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.signPdf.diagram;
+// One hand-drawn looking stroke, used for the photo and the signed page alike.
+const STROKE = "M6 30c6-14 10-20 13-18s-4 20 0 20 8-22 12-22-3 18 1 18 6-10 9-10 2 8 5 8 10-6 16-8";
+---
+
+<figure class="sig-diagram" aria-labelledby="sig-diagram-caption" data-sig-diagram data-mode="clean">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.photo}</span>
+      <span class="photo" aria-hidden="true">
+        <svg viewBox="0 0 70 44" width="100%" height="100%"><path d={STROKE} fill="none" stroke="#2a3f8f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </span>
+      <span class="note">{d.photoNote}</span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+      </svg>
+      <span>{d.clean}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.result}</span>
+      <span class="sheet" aria-hidden="true">
+        <span class="lines"></span>
+        <span class="placed">
+          <svg viewBox="0 0 70 44" width="100%" height="100%"><path d={STROKE} fill="none" stroke="#1f3fbf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </span>
+        <span class="line"></span>
+      </span>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="toggle" type="button" data-toggle data-label-original={d.tryOriginal} data-label-clean={d.tryClean}>{d.tryOriginal}</button>
+  </div>
+  <figcaption id="sig-diagram-caption" aria-live="polite" data-caption-clean={d.captionClean} data-caption-original={d.captionOriginal}>
+    {d.captionClean}
+  </figcaption>
+</figure>
+
+<script>
+  const figure = document.querySelector<HTMLElement>("[data-sig-diagram]");
+  const toggle = figure?.querySelector<HTMLButtonElement>("[data-toggle]");
+  const caption = figure?.querySelector<HTMLElement>("figcaption");
+
+  // Shows what lands on the page with and without cleaning.
+  toggle?.addEventListener("click", () => {
+    if (!figure || !caption) return;
+    const original = figure.dataset.mode === "clean";
+    figure.dataset.mode = original ? "original" : "clean";
+    caption.textContent = (original ? caption.dataset.captionOriginal : caption.dataset.captionClean) ?? "";
+    toggle.textContent = (original ? toggle.dataset.labelClean : toggle.dataset.labelOriginal) ?? "";
+  });
+</script>
+
+<style>
+  .sig-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .note {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  /* A phone photo: grey paper, darker in one corner where the phone's shadow fell. */
+  .photo {
+    display: block;
+    width: 8rem;
+    height: 5rem;
+    padding: 6px;
+    border-radius: 4px;
+    background: radial-gradient(circle at 15% 85%, #8f918c, transparent 60%), #c9cbc5;
+  }
+
+  .sheet {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    width: 6rem;
+    height: 8rem;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  .lines {
+    display: block;
+    height: 60%;
+    background: repeating-linear-gradient(#c7cfca 0 2px, transparent 2px 8px);
+  }
+
+  .placed {
+    position: absolute;
+    right: 8px;
+    bottom: 14px;
+    width: 3.6rem;
+    height: 2.3rem;
+    padding: 2px;
+    transition: background 0.2s ease;
+  }
+
+  .line {
+    position: absolute;
+    right: 8px;
+    bottom: 14px;
+    width: 3.6rem;
+    border-top: 1px solid #8a908c;
+  }
+
+  /* Uncleaned: the grey paper comes along as a box. */
+  .sig-diagram[data-mode="original"] .placed {
+    background: radial-gradient(circle at 15% 85%, #8f918c, transparent 60%), #c9cbc5;
+  }
+
+  .sig-diagram[data-mode="original"] .placed path {
+    stroke: #2a3f8f;
+    stroke-width: 2.2;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .controls {
+    margin-top: var(--space-lg);
+  }
+
+  .toggle {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .placed {
+      transition: none;
+    }
+  }
+</style>

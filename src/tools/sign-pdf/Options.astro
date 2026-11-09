@@ -1,0 +1,735 @@
+---
+import en from "../../i18n/en.json";
+import DateEditor from "./DateEditor.astro";
+import MarkEditor from "./MarkEditor.astro";
+import { MARKS } from "./marks";
+
+const t = en.signPdf;
+---
+
+<div class="sign-layout" data-sign-options data-testid="sign-options">
+  <aside class="sign-panel" aria-labelledby="sign-panel-title">
+    <h3 class="sign-panel-title" id="sign-panel-title">{t.panelTitle}</h3>
+
+    <fieldset class="sign-marks">
+      <legend>{t.markLegend}</legend>
+      <div class="sign-mark-tabs">
+        {
+          MARKS.map((mark) => (
+            <label class="sign-mark-tab">
+              <input type="radio" name="sign-mark" value={mark} checked={mark === "signature"} />
+              <span>{t.marks[mark]}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <MarkEditor mark="signature" />
+    <MarkEditor mark="initials" />
+    <DateEditor />
+
+    <section class="sign-section" aria-labelledby="sign-place-heading" data-place hidden>
+      <h4 id="sign-place-heading">{t.placeHeading}</h4>
+      <div class="sign-adds">
+        <button type="button" class="sign-add is-main" data-add-page></button>
+        <button type="button" class="sign-add" data-add-all>{t.addToAll}</button>
+      </div>
+      <p class="sign-count" data-count role="status">{t.placedNone}</p>
+      <p class="sign-hint" id="sign-place-hint">{t.placeHint}</p>
+    </section>
+
+    <input type="hidden" name="placements" data-placements-value />
+  </aside>
+
+  <ol class="sign-pages" data-pages aria-label={t.pagesLabel}></ol>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { previewPdfOutput } from "../../lib/pdf/preview";
+  import type { OutputPreview } from "../../lib/shell/types";
+  import { onPicture, pictureOf } from "./mark-store";
+  import { MARKS, type Mark } from "./marks";
+
+  const t = en.signPdf;
+  // Where a new mark starts, as shares of the page: a signature in the bottom-right corner like a signature line,
+  // initials small in the corner below it, the date on the left.
+  const START: Record<Mark, { width: number; left: boolean; bottom: number }> = {
+    signature: { width: 0.3, left: false, bottom: 0.1 },
+    initials: { width: 0.08, left: false, bottom: 0.03 },
+    date: { width: 0.15, left: true, bottom: 0.1 },
+  };
+  const EDGE = 0.06;
+  const MIN_WIDTH = 0.04;
+  const STEP = 0.01;
+  const BIG_STEP = 0.05;
+  // Pages are drawn sharp enough for their shown size, but never huge.
+  const MAX_RENDER_WIDTH = 1400;
+
+  interface Placed {
+    id: number;
+    mark: Mark;
+    page: number;
+    x: number;
+    y: number;
+    width: number;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-sign-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
+    const placeSection = $<HTMLElement>("[data-place]");
+    const addPage = $<HTMLButtonElement>("[data-add-page]");
+    const addAll = $<HTMLButtonElement>("[data-add-all]");
+    const count = $<HTMLElement>("[data-count]");
+    const pagesList = $<HTMLOListElement>("[data-pages]");
+    const placementsValue = $<HTMLInputElement>("[data-placements-value]");
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+
+    let file: File | null = null;
+    let document_: OutputPreview | null = null;
+    // Width divided by height of each mark's picture, so placed copies keep its shape. Kept when a mark is emptied.
+    const ratios: Record<Mark, number> = { signature: 3, initials: 1.5, date: 4 };
+    let placed: Placed[] = [];
+    let nextId = 1;
+    let currentPage = 1;
+    // The copy of each mark moved last, so "Add to every page" uses its spot.
+    const lastMoved = new Map<Mark, Placed>();
+    const visible = new Map<number, number>();
+    let renderObserver: IntersectionObserver | null = null;
+    let viewObserver: IntersectionObserver | null = null;
+
+    const chosenMark = () => (box.querySelector<HTMLInputElement>('input[name="sign-mark"]:checked')?.value ?? "signature") as Mark;
+
+    function sheetOf(page: number) {
+      return pagesList.querySelector<HTMLElement>(`[data-page="${page}"] .sign-sheet`);
+    }
+
+    // The mark's height as a share of its page's height.
+    function heightShare(item: Placed): number {
+      const sheet = sheetOf(item.page);
+      const aspect = sheet && sheet.clientWidth ? sheet.clientHeight / sheet.clientWidth : Math.SQRT2;
+      return item.width / ratios[item.mark] / aspect;
+    }
+
+    function keepInside(item: Placed) {
+      item.width = Math.min(1, Math.max(MIN_WIDTH, item.width));
+      item.x = Math.min(1 - item.width, Math.max(0, item.x));
+      item.y = Math.min(Math.max(0, 1 - heightShare(item)), Math.max(0, item.y));
+    }
+
+    function sync() {
+      const ready = Boolean(pictureOf(chosenMark()));
+      placementsValue.value = JSON.stringify(placed.map(({ page, mark, x, y, width }) => ({ page, mark, x, y, width })));
+      placeSection.hidden = !file;
+      addPage.textContent = fill(t.addToPage, { page: currentPage });
+      addPage.disabled = addAll.disabled = !ready || !document_;
+      count.textContent = placed.length === 0 ? t.placedNone : placed.length === 1 ? t.placedOne : fill(t.placedMany, { count: placed.length });
+      // Every placed mark needs a picture to sign with.
+      if (runButton) runButton.disabled = placed.length === 0 || placed.some((item) => !pictureOf(item.mark));
+    }
+
+    function drawPlaced(item: Placed) {
+      let element = pagesList.querySelector<HTMLElement>(`[data-placed="${item.id}"]`);
+      if (!element) {
+        element = document.createElement("div");
+        element.className = "sign-placed";
+        element.dataset.placed = String(item.id);
+        element.dataset.mark = item.mark;
+        element.setAttribute("data-testid", "sign-placed");
+        element.tabIndex = 0;
+        element.setAttribute("role", "group");
+        element.setAttribute("aria-label", fill(t.placedLabels[item.mark], { page: item.page }));
+        element.setAttribute("aria-describedby", "sign-place-hint");
+        const img = document.createElement("img");
+        img.alt = "";
+        img.draggable = false;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "sign-remove";
+        remove.setAttribute("aria-label", t.removeLabels[item.mark]);
+        remove.textContent = "×";
+        remove.addEventListener("click", () => removePlaced(item));
+        const handle = document.createElement("span");
+        handle.className = "sign-handle";
+        handle.setAttribute("aria-hidden", "true");
+        element.append(img, remove, handle);
+        listen(element, handle, item);
+        sheetOf(item.page)?.append(element);
+      }
+      const img = element.querySelector("img") as HTMLImageElement;
+      const url = pictureOf(item.mark)?.url;
+      img.hidden = !url;
+      if (url && img.src !== url) img.src = url;
+      element.style.left = `${item.x * 100}%`;
+      element.style.top = `${item.y * 100}%`;
+      element.style.width = `${item.width * 100}%`;
+      element.style.aspectRatio = String(ratios[item.mark]);
+    }
+
+    function removePlaced(item: Placed) {
+      placed = placed.filter((other) => other !== item);
+      if (lastMoved.get(item.mark) === item) lastMoved.delete(item.mark);
+      pagesList.querySelector(`[data-placed="${item.id}"]`)?.remove();
+      sync();
+      addPage.focus({ preventScroll: true });
+    }
+
+    function add(mark: Mark, page: number, spot?: { x: number; y: number; width: number }) {
+      const start = START[mark];
+      const item: Placed = { id: nextId++, mark, page, x: 0, y: 0, width: spot?.width ?? start.width };
+      if (spot) {
+        item.x = spot.x;
+        item.y = spot.y;
+      } else {
+        item.x = start.left ? EDGE : 1 - item.width - EDGE;
+        item.y = 1 - heightShare(item) - start.bottom;
+      }
+      keepInside(item);
+      placed.push(item);
+      drawPlaced(item);
+      return item;
+    }
+
+    // Drag to move; drag the corner to resize. Pointer events cover mouse, pen and touch alike.
+    function listen(element: HTMLElement, handle: HTMLElement, item: Placed) {
+      element.addEventListener("pointerdown", (event) => {
+        if ((event.target as HTMLElement).closest(".sign-remove")) return;
+        const sheet = element.parentElement as HTMLElement;
+        const rect = sheet.getBoundingClientRect();
+        const resizing = event.target === handle;
+        const start = { x: event.clientX, y: event.clientY, left: item.x, top: item.y, width: item.width };
+        element.setPointerCapture(event.pointerId);
+        element.classList.add("is-moving");
+        event.preventDefault();
+        element.focus({ preventScroll: true });
+        const move = (next: PointerEvent) => {
+          const dx = (next.clientX - start.x) / rect.width;
+          const dy = (next.clientY - start.y) / rect.height;
+          if (resizing) item.width = start.width + dx;
+          else {
+            item.x = start.left + dx;
+            item.y = start.top + dy;
+          }
+          keepInside(item);
+          drawPlaced(item);
+        };
+        const end = () => {
+          element.removeEventListener("pointermove", move);
+          element.removeEventListener("pointerup", end);
+          element.removeEventListener("pointercancel", end);
+          element.classList.remove("is-moving");
+          lastMoved.set(item.mark, item);
+          sync();
+        };
+        element.addEventListener("pointermove", move);
+        element.addEventListener("pointerup", end);
+        element.addEventListener("pointercancel", end);
+      });
+
+      element.addEventListener("keydown", (event) => {
+        const step = event.shiftKey ? BIG_STEP : STEP;
+        const moves: Record<string, () => void> = {
+          ArrowLeft: () => (item.x -= step),
+          ArrowRight: () => (item.x += step),
+          ArrowUp: () => (item.y -= step),
+          ArrowDown: () => (item.y += step),
+          "+": () => (item.width += step * 2),
+          "=": () => (item.width += step * 2),
+          "-": () => (item.width -= step * 2),
+          "−": () => (item.width -= step * 2),
+        };
+        if (event.key === "Delete" || event.key === "Backspace") {
+          event.preventDefault();
+          removePlaced(item);
+          return;
+        }
+        const action = moves[event.key];
+        if (!action) return;
+        event.preventDefault();
+        action();
+        keepInside(item);
+        drawPlaced(item);
+        lastMoved.set(item.mark, item);
+        sync();
+      });
+    }
+
+    // A mark's editor made a new picture: every placed copy shows it, at its shape.
+    onPicture((mark) => {
+      const picture = pictureOf(mark);
+      if (picture) ratios[mark] = picture.ratio;
+      for (const item of placed) {
+        if (item.mark !== mark) continue;
+        keepInside(item);
+        drawPlaced(item);
+      }
+      sync();
+    });
+
+    // Only the chosen mark's editor shows.
+    box.addEventListener("change", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.name !== "sign-mark") return;
+      for (const editor of box.querySelectorAll<HTMLElement>("[data-mark-editor], [data-date-editor]")) {
+        editor.hidden = (editor.dataset.markEditor ?? "date") !== target.value;
+      }
+      sync();
+    });
+
+    // Draws pages as they come near the screen, and tracks which page is most in view.
+    function watchPages(pageCount: number) {
+      renderObserver?.disconnect();
+      viewObserver?.disconnect();
+      visible.clear();
+      renderObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            renderObserver?.unobserve(entry.target);
+            void drawPage(entry.target as HTMLElement);
+          }
+        },
+        { rootMargin: "600px 0px" },
+      );
+      viewObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) visible.set(Number((entry.target as HTMLElement).dataset.page), entry.intersectionRatio);
+          let best = currentPage;
+          let most = -1;
+          for (const [page, share] of visible) {
+            if (share > most || (share === most && page < best)) [best, most] = [page, share];
+          }
+          if (most > 0 && best !== currentPage) {
+            currentPage = best;
+            sync();
+          }
+        },
+        { threshold: [0, 0.25, 0.5, 0.75, 1] },
+      );
+      const items = Array.from({ length: pageCount }, (_, index) => {
+        const page = index + 1;
+        const item = document.createElement("li");
+        item.className = "sign-page";
+        item.dataset.page = String(page);
+        item.setAttribute("data-testid", "sign-page");
+        const sheet = document.createElement("div");
+        sheet.className = "sign-sheet is-loading";
+        const caption = document.createElement("span");
+        caption.className = "sign-page-number";
+        caption.textContent = fill(t.pageLabel, { page });
+        item.append(sheet, caption);
+        return item;
+      });
+      pagesList.replaceChildren(...items);
+      for (const item of items) {
+        renderObserver.observe(item);
+        viewObserver.observe(item);
+      }
+    }
+
+    async function drawPage(item: HTMLElement) {
+      const handle = document_;
+      const sheet = item.querySelector(".sign-sheet") as HTMLElement;
+      if (!handle) return;
+      const width = Math.min(MAX_RENDER_WIDTH, Math.round(sheet.clientWidth * (window.devicePixelRatio || 1)));
+      try {
+        const rendered = await handle.renderPage(Number(item.dataset.page), width);
+        if (handle !== document_) return;
+        const img = document.createElement("img");
+        img.className = "sign-page-image";
+        img.alt = "";
+        img.draggable = false;
+        img.src = URL.createObjectURL(rendered.blob);
+        sheet.style.aspectRatio = `${rendered.width} / ${rendered.height}`;
+        sheet.classList.remove("is-loading");
+        sheet.prepend(img);
+        // The page's real shape is known now, so keep its marks inside it.
+        for (const placedItem of placed) if (placedItem.page === Number(item.dataset.page)) keepInside(placedItem), drawPlaced(placedItem);
+      } catch {
+        sheet.classList.remove("is-loading");
+      }
+    }
+
+    function clearPages() {
+      for (const img of pagesList.querySelectorAll<HTMLImageElement>(".sign-page-image")) URL.revokeObjectURL(img.src);
+      pagesList.replaceChildren();
+      document_?.close();
+      document_ = null;
+      placed = [];
+      lastMoved.clear();
+      currentPage = 1;
+    }
+
+    function reveal(item: Placed) {
+      const element = pagesList.querySelector<HTMLElement>(`[data-placed="${item.id}"]`);
+      const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      element?.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" });
+      element?.focus({ preventScroll: true });
+    }
+
+    addPage.addEventListener("click", () => {
+      const item = add(chosenMark(), currentPage);
+      lastMoved.set(item.mark, item);
+      sync();
+      reveal(item);
+    });
+
+    addAll.addEventListener("click", () => {
+      const mark = chosenMark();
+      const pages = Number(pagesList.children.length);
+      // Every page gets it at the spot of the copy moved last, or where it usually starts.
+      const last = lastMoved.get(mark);
+      const spot = last ? { x: last.x, y: last.y, width: last.width } : undefined;
+      for (let page = 1; page <= pages; page++) {
+        const already = placed.some((item) => item.mark === mark && item.page === page && spot && item.x === spot.x && item.y === spot.y);
+        if (!already) add(mark, page, spot);
+      }
+      sync();
+    });
+
+    shell.addEventListener("anytools:files", async (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files[0] ?? null;
+      if (next === file) return;
+      file = next;
+      clearPages();
+      sync();
+      if (!next) return;
+      try {
+        const opened = await previewPdfOutput(next);
+        if (file !== next) {
+          opened.close();
+          return;
+        }
+        document_ = opened;
+        watchPages(opened.pageCount);
+      } catch {
+        // The shell already tells people the file can't be read.
+      }
+      sync();
+      const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+    });
+
+    // A panel taller than the screen moves with the page and stops at either end: scrolling down shows its bottom, with the
+    // Add buttons, just above the Sign PDF bar; scrolling up brings its top back below the header. It never scrolls inside itself.
+    const panel = $<HTMLElement>(".sign-panel");
+    const GAP = 16;
+    let panelTop: number | null = null;
+    let lastScroll = window.scrollY;
+    function placePanel() {
+      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 64;
+      const bar = shell.querySelector<HTMLElement>('[data-testid="shell-action-bar"]')?.getBoundingClientRect().height ?? 0;
+      const highest = header + GAP;
+      const lowest = Math.min(highest, window.innerHeight - bar - GAP * 2 - panel.offsetHeight);
+      const scrolled = window.scrollY - lastScroll;
+      lastScroll = window.scrollY;
+      panelTop = Math.min(highest, Math.max(lowest, (panelTop ?? highest) - scrolled));
+      panel.style.setProperty("--sign-panel-top", `${Math.round(panelTop)}px`);
+    }
+    new ResizeObserver(placePanel).observe(panel);
+    window.addEventListener("resize", placePanel);
+    window.addEventListener("scroll", placePanel, { passive: true });
+
+    for (const mark of MARKS) if (pictureOf(mark)) ratios[mark] = (pictureOf(mark) as { ratio: number }).ratio;
+    sync();
+  }
+</script>
+
+<style>
+  /* Like most signing tools: the pages large on the left, the options in a panel on the right. Phones show the options first. */
+  .sign-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .sign-layout {
+      grid-template-columns: minmax(0, 1fr) 23rem;
+      align-items: start;
+    }
+
+    .sign-pages {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    /* The panel scrolls with the page, never inside itself. A tall panel stops once its bottom, with the Add buttons, is in view. */
+    .sign-panel {
+      position: sticky;
+      top: var(--sign-panel-top, calc(var(--header-height, 4rem) + var(--space-md)));
+      grid-column: 2;
+    }
+  }
+
+  .sign-panel {
+    min-width: 0;
+    display: grid;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .sign-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .sign-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .sign-section {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .sign-section[hidden] {
+    display: none;
+  }
+
+  .sign-section h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin: 0 0 var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  /* Signature, Initials, Date: what the editor below makes and the buttons add. */
+  .sign-mark-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  .sign-mark-tab {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 48px;
+    padding: 0 var(--space-xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    color: var(--color-text);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .sign-mark-tab input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .sign-mark-tab:has(input:checked) {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .sign-mark-tab:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .sign-hint {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .sign-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .sign-adds {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .sign-add.is-main {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .sign-add:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .sign-add:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .sign-add:not(.is-main):not(:disabled):hover,
+    .sign-mark-tab:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  .sign-count {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .sign-pages {
+    display: grid;
+    gap: var(--space-xl);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :global(.sign-page) {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+  }
+
+  /* The page, drawn large. Signatures sit on top of it, measured in shares of its size. */
+  :global(.sign-sheet) {
+    position: relative;
+    width: 100%;
+    max-width: 48rem;
+    aspect-ratio: 1 / 1.414;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
+    user-select: none;
+  }
+
+  :global(.sign-sheet.is-loading) {
+    animation: sign-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes sign-pulse {
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  :global(.sign-page-image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  :global(.sign-page-number) {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* A placed signature: dashed outline while it can be moved, a remove button and a corner to resize. */
+  :global(.sign-placed) {
+    position: absolute;
+    outline: 1px dashed color-mix(in srgb, var(--color-accent) 70%, transparent);
+    cursor: move;
+    touch-action: none;
+  }
+
+  :global(.sign-placed img[hidden]) {
+    display: none;
+  }
+
+  :global(.sign-placed img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  :global(.sign-placed:focus-visible),
+  :global(.sign-placed.is-moving) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  :global(.sign-remove) {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* A bigger invisible area makes the small buttons easy to hit with a finger. */
+  :global(.sign-remove::after),
+  :global(.sign-handle::after) {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
+
+  :global(.sign-handle) {
+    position: absolute;
+    right: -9px;
+    bottom: -9px;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ffffff;
+    border-radius: 4px;
+    background: var(--color-accent);
+    cursor: nwse-resize;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.sign-sheet.is-loading) {
+      animation: none;
+    }
+  }
+</style>

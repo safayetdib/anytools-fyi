@@ -1,0 +1,125 @@
+---
+import en from "../../i18n/en.json";
+
+interface Props {
+  name: string;
+  // Photos can keep their pen's own colour; typed and drawn marks need a colour.
+  withPen?: boolean;
+}
+
+const { name, withPen = false } = Astro.props;
+const t = en.signPdf;
+// The colours most signatures are written in.
+const inks: { key: keyof typeof t.inks; value: string }[] = [
+  ...(withPen ? [{ key: "original" as const, value: "original" }] : []),
+  { key: "black", value: "#111111" },
+  { key: "blue", value: "#1f3fbf" },
+  { key: "red", value: "#c42b2b" },
+  { key: "green", value: "#1d7a3e" },
+];
+---
+
+<fieldset class="ink-row" data-ink-row>
+  <legend>{t.inkLegend}</legend>
+  <div class="ink-swatches">
+    {
+      inks.map(({ key, value }, index) => (
+        <label class="ink-swatch" title={t.inks[key]}>
+          <input type="radio" name={name} value={value} checked={index === 0} aria-label={t.inks[key]} />
+          <span class:list={["ink-dot", { "is-pen": key === "original" }]} style={key === "original" ? undefined : `background:${value}`} />
+        </label>
+      ))
+    }
+    <label class="ink-swatch" title={t.inks.custom} data-custom-swatch>
+      <input type="color" value="#6b2fb3" data-custom aria-label={t.inks.custom} />
+      <span class="ink-dot is-custom" data-custom-dot></span>
+    </label>
+  </div>
+</fieldset>
+
+<script>
+  import { pickCustom } from "./ink";
+
+  // Picking from the rainbow swatch takes over from the ready-made colours, until one of them is chosen again.
+  // These listeners sit on the inputs themselves, so they run before the editors read the colour.
+  for (const row of document.querySelectorAll<HTMLElement>("[data-ink-row]")) {
+    const custom = row.querySelector("[data-custom]") as HTMLInputElement;
+    custom.addEventListener("input", () => {
+      pickCustom(row, true);
+      (row.querySelector("[data-custom-dot]") as HTMLElement).style.background = custom.value;
+    });
+    for (const radio of row.querySelectorAll<HTMLInputElement>('input[type="radio"]')) radio.addEventListener("change", () => pickCustom(row, false));
+  }
+</script>
+
+<style>
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin: 0 0 var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .ink-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .ink-swatch {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .ink-swatch:has(input:checked),
+  .ink-swatch.is-picked {
+    border-color: var(--color-accent);
+  }
+
+  .ink-swatch:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* The inputs cover their swatch, so tapping anywhere on it chooses it; the rainbow opens the colour picker. */
+  .ink-swatch input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .ink-dot {
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgb(0 0 0 / 0.2);
+    border-radius: 50%;
+  }
+
+  /* The pen's own colour: half dark blue, half black, like a mix of pens. */
+  .ink-dot.is-pen {
+    background: linear-gradient(135deg, #2a3f8f 50%, #222222 50%);
+  }
+
+  .ink-dot.is-custom {
+    background: conic-gradient(#e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935);
+  }
+</style>

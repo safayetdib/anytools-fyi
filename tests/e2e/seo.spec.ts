@@ -37,6 +37,8 @@ test("seo - the sitemap lists only indexable pages", async ({ request }) => {
   expect(xml).toContain("<loc>https://anytools.fyi/split-pdf/</loc>");
   expect(xml).toContain("<loc>https://anytools.fyi/rotate-pdf/</loc>");
   expect(xml).toContain("<loc>https://anytools.fyi/add-watermark/</loc>");
+  expect(xml).toContain("<loc>https://anytools.fyi/compress-pdf/</loc>");
+  expect(xml).toContain("<loc>https://anytools.fyi/sign-pdf/</loc>");
   expect(xml).not.toContain("image-tools");
   expect(xml).not.toContain("/terms/");
   expect(xml).toContain("<loc>https://anytools.fyi/cookies/</loc>");
@@ -59,6 +61,8 @@ test("seo - robots.txt and llms.txt are served for crawlers", async ({ request }
   expect(llms).toContain("[Split PDF](https://anytools.fyi/split-pdf/)");
   expect(llms).toContain("[Rotate PDF](https://anytools.fyi/rotate-pdf/)");
   expect(llms).toContain("[Add watermark](https://anytools.fyi/add-watermark/)");
+  expect(llms).toContain("[Compress PDF](https://anytools.fyi/compress-pdf/)");
+  expect(llms).toContain("[Sign PDF](https://anytools.fyi/sign-pdf/)");
   const full = await (await request.get("/llms-full.txt")).text();
   expect(full).toContain("Does this upload my files?");
 });

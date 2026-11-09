@@ -1,0 +1,172 @@
+---
+import en from "../../i18n/en.json";
+import InkPicker from "./InkPicker.astro";
+import { DATE_FORMATS, formatDate } from "./marks";
+
+const t = en.signPdf;
+// Shown until the page knows today's date on the device.
+const example = { year: 2026, month: 11, day: 9 };
+---
+
+<div class="mark-editor" data-date-editor hidden>
+  <label class="date-field">
+    <span>{t.dateLabel}</span>
+    <input type="date" data-date required />
+  </label>
+  <fieldset>
+    <legend>{t.formatLegend}</legend>
+    <div class="date-formats">
+      {
+        DATE_FORMATS.map((format, index) => (
+          <label class="date-format">
+            <input type="radio" name="sign-date-format" value={format} checked={index === 0} />
+            <span data-example={format}>{formatDate(example, format)}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+  <InkPicker name="sign-date-ink" />
+</div>
+
+<script>
+  import { DATE_FAMILY } from "./fonts";
+  import { readInk } from "./ink";
+  import { publish } from "./mark-store";
+  import { formatDate, readDate, todayOf, type DateFormat } from "./marks";
+  import { toPng } from "./photo";
+  import { renderText } from "./render";
+
+  // Drawn this tall on the pages while choosing, and this tall in the PDF.
+  const PREVIEW = 80;
+  const FULL = 200;
+
+  const editor = document.querySelector<HTMLElement>("[data-date-editor]");
+  if (editor) {
+    const box: HTMLElement = editor;
+    const input = box.querySelector("[data-date]") as HTMLInputElement;
+    const ink = box.querySelector("[data-ink-row]") as HTMLElement;
+    const today = todayOf(new Date());
+    input.value = formatDate(today, "iso");
+
+    let pending = 0;
+    async function refresh() {
+      const ticket = ++pending;
+      const day = readDate(input.value);
+      for (const example of box.querySelectorAll<HTMLElement>("[data-example]")) example.textContent = formatDate(day ?? today, example.dataset.example as DateFormat);
+      if (!day) {
+        publish("date", null);
+        return;
+      }
+      const format = (box.querySelector('input[name="sign-date-format"]:checked') as HTMLInputElement).value as DateFormat;
+      const text = formatDate(day, format);
+      const colour = readInk(ink);
+      const pixels = await renderText(text, DATE_FAMILY, colour, PREVIEW);
+      if (ticket !== pending || !pixels) return;
+      const url = URL.createObjectURL(await toPng(pixels));
+      if (ticket !== pending) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+      publish("date", { url, ratio: pixels.width / pixels.height, full: () => renderText(text, DATE_FAMILY, colour, FULL) });
+    }
+
+    box.addEventListener("change", () => void refresh());
+    box.addEventListener("input", () => void refresh());
+    void refresh();
+  }
+</script>
+
+<style>
+  .mark-editor {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .mark-editor[hidden] {
+    display: none;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin: 0 0 var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .date-field {
+    display: grid;
+    gap: var(--space-xs);
+    font-weight: 700;
+  }
+
+  .date-field input {
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 400;
+    color-scheme: light dark;
+  }
+
+  .date-field input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  .date-formats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  .date-format {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-xs);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .date-format input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .date-format:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  .date-format:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) {
+    .date-format:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+  }
+</style>
