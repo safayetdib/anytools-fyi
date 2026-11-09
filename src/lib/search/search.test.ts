@@ -62,6 +62,8 @@ describe("finds the closest tool", () => {
     ["crop pdf", "crop-pdf"],
     ["password protect pdf", "protect-pdf"],
     ["encrypt pdf", "protect-pdf"],
+    ["remove pdf password", "unlock-pdf"],
+    ["unlock pdf", "unlock-pdf"],
     ["trim pdf margins", "crop-pdf"],
     ["remove pages", "remove-pdf-pages"],
     ["delete pdf pages", "remove-pdf-pages"],
@@ -98,7 +100,7 @@ describe("finds the closest tool", () => {
 describe("result lists", () => {
   it("lists every PDF tool for the category word", () => {
     const all = search("pdf", 20).map((r) => r.slug);
-    expect(all).toHaveLength(14);
+    expect(all).toHaveLength(15);
     expect(all[0]).toBe("merge-pdf");
   });
 

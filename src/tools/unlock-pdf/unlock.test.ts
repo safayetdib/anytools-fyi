@@ -4,7 +4,8 @@ import { makePdf } from "../../../tests/fixtures/pdf";
 import { IN, OUT } from "../../lib/pdf/qpdf";
 import { nodeQpdf } from "../../lib/pdf/qpdf-node.test-helper";
 import { protectPdf } from "../protect-pdf/protect";
-import { readPasswords, unlockPdf, unlockedName } from "./unlock";
+import { readPasswords } from "./passwords";
+import { unlockPdf, unlockedName } from "./unlock";
 
 describe("unlockPdf", () => {
   it("removes an open password, given the right one", async () => {

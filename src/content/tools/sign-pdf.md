@@ -33,7 +33,7 @@ limits:
   - icon: lock
     value: "Not yet"
     label: "Password-protected PDFs"
-    note: "Remove the password first. These files are flagged as soon as you add them."
+    note: "Remove the password first with Unlock PDF. These files are flagged as soon as you add them."
     tone: warn
   - icon: browser
     value: "Any"

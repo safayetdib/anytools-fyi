@@ -1,0 +1,151 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/password-tools.css";
+
+const t = en.unlockPdf;
+---
+
+<div class="pw-layout" data-unlock-options data-testid="unlock-options">
+  <aside class="pw-panel" aria-labelledby="unlock-panel-title">
+    <h3 class="pw-panel-title" id="unlock-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+    <p class="pw-check" data-status data-testid="unlock-status" aria-live="polite"></p>
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.ownNote}</span>
+    </p>
+    <input type="hidden" name="passwords" data-value />
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+
+  <template data-password-template>
+    <div class="pw-input">
+      <input type="password" autocomplete="off" spellcheck="false" autocapitalize="off" data-card-password />
+      <button type="button" class="pw-show" aria-pressed="false" aria-label={en.protectPdf.show} data-show data-label-show={en.protectPdf.show} data-label-hide={en.protectPdf.hide}>
+        <svg class="is-show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <svg class="is-hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.1-5.9M9.9 5.2A9.7 9.7 0 0 1 12 5c6.5 0 10 7 10 7a18.6 18.6 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2"></path><path d="m2 2 20 20"></path></svg>
+      </button>
+    </div>
+  </template>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { openPdf } from "../../lib/pdf/preview";
+  import { wireShowButton } from "../../lib/shell/password-input";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+
+  const t = en.unlockPdf;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-unlock-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
+    const cards = $<HTMLUListElement>("[data-cards]");
+    const status = $<HTMLElement>("[data-status]");
+    const value = $<HTMLInputElement>("[data-value]");
+    const template = $<HTMLTemplateElement>("[data-password-template]");
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+
+    let files: File[] = [];
+    let entries = new Map<File, PdfCard>();
+    // What each file asks for: kept so typed passwords survive the list being redrawn.
+    const passwords = new Map<File, string>();
+    // Files that open without a password: whether they limit printing, copying or editing.
+    const restricted = new Map<File, boolean>();
+    const checked = new Set<File>();
+    let focusedFile: File | null = null;
+
+    const needsPassword = (file: File) => entries.get(file)?.status === "locked";
+
+    async function checkLimits(file: File) {
+      try {
+        const opened = await openPdf(new Uint8Array(await file.arrayBuffer()));
+        // pdf.js reports no permissions for a file that sets none.
+        restricted.set(file, (await opened.doc.getPermissions()) !== null);
+        opened.close();
+      } catch {
+        restricted.set(file, false);
+      }
+      if (files.includes(file)) draw();
+    }
+
+    function sync() {
+      value.value = JSON.stringify(files.map((file) => (needsPassword(file) ? (passwords.get(file) ?? "") : "")));
+      const missing = files.filter((file) => needsPassword(file) && !passwords.get(file));
+      const checking = files.some((file) => entries.get(file)?.status === "loading");
+      status.textContent = missing.length ? fill(t.missing, { name: missing[0].name }) : "";
+      if (runButton) runButton.disabled = checking || missing.length > 0;
+    }
+
+    function metaOf(file: File, card: PdfCard): { text: string; problem: boolean } {
+      if (card.status === "loading") return { text: t.checking, problem: false };
+      if (card.status === "locked") return { text: t.needsPassword, problem: false };
+      if (card.status === "unreadable") return { text: t.unreadablePreview, problem: true };
+      if (!restricted.has(file)) return { text: t.checking, problem: false };
+      return restricted.get(file) ? { text: t.restrictedOnly, problem: false } : { text: t.notLocked, problem: true };
+    }
+
+    function draw() {
+      const focused = document.activeElement instanceof HTMLInputElement && cards.contains(document.activeElement) && focusedFile ? files.indexOf(focusedFile) : -1;
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(file, card);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "unlock-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          if (card.status === "locked") {
+            const field = template.content.firstElementChild?.cloneNode(true) as HTMLElement;
+            const input = field.querySelector("input") as HTMLInputElement;
+            input.setAttribute("aria-label", fill(t.passwordFor, { name: file.name }));
+            input.value = passwords.get(file) ?? "";
+            input.addEventListener("focus", () => (focusedFile = file));
+            input.addEventListener("input", () => {
+              passwords.set(file, input.value);
+              sync();
+            });
+            wireShowButton(field.querySelector("[data-show]") as HTMLButtonElement);
+            item.append(field);
+          }
+          return item;
+        }),
+      );
+      // Redrawing keeps typing where it was.
+      if (focused >= 0) cards.children[focused]?.querySelector("input")?.focus();
+      sync();
+    }
+    let first = true;
+    trackPdfCards(shell, THUMBNAIL_WIDTH, (next, latest) => {
+      files = next;
+      entries = latest;
+      for (const file of [...passwords.keys(), ...checked]) {
+        if (files.includes(file)) continue;
+        passwords.delete(file);
+        checked.delete(file);
+        restricted.delete(file);
+      }
+      for (const file of files) {
+        if (entries.get(file)?.status === "ready" && !checked.has(file)) {
+          checked.add(file);
+          void checkLimits(file);
+        }
+      }
+      draw();
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+
+    sync();
+  }
+</script>

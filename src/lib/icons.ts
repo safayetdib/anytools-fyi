@@ -20,6 +20,7 @@ export const TOOL_ICONS: Record<string, string> = {
   "add-page-numbers": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M11 13l1.5-1V18"/><path d="M10.5 18h4"/>',
   "add-watermark": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M8.5 17 15.5 11"/><path d="M9 12.5h3"/>',
   "protect-pdf": '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/>',
+  "unlock-pdf": '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/><path d="M12 15v2"/>',
 };
 
 export function iconFor(tool: Tool): string {
