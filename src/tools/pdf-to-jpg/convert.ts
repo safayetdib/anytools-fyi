@@ -1,6 +1,11 @@
+// PDF to PNG runs this same tool, saving PNG pictures instead.
+export type Format = "jpg" | "png";
+
 export interface Choice {
   mode: "pages" | "images";
   quality: "normal" | "high";
+  // PNG only: pages can keep a see-through background where nothing is drawn.
+  background: "white" | "transparent";
 }
 
 // Normal is what most PDF tools send (150 dpi); High is print quality (300 dpi).
@@ -25,6 +30,7 @@ export function readChoice(text: string): Choice {
   return {
     mode: raw.mode === "images" ? "images" : "pages",
     quality: raw.quality === "high" ? "high" : "normal",
+    background: raw.background === "transparent" ? "transparent" : "white",
   };
 }
 
@@ -35,9 +41,9 @@ export function renderWidth(width: number, height: number, quality: Choice["qual
 }
 
 // Like most PDF tools: "report_page-0001.jpg", numbered with four digits so the files sort in order.
-export function jpgName(original: string, kind: "page" | "image", index: number): string {
+export function pictureName(original: string, kind: "page" | "image", index: number, format: Format = "jpg"): string {
   const base = original.replace(/\.pdf$/i, "") || "document";
-  return `${base}_${kind}-${String(index).padStart(4, "0")}.jpg`;
+  return `${base}_${kind}-${String(index).padStart(4, "0")}.${format}`;
 }
 
 // pdf.js hands over some pictures as raw pixels: 1 = one bit per pixel, 2 = RGB, 3 = RGBA.

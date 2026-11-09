@@ -181,7 +181,16 @@
       "name": "PDF to JPG",
       "description": "Save each PDF page as a sharp JPG image.",
       "title": "PDF to JPG Converter Online Free, No Upload | AnyTools.fyi",
-      "metaDescription": "Convert PDF to JPG for free. Save every page as a sharp JPG image, or extract the photos inside a PDF, in normal or high quality. Nothing uploaded."
+      "metaDescription": "Convert PDF to JPG for free. Save every page as a sharp JPG image, or extract the photos inside a PDF, in normal or high quality. Nothing uploaded.",
+      "size": "JPG",
+      "variantsTitle": "Save as another image type"
+    },
+    "pdf-to-png": {
+      "name": "PDF to PNG",
+      "description": "Save each PDF page as a sharp PNG image, with a white or see-through background.",
+      "title": "PDF to PNG Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert PDF to PNG for free. Save every page as a lossless PNG, with a white or transparent background, or extract the images inside. Nothing uploaded.",
+      "size": "PNG"
     },
     "sign-pdf": {
       "name": "Sign PDF",
@@ -930,6 +939,62 @@
       "pageName": "brochure_page-{number}.jpg",
       "imageName": "brochure_image-{number}.jpg",
       "captionPages": "Page to JPG: each of the 3 pages becomes its own JPG picture, text and all.",
+      "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
+    }
+  },
+  "pdfToPng": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to PNG",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose how to convert. Each PDF's pictures come out in the order of this list.",
+    "panelTitle": "PDF to PNG options",
+    "modeLegend": "Convert",
+    "modes": {
+      "pages": "Page to PNG",
+      "images": "Extract images"
+    },
+    "pagesInfoOne": "Every page of this PDF will be converted into a PNG file.",
+    "pagesInfoMany": "Every page of these PDFs will be converted into a PNG file.",
+    "created": "{count} PNG",
+    "createdTail": "will be created.",
+    "imagesInfo": "All embedded images inside the PDF will be extracted as PNG images, see-through parts and all.",
+    "quality": "Image quality",
+    "qualities": {
+      "normal": "Normal",
+      "high": "High"
+    },
+    "recommended": "Recommended",
+    "background": "Page background",
+    "backgrounds": {
+      "white": "White",
+      "transparent": "Transparent"
+    },
+    "backgroundHint": "Transparent leaves the paper out, so only the text and pictures are kept. Good for logos and stamps.",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipPages": "anytools_pages-to-png.zip",
+    "zipImages": "anytools_images-from-pdf.zip",
+    "partPage": "Page {page} of {name}",
+    "partImage": "Picture {number} from {name}",
+    "summaryOne": "Done. Saved as {output} ({size}).",
+    "summaryPages": "Done. {count} pages saved as PNG images, in one ZIP ({size}).",
+    "summaryImages": "Done. {count} pictures saved as PNG images, in one ZIP ({size}).",
+    "noImages": "No pictures were found in {name}. Choose Page to PNG to save its pages as pictures instead.",
+    "noImagesMany": "No pictures were found in these PDFs. Choose Page to PNG to save their pages as pictures instead.",
+    "tooMany": "That makes more than {max} pictures. Convert fewer pages at a time, or split the PDF first.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "brochure.pdf",
+      "pages": "{count} pages",
+      "convert": "Converted in your browser",
+      "tryImages": "Show Extract images",
+      "tryPages": "Show Page to PNG",
+      "pageName": "brochure_page-{number}.png",
+      "imageName": "brochure_image-{number}.png",
+      "captionPages": "Page to PNG: each of the 3 pages becomes its own PNG picture, text and all.",
       "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
     }
   },

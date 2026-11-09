@@ -1,12 +1,19 @@
 ---
 import en from "../../i18n/en.json";
+import type { Format } from "./convert";
 
-const t = en.pdfToJpg;
+interface Props {
+  format?: Format;
+}
+
+const { format = "jpg" } = Astro.props;
+const t = format === "png" ? en.pdfToPng : en.pdfToJpg;
 const modes = ["pages", "images"] as const;
 const qualities = ["normal", "high"] as const;
+const backgrounds = ["white", "transparent"] as const;
 ---
 
-<div class="jpg-layout" data-pdf-jpg-options data-testid="pdf-jpg-options">
+<div class="jpg-layout" data-pdf-jpg-options data-format={format} data-testid="pdf-jpg-options">
   <aside class="jpg-panel" aria-labelledby="jpg-panel-title">
     <h3 class="jpg-panel-title" id="jpg-panel-title">{t.panelTitle}</h3>
 
@@ -43,6 +50,22 @@ const qualities = ["normal", "high"] as const;
         }
       </div>
     </fieldset>
+    {
+      format === "png" && (
+        <fieldset class="jpg-quality" data-background>
+          <legend>{en.pdfToPng.background}</legend>
+          <div class="jpg-quality-options">
+            {backgrounds.map((background) => (
+              <label class="jpg-quality-option">
+                <input type="radio" name="jpg-background" value={background} checked={background === "white"} />
+                <span class="jpg-quality-name">{en.pdfToPng.backgrounds[background]}</span>
+              </label>
+            ))}
+          </div>
+          <p class="jpg-quality-hint">{en.pdfToPng.backgroundHint}</p>
+        </fieldset>
+      )
+    }
     <input type="hidden" name="choice" data-choice />
   </aside>
 
@@ -54,7 +77,6 @@ const qualities = ["normal", "high"] as const;
   import { fill } from "../../i18n/format";
   import { previewPdfFile } from "../../lib/pdf/preview";
 
-  const t = en.pdfToJpg;
   const THUMBNAIL_WIDTH = 240;
 
   interface Entry {
@@ -72,6 +94,8 @@ const qualities = ["normal", "high"] as const;
     const cards = box.querySelector("[data-cards]") as HTMLUListElement;
     const pagesInfo = box.querySelector("[data-pages-info]") as HTMLElement;
     const choiceInput = box.querySelector("[data-choice]") as HTMLInputElement;
+    const t = box.dataset.format === "png" ? en.pdfToPng : en.pdfToJpg;
+    const background = box.querySelector<HTMLElement>("[data-background]");
 
     let files: File[] = [];
     const entries = new Map<File, Entry>();
@@ -79,7 +103,10 @@ const qualities = ["normal", "high"] as const;
 
     // "Every page of this PDF will be converted into a JPG file. 12 JPG will be created.", with the count in bold.
     function sync() {
-      choiceInput.value = JSON.stringify({ mode: picked("jpg-mode"), quality: picked("jpg-quality") });
+      const mode = picked("jpg-mode");
+      choiceInput.value = JSON.stringify({ mode, quality: picked("jpg-quality"), background: picked("jpg-background") || "white" });
+      // Extracted pictures keep their own background, so the choice only applies to whole pages.
+      if (background) background.hidden = mode !== "pages";
       const counts = files.map((file) => entries.get(file)?.pages);
       const known = counts.every((count) => typeof count === "number");
       pagesInfo.replaceChildren(files.length > 1 ? t.pagesInfoMany : t.pagesInfoOne);
@@ -164,6 +191,8 @@ const qualities = ["normal", "high"] as const;
   .jpg-layout {
     scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
     display: grid;
+    /* Without a set column, Safari can size it to two cards side by side and push the page sideways. */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-xl);
     margin-top: var(--space-xl);
   }
@@ -312,6 +341,13 @@ const qualities = ["normal", "high"] as const;
     font-weight: 500;
   }
 
+  .jpg-quality-hint {
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
   @media (hover: hover) {
     .jpg-mode:not(:has(input:checked)):hover,
     .jpg-quality-option:not(:has(input:checked)):hover {
@@ -329,6 +365,14 @@ const qualities = ["normal", "high"] as const;
     list-style: none;
   }
 
+  /* Two cards a row on phones. Safari can miscount the auto-fill columns here and push the page sideways. */
+  @media (max-width: 479px) {
+    .jpg-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+  }
+
   @media (max-width: 599px) {
     .jpg-cards {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -338,6 +382,7 @@ const qualities = ["normal", "high"] as const;
 
   :global(.jpg-card) {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2px;
     min-width: 0;
     padding: var(--space-sm);
@@ -351,6 +396,9 @@ const qualities = ["normal", "high"] as const;
     align-items: center;
     justify-content: center;
     aspect-ratio: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     margin-bottom: var(--space-xs);
     border-radius: 6px;
     background: var(--color-bg);

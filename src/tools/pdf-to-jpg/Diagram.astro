@@ -1,8 +1,14 @@
 ---
 import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
+import type { Format } from "./convert";
 
-const d = en.pdfToJpg.diagram;
+interface Props {
+  format?: Format;
+}
+
+const { format = "jpg" } = Astro.props;
+const d = (format === "png" ? en.pdfToPng : en.pdfToJpg).diagram;
 // A three-page brochure: page 1 has a photo, page 2 is text, page 3 has another photo.
 const PAGES = [{ photo: 1 }, { photo: 0 }, { photo: 2 }];
 ---

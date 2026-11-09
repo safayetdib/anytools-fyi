@@ -46,7 +46,7 @@ describe("finds the closest tool", () => {
     ["photo to pdf", "image-to-pdf"],
     ["scan to pdf", "image-to-pdf"],
     ["pdf to jpg", "pdf-to-jpg"],
-    ["pdf to png", "pdf-to-jpg"],
+    ["pdf to png", "pdf-to-png"],
     ["pdf to image", "pdf-to-jpg"],
     ["save pdf as picture", "pdf-to-jpg"],
     ["organize", "organize-pdf"],
