@@ -67,6 +67,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const zone = root.querySelector<HTMLElement>('[data-el="zone"]');
   const pickInput = root.querySelector<HTMLInputElement>('[data-el="pick-input"]');
   const addInput = root.querySelector<HTMLInputElement>('[data-el="add-input"]');
+  const cameraInput = root.querySelector<HTMLInputElement>('[data-el="camera-input"]');
+  const cameraAddInput = root.querySelector<HTMLInputElement>('[data-el="camera-add-input"]');
   const form = el<HTMLFormElement>(root, "form");
   const list = root.querySelector<HTMLOListElement>('[data-el="list"]');
   const total = root.querySelector<HTMLElement>('[data-el="total"]');
@@ -552,6 +554,20 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   addInput?.addEventListener("change", () => {
     controller.addFiles(addInput.files ?? []);
     addInput.value = "";
+    afterFiles("working");
+  });
+
+  // A photo just taken joins the list like a chosen file, so pages can be scanned one after another.
+  cameraInput?.addEventListener("change", () => {
+    warm();
+    controller.addFiles(cameraInput.files ?? []);
+    cameraInput.value = "";
+    afterFiles("select");
+  });
+
+  cameraAddInput?.addEventListener("change", () => {
+    controller.addFiles(cameraAddInput.files ?? []);
+    cameraAddInput.value = "";
     afterFiles("working");
   });
 

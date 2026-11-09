@@ -114,6 +114,16 @@ export const TOOLS: Tool[] = [
     variantOf: "jpg-to-pdf",
   },
   {
+    slug: "scan-to-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["jpg-to-pdf", "merge-pdf", "compress-pdf", "sign-pdf"],
+    aliases: ["scan document", "document scanner", "camera to pdf", "scan with phone", "photo of document to pdf", "scanner app", "স্ক্যান করে পিডিএফ"],
+    built: true,
+    runsIn: "browser",
+    variantOf: "jpg-to-pdf",
+  },
+  {
     slug: "pdf-to-jpg",
     hub: "pdf",
     input: "files",

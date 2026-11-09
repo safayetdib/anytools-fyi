@@ -187,7 +187,7 @@ for (const format of FORMATS) {
     expect(crumbs).toEqual(["Home", "PDF tools", "JPG to PDF", format.name]);
     // Links to the other image types, with this one marked as the current page.
     const types = page.getByRole("navigation", { name: "Convert other image types" });
-    await expect(types.getByRole("link")).toHaveText(["JPG", "Any image", "PNG", "HEIC", "WebP"]);
+    await expect(types.getByRole("link")).toHaveText(["JPG", "Any image", "PNG", "HEIC", "WebP", "Scan"]);
     await expect(types.locator('[aria-current="page"]')).toHaveText(format.name === "Image to PDF" ? "Any image" : format.name.split(" ")[0]);
     await picker(page).setInputFiles([`${IMAGES}/${format.file}`]);
     await expect(cards(page).locator("img")).toHaveCount(1);

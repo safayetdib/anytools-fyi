@@ -1,0 +1,126 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.scanToPdf.diagram;
+---
+
+<figure class="scan-diagram" aria-labelledby="scan-diagram-caption">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.photo}</span>
+      <span class="sheet is-photo" aria-hidden="true"><span class="lines"></span><span class="stamp"></span></span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+      </svg>
+      <span>{d.clean}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.scanned}</span>
+      <span class="sheet" aria-hidden="true"><span class="lines"></span><span class="stamp"></span></span>
+    </div>
+  </div>
+  <figcaption id="scan-diagram-caption">{d.caption}</figcaption>
+</figure>
+
+<style>
+  .scan-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+  }
+
+  /* The page: lines of text and a red stamp. The photo is tilted a little, grey and yellowed, with a shadow. */
+  .sheet {
+    position: relative;
+    display: grid;
+    place-items: start;
+    width: 3.6rem;
+    height: 4.8rem;
+    margin-top: var(--space-xs);
+    padding: 0.6rem 0.5rem;
+    border-radius: 2px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  }
+
+  .is-photo {
+    rotate: -4deg;
+    background: linear-gradient(115deg, #e9dfc4 0%, #c9bc9c 60%, #8f846c 100%);
+  }
+
+  .lines {
+    width: 100%;
+    height: 55%;
+    background: repeating-linear-gradient(#1f1f1f 0 2px, transparent 2px 7px);
+  }
+
+  .is-photo .lines {
+    opacity: 0.6;
+  }
+
+  .stamp {
+    position: absolute;
+    right: 0.45rem;
+    bottom: 0.45rem;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #c42b2b;
+    border-radius: 50%;
+  }
+
+  .is-photo .stamp {
+    border-color: #9c5a4a;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

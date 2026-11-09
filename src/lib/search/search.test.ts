@@ -66,6 +66,8 @@ describe("finds the closest tool", () => {
     ["unlock pdf", "unlock-pdf"],
     ["repair pdf", "repair-pdf"],
     ["corrupt pdf", "repair-pdf"],
+    ["scan document", "scan-to-pdf"],
+    ["document scanner", "scan-to-pdf"],
     ["trim pdf margins", "crop-pdf"],
     ["remove pages", "remove-pdf-pages"],
     ["delete pdf pages", "remove-pdf-pages"],

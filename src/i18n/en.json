@@ -177,6 +177,13 @@
       "metaDescription": "Convert WebP to PDF for free. Turn WebP images saved from websites into a PDF that opens on any device, merged or one per image. Nothing uploaded.",
       "size": "WebP"
     },
+    "scan-to-pdf": {
+      "name": "Scan to PDF",
+      "description": "Take photos of pages with your phone and turn them into one clean, scanned-looking PDF.",
+      "title": "Scan to PDF: Phone Camera Document Scanner | AnyTools.fyi",
+      "metaDescription": "Scan documents to PDF with your phone camera. Shadows and grey paper are cleaned away, in colour or black and white. Free, no app, nothing uploaded.",
+      "size": "Scan"
+    },
     "pdf-to-jpg": {
       "name": "PDF to JPG",
       "description": "Save each PDF page as a sharp JPG image.",
@@ -741,6 +748,27 @@
       "tryA4": "Show A4 with margins",
       "captionA4": "A4 with a small margin: every photo sits centred on a standard page, ready to print.",
       "captionFit": "Fit: each page takes its photo's own shape, so nothing is added around it."
+    }
+  },
+  "scanToPdf": {
+    "selectLabel": "Select photos of pages",
+    "cameraLabel": "Take a photo",
+    "runLabel": "Create PDF",
+    "acceptLabel": "Photos",
+    "arrangeHint": "Add a photo for each page, in order. Drag to reorder, or take another photo.",
+    "panelTitle": "Scan to PDF options",
+    "filterLegend": "Look",
+    "filters": {
+      "color": "Colour",
+      "bw": "Black and white",
+      "original": "Original"
+    },
+    "filterNote": "Colour and Black and white whiten the paper and remove shadows, like a scanner.",
+    "diagram": {
+      "photo": "Phone photo",
+      "scanned": "Scanned page",
+      "clean": "Cleaned in your browser",
+      "caption": "Shadows, the yellow tint of the lamp and the grey paper are gone. The text stays sharp and dark."
     }
   },
   "compressPdf": {

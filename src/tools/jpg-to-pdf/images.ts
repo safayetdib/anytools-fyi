@@ -1,3 +1,4 @@
+import { enhanceScan, type ScanFilter } from "../scan-to-pdf/enhance";
 import { isHeic, jpegOrientation, type PreparedImage } from "./layout";
 
 // Runs in the page: decoding images needs the browser. JPG and PNG pass through untouched when they can.
@@ -66,6 +67,43 @@ export async function prepareImage(file: File, rotate: number): Promise<Prepared
     const blob = await toBlob(canvas, png ? "image/png" : "image/jpeg", 0.92);
     canvas.width = canvas.height = 0;
     return { bytes: new Uint8Array(await blob.arrayBuffer()), kind: png ? "png" : "jpg", rotate };
+  } finally {
+    bitmap.close();
+  }
+}
+
+// Scans are cleaned at up to this many pixels on their longest side: A4 at 300 dpi, sharp in print and quick on phones.
+const SCAN_SIDE = 3000;
+
+// A photo of a page, cleaned to look scanned and ready to place in a PDF. "original" keeps the photo as it is.
+export async function prepareScan(file: File, rotate: number, filter: ScanFilter): Promise<PreparedImage> {
+  if (filter === "original") return prepareImage(file, rotate);
+  const bitmap = await decode(file);
+  try {
+    const scale = Math.min(1, SCAN_SIDE / Math.max(bitmap.width, bitmap.height));
+    const { canvas, context } = canvasFor(bitmap, bitmap.width * scale, bitmap.height * scale);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    const clean = enhanceScan(pixels, filter);
+    context.putImageData(new ImageData(clean.data as Uint8ClampedArray<ArrayBuffer>, clean.width, clean.height), 0, 0);
+    const blob = await toBlob(canvas, "image/jpeg", 0.85);
+    canvas.width = canvas.height = 0;
+    return { bytes: new Uint8Array(await blob.arrayBuffer()), kind: "jpg", rotate };
+  } finally {
+    bitmap.close();
+  }
+}
+
+// A small picture of a scan with its filter applied, for the cards.
+export async function scanThumbnail(image: Blob, filter: ScanFilter): Promise<Blob> {
+  if (filter === "original") return image;
+  const bitmap = await createImageBitmap(image);
+  try {
+    const { canvas, context } = canvasFor(bitmap);
+    const clean = enhanceScan(context.getImageData(0, 0, canvas.width, canvas.height), filter);
+    context.putImageData(new ImageData(clean.data as Uint8ClampedArray<ArrayBuffer>, clean.width, clean.height), 0, 0);
+    const blob = await toBlob(canvas, "image/png");
+    canvas.width = canvas.height = 0;
+    return blob;
   } finally {
     bitmap.close();
   }
