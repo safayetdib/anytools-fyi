@@ -2,10 +2,11 @@ import { rearrangePdf } from "../../lib/pdf/rearrange";
 import type { PagePlan } from "../../lib/shell/types";
 import { JobError, serveJobs } from "../../lib/worker/host";
 import { zipParts } from "../../lib/zip";
+import type { TextPicture } from "../../lib/pdf/stamp";
 import { numberPdf, numberedName, type Settings } from "./numbers";
 
 export type NumbersJob =
-  | { op: "number"; files: { name: string; bytes: Uint8Array }[]; settings: Settings }
+  | { op: "number"; files: { name: string; bytes: Uint8Array }[]; settings: Settings; pictures?: Record<string, TextPicture> }
   | { op: "rearrange"; bytes: Uint8Array; plan: PagePlan };
 
 export type NumbersResult =
@@ -20,7 +21,7 @@ serveJobs<NumbersJob, NumbersResult>(async (job, progress) => {
   const parts: Uint8Array[] = [];
   for (const [index, file] of job.files.entries()) {
     try {
-      parts.push(await numberPdf(file.bytes, job.settings));
+      parts.push(await numberPdf(file.bytes, job.settings, job.pictures));
     } catch (error) {
       // Say which file failed, so the page can name it.
       throw error instanceof JobError ? new JobError(error.code, String(index)) : error;

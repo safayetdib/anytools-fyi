@@ -138,7 +138,7 @@ const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
 <script>
   import en from "../../i18n/en.json";
   import { fill } from "../../i18n/format";
-  import { canDraw } from "../../lib/pdf/stamp";
+  import { FAMILIES } from "../../lib/pdf/text-picture";
   import { previewPdfOutput } from "../../lib/pdf/preview";
   import { createPageGrid } from "../../lib/shell/page-grid";
   import { chosenImage, prepareWatermarkImage, setChosenImage } from "./chosen-image";
@@ -149,7 +149,6 @@ const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
   const PAGE = { width: 595, height: 842 };
   // A4 is a little narrower than the preview frame, so the page fills 94% of its width, centred.
   const PAGE_SHARE = 94;
-  const FAMILIES = { helvetica: "Helvetica, Arial, sans-serif", times: '"Times New Roman", Times, serif', courier: '"Courier New", Courier, monospace' };
 
   const root = document.querySelector<HTMLElement>("[data-tool-shell]");
   const found = root?.querySelector<HTMLElement>("[data-watermark-options]");
@@ -267,8 +266,7 @@ const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
       current = read();
       box.querySelectorAll<HTMLElement>("[data-kind-panel]").forEach((panel) => (panel.hidden = panel.dataset.kindPanel !== current.kind));
       let message = "";
-      if (current.kind === "text" && !canDraw(current.text)) message = t.textError;
-      else if (current.kind === "text" && !current.text.trim()) message = t.emptyText;
+      if (current.kind === "text" && !current.text.trim()) message = t.emptyText;
       error.textContent = message;
       error.hidden = !message;
       textInput.toggleAttribute("aria-invalid", current.kind === "text" && Boolean(message));
@@ -276,6 +274,9 @@ const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
       output.value = JSON.stringify(current);
       grid.decorate();
     }
+
+    // Bangla letters come from a font that loads when first used; previews are measured again once it arrives.
+    document.fonts.addEventListener("loadingdone", () => grid.decorate());
 
     // Page numbers are tidied when leaving a box: within the file, and "to" never before "from".
     function tidy() {

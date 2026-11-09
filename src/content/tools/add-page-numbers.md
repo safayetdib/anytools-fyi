@@ -27,9 +27,9 @@ limits:
     label: "File size"
     note: "For each file. Very large files may fail on phones with little memory."
   - icon: page
-    value: "Latin text"
+    value: "Latin + Bangla"
     label: "Custom text"
-    note: "Letters, numbers and common symbols. Other scripts aren't supported yet."
+    note: "Bangla text and ১, ২, ৩ digits are drawn as sharp pictures, so they can't be selected like other text."
   - icon: lock
     value: "Not yet"
     label: "Password-protected PDFs"
@@ -63,8 +63,8 @@ faq:
     answer: "{n} is the page's number and {p} is the last number printed. For example, Page {n} of {p} gives Page 3 of 10."
   - question: "What are facing pages?"
     answer: "Pages printed as a book, where pages sit side by side in spreads. Numbers then go on the outer edge of each page, left on left pages and right on right pages."
-  - question: "Can I write the numbers in Bangla or other scripts?"
-    answer: "Not yet. The fonts every PDF reader has built in cover Latin letters, numbers and common symbols. We plan to add more fonts later."
+  - question: "Can I write the numbers in Bangla?"
+    answer: "Yes. Choose ১, ২, ৩ under Digits, and type Bangla custom text such as পৃষ্ঠা {n}. Bangla is drawn as a sharp picture so its letters join correctly in every PDF reader; it can't be selected or searched like the other text."
   - question: "Will the rest of my PDF change?"
     answer: "No. Only the numbers are added on top. Text, images, links and page sizes stay exactly as they were."
 ---

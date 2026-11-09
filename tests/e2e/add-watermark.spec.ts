@@ -115,11 +115,21 @@ test("add watermark - an image watermark is placed on each page", async ({ page 
   }
 });
 
-test("add watermark - text the fonts can't draw is explained before running", async ({ page }) => {
+test("add watermark - Bangla text is stamped as a sharp picture", async ({ page }) => {
   await choose(page, [await pdf("report.pdf", 2)]);
-  await panel(page).getByLabel("Text", { exact: true }).fill("গোপনীয়");
-  await expect(page.getByTestId("watermark-error")).toContainText("can only use Latin letters");
-  await expect(runButton(page)).toBeDisabled();
+  await panel(page).getByLabel("Text", { exact: true }).fill("গোপনীয় নথি");
+  await expect(runButton(page)).toBeEnabled();
+  const { bytes } = await stampAndDownload(page);
+  const doc = await PDFDocument.load(bytes);
+  const refs = doc.getPages().flatMap((one) => {
+    const images = one.node.Resources()?.lookup(PDFName.of("XObject"), PDFDict);
+    return images ? images.keys().map((key) => String(images.get(key))) : [];
+  });
+  // One picture, placed on both pages.
+  expect(refs).toHaveLength(2);
+  expect(new Set(refs).size).toBe(1);
+  await page.getByRole("heading", { name: "Preview", exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: "test-results/screenshots/add-watermark/bangla-result.png" });
 });
 
 test("add watermark - several PDFs come in one ZIP", async ({ page }) => {

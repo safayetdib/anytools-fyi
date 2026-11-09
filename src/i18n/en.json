@@ -1103,7 +1103,12 @@
       "custom": "Custom"
     },
     "customLabel": "Custom text",
-    "customHint": "Use {n} for the page number and {p} for the last number.",
+    "customHint": "Use {n} for the page number and {p} for the last number. Bangla works too, such as পৃষ্ঠা {n}.",
+    "digits": "Digits",
+    "digitStyles": {
+      "latin": "1, 2, 3",
+      "bangla": "১, ২, ৩ (Bangla)"
+    },
     "format": "Text format",
     "font": "Font",
     "fonts": {
@@ -1116,7 +1121,7 @@
     "italic": "Italic",
     "underline": "Underline",
     "color": "Colour",
-    "textError": "Custom text can only use Latin letters, numbers and common symbols for now. Try Page {n}, or {n} / {p}.",
+    "textError": "This text couldn't be drawn. Try again, or choose another text.",
     "pagesLabel": "Pages of {name}, with their numbers",
     "zipName": "anytools_page-numbers.zip",
     "summaryOne": "Done. Page numbers added to {name}, saved as {output} ({size}).",
@@ -1203,7 +1208,7 @@
       "over": "Over the PDF content",
       "below": "Below the PDF content"
     },
-    "textError": "The watermark can only use Latin letters, numbers and common symbols for now. Try CONFIDENTIAL or DRAFT.",
+    "textError": "This text couldn't be drawn. Try again, or change the text.",
     "emptyText": "Type the watermark text first.",
     "needImage": "Choose an image first.",
     "pagesLabel": "Pages of {name}, with the watermark",
