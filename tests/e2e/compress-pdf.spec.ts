@@ -14,8 +14,16 @@ const panel = (page: Page) => page.getByTestId("compress-options");
 const runButton = (page: Page) => page.getByRole("button", { name: "Compress PDF", exact: true });
 
 // A large, detailed photo, made by the browser's own JPEG encoder like a phone camera would.
-async function photo(page: Page): Promise<Uint8Array> {
-  const bytes = await page.evaluate(async () => {
+// Drawing and encoding this photo is the slowest part of these tests, so each test worker makes it once.
+let photoBytes: Promise<Uint8Array> | undefined;
+
+function photo(page: Page): Promise<Uint8Array> {
+  photoBytes ??= makePhoto(page);
+  return photoBytes;
+}
+
+async function makePhoto(page: Page): Promise<Uint8Array> {
+  const base64 = await page.evaluate(async () => {
     const canvas = new OffscreenCanvas(2400, 3200);
     const context = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
     const sky = context.createLinearGradient(0, 0, 2400, 3200);
@@ -35,9 +43,15 @@ async function photo(page: Page): Promise<Uint8Array> {
     }
     context.putImageData(grain, 0, 0);
     const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.95 });
-    return Array.from(new Uint8Array(await blob.arrayBuffer()));
+    // Base64 crosses from the page far faster than a list of numbers.
+    const url = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+    return url.slice(url.indexOf(",") + 1);
   });
-  return new Uint8Array(bytes);
+  return new Uint8Array(Buffer.from(base64, "base64"));
 }
 
 // A two-page report: a heading on each page and the photo filling most of it.
@@ -152,7 +166,8 @@ test("compress pdf - a PDF that is already small comes back unchanged", async ({
 });
 
 test("compress pdf - several PDFs come in one ZIP, each labelled", async ({ page }) => {
-  test.setTimeout(60000);
+  // Compressing two files with large photos takes a while when every test runs at once.
+  test.slow();
   await page.goto(PAGE);
   await picker(page).setInputFiles([await photoPdf(page, "photos.pdf"), await textPdf("notes.pdf")]);
   const { name, bytes } = await compressAndDownload(page);
