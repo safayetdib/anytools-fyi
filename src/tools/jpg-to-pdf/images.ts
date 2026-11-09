@@ -10,7 +10,7 @@ function kindOf(bytes: Uint8Array): "jpg" | "png" | "other" {
 
 // The browser turns photos the way their camera tag says, so what's decoded is what people see.
 // Only Safari opens iPhone HEIC photos itself; elsewhere a HEIC decoder (about 0.8 MB) loads the first time one is chosen.
-async function decode(file: Blob): Promise<ImageBitmap> {
+export async function decode(file: Blob): Promise<ImageBitmap> {
   try {
     return await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch (error) {

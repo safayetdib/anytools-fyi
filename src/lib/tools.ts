@@ -123,6 +123,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "sign-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["add-watermark", "merge-pdf", "compress-pdf", "jpg-to-pdf"],
+    aliases: ["esign pdf", "add signature to pdf", "electronic signature", "signature on pdf", "sign document", "fill and sign", "পিডিএফে স্বাক্ষর", "সই করুন"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "organize-pdf",
     hub: "pdf",
     input: "files",
