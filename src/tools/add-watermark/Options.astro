@@ -370,6 +370,8 @@ const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
   }
 
   .mark-panel {
+    /* Never wider than its column, whatever goes inside. */
+    min-width: 0;
     display: grid;
     gap: var(--space-lg);
     padding: var(--space-lg);
@@ -555,10 +557,12 @@ const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
     cursor: pointer;
   }
 
-  .mark-pick-preview img {
+  /* The script adds this picture, so the rule must be global to reach it. A big logo stays a small thumbnail. */
+  .mark-pick-preview :global(img) {
     display: block;
     max-width: 64px;
     max-height: 40px;
+    object-fit: contain;
   }
 
   .mark-hint {
