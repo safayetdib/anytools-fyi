@@ -59,6 +59,8 @@ describe("finds the closest tool", () => {
     ["turn pdf pages", "rotate-pdf"],
     ["sideways pdf", "rotate-pdf"],
     ["rotat pdf", "rotate-pdf"],
+    ["crop pdf", "crop-pdf"],
+    ["trim pdf margins", "crop-pdf"],
     ["remove pages", "remove-pdf-pages"],
     ["delete pdf pages", "remove-pdf-pages"],
     ["delete page from pdf", "remove-pdf-pages"],
@@ -94,7 +96,7 @@ describe("finds the closest tool", () => {
 describe("result lists", () => {
   it("lists every PDF tool for the category word", () => {
     const all = search("pdf", 20).map((r) => r.slug);
-    expect(all).toHaveLength(12);
+    expect(all).toHaveLength(13);
     expect(all[0]).toBe("merge-pdf");
   });
 

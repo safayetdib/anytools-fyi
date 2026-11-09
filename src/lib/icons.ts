@@ -12,6 +12,7 @@ export const TOOL_ICONS: Record<string, string> = {
   "organize-pdf":
     '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><path d="M14 6h4a2 2 0 0 1 2 2v1"/><path d="m18 7 2 2 2-2"/><path d="M10 18H6a2 2 0 0 1-2-2v-1"/><path d="m6 17-2-2-2 2"/>',
   "rotate-pdf": '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/><rect x="9" y="9" width="6" height="7" rx="1"/>',
+  "crop-pdf": '<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>',
   "remove-pdf-pages":
     '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="m10 12 5 5"/><path d="m15 12-5 5"/>',
   "extract-pdf-pages":

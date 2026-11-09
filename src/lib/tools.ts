@@ -160,6 +160,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "crop-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["rotate-pdf", "organize-pdf", "compress-pdf", "pdf-to-jpg"],
+    aliases: ["crop pdf pages", "trim pdf", "cut pdf margins", "remove pdf margins", "resize pdf page", "pdf cropper", "পিডিএফ ক্রপ"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "remove-pdf-pages",
     hub: "pdf",
     input: "files",

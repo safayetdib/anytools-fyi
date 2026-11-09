@@ -3,7 +3,7 @@ import type { FilePreview, OutputPreview, RenderedPage } from "../shell/types";
 
 type Pdfjs = typeof import("pdfjs-dist/legacy/build/pdf.mjs");
 type LoadingTask = ReturnType<Pdfjs["getDocument"]>;
-type PdfDocument = Awaited<LoadingTask["promise"]>;
+export type PdfDocument = Awaited<LoadingTask["promise"]>;
 
 let pdfjs: Promise<Pdfjs> | undefined;
 
@@ -20,7 +20,7 @@ export function loadPdfjs(): Promise<Pdfjs> {
 }
 
 // Closing the loading task frees the document and its share of the pdf.js worker.
-async function openPdf(bytes: Uint8Array): Promise<{ doc: PdfDocument; close: () => void }> {
+export async function openPdf(bytes: Uint8Array): Promise<{ doc: PdfDocument; close: () => void }> {
   const lib = await loadPdfjs();
   const task = lib.getDocument({ data: bytes });
   try {

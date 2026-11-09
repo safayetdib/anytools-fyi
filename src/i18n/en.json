@@ -210,6 +210,12 @@
       "title": "Rotate PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Rotate PDF files for free. Turn one PDF or many at once, right or left, or only the portrait or landscape ones. No signup, no watermark, nothing uploaded."
     },
+    "crop-pdf": {
+      "name": "Crop PDF",
+      "description": "Cut away margins or keep just part of a page, on every page or one at a time.",
+      "title": "Crop PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Crop PDF pages for free. Drag a box to trim margins, or keep just part of a page, on every page or one at a time. No signup, nothing uploaded."
+    },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
       "description": "Delete the pages you don't need and keep the rest.",
@@ -890,6 +896,60 @@
       "signature": "Make your signature first: type, draw or upload it.",
       "initials": "Make your initials first: type, draw or upload them.",
       "date": "Choose a date first."
+    }
+  },
+  "cropPdf": {
+    "selectLabel": "Select PDF file",
+    "runLabel": "Crop PDF",
+    "acceptLabel": "PDF file",
+    "arrangeHint": "Drag the box over the part of the page to keep.",
+    "stageTitle": "Page to crop",
+    "boxLabel": "Crop area",
+    "boxLabelValue": "Crop area. Cutting {top} mm from the top, {bottom} mm from the bottom, {left} mm from the left and {right} mm from the right.",
+    "size": "{width} × {height} mm",
+    "navLabel": "Pages",
+    "previous": "Previous page",
+    "next": "Next page",
+    "pageOf": "Page {page} of {count}",
+    "help": "Drag the box or its handles over the part to keep, or drag across the page to draw a new box.",
+    "helpKeys": "With the keyboard, select the box, then use the arrow keys to move it and Shift with the arrows to resize it.",
+    "panelTitle": "Crop PDF options",
+    "modeLegend": "Pages",
+    "modes": {
+      "all": "All pages",
+      "current": "Current page"
+    },
+    "modeNotes": {
+      "all": "The same area is cropped on every page.",
+      "current": "Crop each page on its own. Pages you don't change stay as they are."
+    },
+    "marginsLegend": "Cut from each side (mm)",
+    "sides": {
+      "top": "Top",
+      "bottom": "Bottom",
+      "left": "Left",
+      "right": "Right"
+    },
+    "fit": "Fit to content",
+    "reset": "Reset",
+    "blank": "This page looks blank, so there's nothing to fit to.",
+    "statusNone": "Nothing cropped yet. Drag the box's edges inwards.",
+    "statusAll": "Every page will be cropped to the box.",
+    "statusOne": "1 page will be cropped.",
+    "statusMany": "{count} pages will be cropped.",
+    "needCrop": "Drag the box's edges inwards to choose the part of the page to keep.",
+    "summaryAll": "Done. Every page is cropped. Saved as {output} ({size}).",
+    "summaryOne": "Done. 1 page is cropped. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} pages are cropped. Saved as {output} ({size}).",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Choose another file and try again.",
+    "diagram": {
+      "file": "poster.pdf",
+      "before": "Before",
+      "after": "After",
+      "crop": "Cropped in your browser",
+      "caption": "The white border around the poster is cut away. Only the part inside the box is kept, on every page."
     }
   },
   "pdfToJpg": {
