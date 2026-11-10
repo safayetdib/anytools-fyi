@@ -56,13 +56,15 @@ describe("liveHubs", () => {
 
 describe("launch registry", () => {
   // The site offers PDF tools only, launched one at a time. Other categories come back when they're built.
-  it("offers the sixteen browser-based PDF tools, with Merge PDF live", () => {
+  it("offers the eighteen browser-based PDF tools, with Merge PDF live", () => {
     expect(listedTools().map((t) => t.slug)).toEqual([
       "merge-pdf",
       "split-pdf",
       "compress-pdf",
       "jpg-to-pdf",
+      "scan-to-pdf",
       "pdf-to-jpg",
+      "pdf-to-png",
       "sign-pdf",
       "organize-pdf",
       "rotate-pdf",
@@ -76,12 +78,12 @@ describe("launch registry", () => {
       "repair-pdf",
     ]);
     expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
-    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "jpg-to-pdf", "pdf-to-jpg", "sign-pdf", "organize-pdf", "rotate-pdf", "crop-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark", "protect-pdf", "unlock-pdf", "repair-pdf"]);
+    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "jpg-to-pdf", "scan-to-pdf", "pdf-to-jpg", "pdf-to-png", "sign-pdf", "organize-pdf", "rotate-pdf", "crop-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark", "protect-pdf", "unlock-pdf", "repair-pdf"]);
   });
 
   it("publishes only the PDF hub", () => {
     expect(liveHubs().map((h) => h.slug)).toEqual(["pdf-tools"]);
-    expect(toolsForHub("pdf")).toHaveLength(16);
+    expect(toolsForHub("pdf")).toHaveLength(18);
   });
 
   it("has strings and an icon for every tool", () => {
@@ -103,7 +105,8 @@ describe("launch registry", () => {
       // Only Scan to PDF has its own folder: it adds the camera and cleans each photo, on top of JPG to PDF.
       expect(existsSync(`src/tools/${format.slug}`), format.slug).toBe(format.slug === "scan-to-pdf");
     }
-    expect(listedTools().some((t) => t.variantOf)).toBe(false);
+    // Only variants that do a job of their own are listed with the other tools.
+    expect(listedTools().filter((t) => t.variantOf).map((t) => t.slug)).toEqual(["scan-to-pdf", "pdf-to-png"]);
   });
 
   // Unbuilt tools are kept out of search page by page, so the site only needs one working tool to go live.

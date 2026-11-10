@@ -18,6 +18,8 @@ export interface Tool {
   // Where the work happens. Only "browser" tools may promise that files stay on the device.
   runsIn: "browser" | "server";
   variantOf?: string;
+  // A variant that does a job of its own, such as PDF to PNG, shows in the tool lists and search like any other tool.
+  listed?: boolean;
 }
 
 const MIN_RELATED_TOOLS = 4;
@@ -122,6 +124,7 @@ export const TOOLS: Tool[] = [
     built: true,
     runsIn: "browser",
     variantOf: "jpg-to-pdf",
+    listed: true,
   },
   {
     slug: "pdf-to-jpg",
@@ -141,6 +144,7 @@ export const TOOLS: Tool[] = [
     built: true,
     runsIn: "browser",
     variantOf: "pdf-to-jpg",
+    listed: true,
   },
   {
     slug: "sign-pdf",
@@ -267,7 +271,7 @@ validateRegistry(TOOLS);
 
 // Tools that get their own card. Variant pages are reached from their parent tool instead.
 export function listedTools(tools: Tool[] = TOOLS): Tool[] {
-  return tools.filter((tool) => !tool.variantOf);
+  return tools.filter((tool) => !tool.variantOf || tool.listed);
 }
 
 /** True when the tool does all its work in the browser, so files never leave the device. */
