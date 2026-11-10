@@ -246,6 +246,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "grayscale-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["compress-pdf", "pdf-to-jpg", "merge-pdf", "edit-pdf"],
+    aliases: ["black and white pdf", "pdf to grayscale", "greyscale pdf", "remove colour from pdf", "save ink pdf", "pdf b&w", "সাদাকালো পিডিএফ", "পিডিএফ গ্রেস্কেল"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "pdf-to-text",
     hub: "pdf",
     input: "files",

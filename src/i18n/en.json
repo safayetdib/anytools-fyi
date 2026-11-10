@@ -271,6 +271,12 @@
       "title": "OCR PDF Free: Make Scanned PDFs Searchable | AnyTools.fyi",
       "metaDescription": "Free OCR for scanned PDFs, in English and Bangla. Make PDFs searchable and copy their text. Runs in your browser: no signup, nothing uploaded."
     },
+    "grayscale-pdf": {
+      "name": "Grayscale PDF",
+      "description": "Turn a colour PDF black and white, to save colour ink when printing. Text stays sharp.",
+      "title": "Grayscale PDF Free: Make PDFs Black and White | AnyTools.fyi",
+      "metaDescription": "Convert a colour PDF to grayscale for free, to save ink. Text, drawings and photos turn grey; text stays sharp and searchable. No signup, nothing uploaded."
+    },
     "pdf-to-text": {
       "name": "PDF to text",
       "description": "Take all the text out of a PDF as a plain text file, ready to copy, edit or search.",
@@ -1141,6 +1147,34 @@
       "after": "Opens again",
       "repair": "Repaired in your browser",
       "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
+  "grayscalePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to grayscale",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is turned grey on its own.",
+    "panelTitle": "Grayscale PDF",
+    "intro": "Turns every colour in the PDF into its shade of grey: text, drawings and photos. Text stays text, so it stays sharp and searchable.",
+    "note": "Printing in black and white uses no colour ink. The file usually gets smaller too.",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now black and white. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs are now black and white, all saved in one ZIP ({size}).",
+    "part": "{name}, black and white",
+    "zipName": "anytools_grayscale.zip",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "flyer.pdf",
+      "before": "In colour",
+      "after": "Black and white",
+      "action": "Converted in your browser",
+      "caption": "Each colour becomes the grey it looks like, so red stays darker than yellow. Text and lines are redrawn in grey, not turned into pictures."
     }
   },
   "pdfToText": {

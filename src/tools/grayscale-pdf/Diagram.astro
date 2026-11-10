@@ -1,0 +1,131 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.grayscalePdf.diagram;
+---
+
+<figure class="gray-diagram" aria-labelledby="gray-diagram-caption">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.before}</span>
+      <span class="sheet" aria-hidden="true"><span class="photo"></span><span class="title"></span><span class="lines"></span></span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+      </svg>
+      <span>{d.action}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.after}</span>
+      <span class="sheet is-gray" aria-hidden="true"><span class="photo"></span><span class="title"></span><span class="lines"></span></span>
+    </div>
+  </div>
+  <figcaption id="gray-diagram-caption">{d.caption}</figcaption>
+</figure>
+
+<style>
+  .gray-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .result .doc-meta {
+    color: var(--color-accent);
+  }
+
+  .sheet {
+    display: grid;
+    grid-template-rows: 3rem 10px 1fr;
+    gap: 8px;
+    width: 6rem;
+    height: 8rem;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  /* A colour photo, a red heading and blue text, then the same in grey. */
+  .photo {
+    display: block;
+    background:
+      radial-gradient(circle at 75% 30%, #f2c14e 0 12%, transparent 13%),
+      linear-gradient(160deg, transparent 55%, #4f8a5b 56%),
+      linear-gradient(#9cc7e4, #d7ecf7);
+  }
+
+  .title {
+    display: block;
+    width: 70%;
+    background: #c62828;
+  }
+
+  .lines {
+    display: block;
+    background: repeating-linear-gradient(#1f4fbf 0 2px, transparent 2px 8px);
+  }
+
+  .is-gray {
+    filter: grayscale(1);
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>
