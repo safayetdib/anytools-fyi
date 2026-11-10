@@ -246,6 +246,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "compare-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["ocr-pdf", "merge-pdf", "edit-pdf", "split-pdf"],
+    aliases: ["diff pdf", "pdf difference", "compare two pdfs", "find changes in pdf", "pdf compare tool", "document comparison", "দুটি পিডিএফ তুলনা", "পিডিএফ তুলনা"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "fill-pdf-forms",
     hub: "pdf",
     input: "files",

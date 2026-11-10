@@ -271,6 +271,12 @@
       "title": "OCR PDF Free: Make Scanned PDFs Searchable | AnyTools.fyi",
       "metaDescription": "Free OCR for scanned PDFs, in English and Bangla. Make PDFs searchable and copy their text. Runs in your browser: no signup, nothing uploaded."
     },
+    "compare-pdf": {
+      "name": "Compare PDF",
+      "description": "See what changed between two versions of a PDF, with removed and added words highlighted side by side.",
+      "title": "Compare PDF Free: Spot Changes in Two PDFs | AnyTools.fyi",
+      "metaDescription": "Compare two PDF files for free and see every word removed or added, highlighted on the pages side by side. No signup, nothing uploaded."
+    },
     "fill-pdf-forms": {
       "name": "Fill PDF forms",
       "description": "Type into a PDF form's own boxes, tick its choices, and save it filled in, ready to send.",
@@ -1129,6 +1135,40 @@
       "after": "Opens again",
       "repair": "Repaired in your browser",
       "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
+  "comparePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Compare PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "The first PDF is the original, the second the changed version. Drag them to swap.",
+    "panelTitle": "Compare PDF",
+    "intro": "Finds every word removed or added between two versions of a document, and shows the pages side by side.",
+    "keyRemoved": "Removed from the original",
+    "keyAdded": "Added in the changed version",
+    "note": "The words are compared, not pictures or layout. Scanned PDFs have no words to compare; run OCR PDF on them first.",
+    "cardsLabel": "Your PDFs",
+    "originalLabel": "Original",
+    "changedLabel": "Changed",
+    "extra": "Not compared: only two PDFs at a time",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "addSecond": "Add the changed version to compare with.",
+    "needTwo": "Choose exactly two PDFs: the original and the changed version.",
+    "noText": "Neither PDF has words to compare. If they're scans, run OCR PDF on them first.",
+    "wordOne": "1 word",
+    "wordMany": "{count} words",
+    "summary": "Done. {removed} removed and {added} added. Saved side by side as {output} ({size}).",
+    "summarySame": "Done. The words are the same in both PDFs. Saved side by side as {output} ({size}).",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then compare.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "before": "lease.pdf",
+      "after": "lease-v2.pdf",
+      "action": "Compared in your browser",
+      "caption": "Each page of the original sits beside the same page of the changed version. Words taken out are red on the left; words put in are green on the right."
     }
   },
   "fillPdfForms": {
