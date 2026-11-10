@@ -65,22 +65,24 @@ export async function organizePdf(
     }
   }
   const output = await PDFDocument.create();
-  // First the real pages, so each blank page can take its size from a neighbour.
-  const placed: (PDFPage | null)[] = [];
-  for (const [index, step] of plan.entries()) {
-    if ("blank" in step) {
-      placed.push(null);
-      continue;
-    }
-    const source = sources[step.file];
-    if (!source || step.page > source.getPageCount()) {
-      placed.push(null);
-      continue;
-    }
-    const [page] = await output.copyPages(source, [step.page - 1]);
-    page.setRotation(degrees((page.getRotation().angle + step.rotate) % 360));
-    placed.push(page);
-    onProgress(((index + 1) / plan.length) * 0.8);
+  // First the real pages, so each blank page can take its size from a neighbour. Each file's pages are copied in one
+  // go, so fonts and images they share go into the new file once, not once per page.
+  const placed: (PDFPage | null)[] = plan.map(() => null);
+  for (const [file, source] of sources.entries()) {
+    const wanted = [...plan.entries()].filter(
+      (entry): entry is [number, Exclude<PlanStep, { blank: true }>] =>
+        !("blank" in entry[1]) && entry[1].file === file && entry[1].page <= source.getPageCount(),
+    );
+    const copies = await output.copyPages(
+      source,
+      wanted.map(([, step]) => step.page - 1),
+    );
+    wanted.forEach(([index, step], at) => {
+      const page = copies[at];
+      page.setRotation(degrees((page.getRotation().angle + step.rotate) % 360));
+      placed[index] = page;
+    });
+    onProgress(((file + 1) / sources.length) * 0.8);
   }
   const kept = plan.filter((step, index) => "blank" in step || placed[index]);
   if (!kept.length) throw new OrganizeError("empty");

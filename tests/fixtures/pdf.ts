@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { PDFDocument, rgb } from "pdf-lib";
 
 // A PDF whose pages have the given widths, so tests can check page order.
@@ -25,6 +26,17 @@ export async function makeHeavyPdf(pages: number, kilobytes: number): Promise<Ui
     }
   }
   return doc.save({ useObjectStreams: false });
+}
+
+// A PDF whose pages all show the same photo, stored once, like a letterhead or a font every page shares. Tools that
+// copy pages one at a time would store it again for every page.
+export async function makeSharedImagePdf(pages: number): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  const photo = await doc.embedJpg(new Uint8Array(readFileSync("tests/fixtures/images/wide.jpg")));
+  for (let index = 0; index < pages; index++) {
+    doc.addPage([300, 400]).drawImage(photo, { x: 10, y: 10, width: 280, height: 180 });
+  }
+  return doc.save();
 }
 
 // The standard 32-byte password padding from the PDF specification.
