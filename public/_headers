@@ -11,6 +11,10 @@
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
+# OCR PDF's languages. Their folder is named after the models' version, so they never change at an address.
+/ocr/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /og/*
   Cache-Control: public, max-age=86400
 

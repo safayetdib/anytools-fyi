@@ -245,6 +245,15 @@ export const TOOLS: Tool[] = [
     built: true,
     runsIn: "browser",
   },
+  {
+    slug: "ocr-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["scan-to-pdf", "compress-pdf", "pdf-to-jpg", "merge-pdf"],
+    aliases: ["ocr", "searchable pdf", "scanned pdf to text", "copy text from pdf", "pdf text recognition", "bangla ocr", "bengali ocr", "বাংলা ওসিআর", "স্ক্যান করা পিডিএফ থেকে লেখা"],
+    built: true,
+    runsIn: "browser",
+  },
 ];
 
 export function validateRegistry(tools: Tool[]): void {

@@ -264,6 +264,12 @@
       "description": "Fix damaged PDFs that won't open, so you can read and use them again.",
       "title": "Repair PDF Online Free: Fix Damaged PDFs | AnyTools.fyi",
       "metaDescription": "Repair damaged or corrupt PDF files for free. Fix PDFs that won't open or were cut short by a failed download. No signup, nothing uploaded."
+    },
+    "ocr-pdf": {
+      "name": "OCR PDF",
+      "description": "Turn scanned PDFs into text you can search, select and copy, in English and Bangla.",
+      "title": "OCR PDF Free: Make Scanned PDFs Searchable | AnyTools.fyi",
+      "metaDescription": "Free OCR for scanned PDFs, in English and Bangla. Make PDFs searchable and copy their text. Runs in your browser: no signup, nothing uploaded."
     }
   },
   "shell": {
@@ -1105,6 +1111,49 @@
       "after": "Opens again",
       "repair": "Repaired in your browser",
       "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
+  "ocrPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "OCR PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Add scanned PDFs. Each one is read on its own.",
+    "panelTitle": "OCR PDF",
+    "intro": "Reads the words on scanned pages, so you can search, select and copy them. The pages look exactly as before.",
+    "languagesLegend": "Document language",
+    "languagesHint": "Choose every language the document is written in.",
+    "languages": {
+      "eng": "English",
+      "ben": "বাংলা (Bangla)"
+    },
+    "noLanguage": "Choose at least one language.",
+    "note": "The reader for each language downloads once, the first time you use it (English 3 MB, Bangla 1.4 MB). After that it works offline.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryRead": "Done. {name} can now be searched and copied. Saved as {output} ({size}).",
+    "summaryNothing": "Done, but no words were found in {name}. Check the language, or try a sharper scan. Saved as {output} ({size}).",
+    "summaryHadText": "{name} already has text you can search and copy, so nothing needed reading. Saved a copy as {output} ({size}).",
+    "summarySkipped": "{pages} already had text and were left as they were.",
+    "summaryMany": "Done. Read {pages} in {count} PDFs. All saved in one ZIP ({size}).",
+    "partRead": "{name}, searchable",
+    "partNothing": "{name}, no words found",
+    "partHadText": "{name}, already had text",
+    "zipName": "anytools_ocr.zip",
+    "tooMany": "OCR reads up to {max} pages at a time. Split the PDF with Split PDF, then read each part.",
+    "locked": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "receipt.pdf",
+      "before": "A picture of text",
+      "after": "Text you can search",
+      "action": "Read in your browser",
+      "search": "Search",
+      "query": "total",
+      "caption": "The page still looks the same. Underneath, each word is placed where it was read, so search, select and copy work like in any PDF."
     }
   },
   "pdfToJpg": {

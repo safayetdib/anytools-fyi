@@ -22,7 +22,7 @@ test("homepage - lists the PDF tools with the most used first", async ({ page })
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "Free PDF tools that get the job done in seconds" })).toBeVisible();
   const cards = page.getByTestId("tool-card");
-  await expect(cards).toHaveCount(18);
+  await expect(cards).toHaveCount(19);
   await expect(cards.first()).toHaveAttribute("href", "/merge-pdf/");
   await expect(cards.first()).toContainText("Merge PDF");
 });
@@ -44,7 +44,7 @@ test("homepage - works with JavaScript turned off and ships no scripts", async (
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4329/");
-  await expect(page.getByTestId("tool-card")).toHaveCount(18);
+  await expect(page.getByTestId("tool-card")).toHaveCount(19);
   await expect(page.locator("script[src]:not([type='module'])")).toHaveCount(0);
   await context.close();
 });
@@ -63,7 +63,7 @@ test("homepage - hero illustration is decorative and under 4 KB", async ({ page 
 test("pdf hub - lists its tools with a breadcrumb", async ({ page }) => {
   await page.goto("/pdf-tools/");
   await expect(page.getByRole("heading", { level: 1, name: "PDF tools" })).toBeVisible();
-  await expect(page.getByTestId("tool-card")).toHaveCount(18);
+  await expect(page.getByTestId("tool-card")).toHaveCount(19);
   const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
   await expect(crumbs.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
 });
@@ -77,7 +77,7 @@ test("removed categories and tools are not published", async ({ page }) => {
 
 test("all tools - groups every tool by category", async ({ page }) => {
   await page.goto("/tools/");
-  await expect(page.getByTestId("tool-card")).toHaveCount(18);
+  await expect(page.getByTestId("tool-card")).toHaveCount(19);
   await expect(page.getByRole("heading", { level: 2 }).filter({ hasText: "PDF tools" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Image tools" })).toHaveCount(0);
 });
