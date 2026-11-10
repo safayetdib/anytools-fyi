@@ -67,6 +67,8 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
   const zone = root.querySelector<HTMLElement>('[data-el="zone"]');
   const pickInput = root.querySelector<HTMLInputElement>('[data-el="pick-input"]');
   const addInput = root.querySelector<HTMLInputElement>('[data-el="add-input"]');
+  const cameraInput = root.querySelector<HTMLInputElement>('[data-el="camera-input"]');
+  const cameraAddInput = root.querySelector<HTMLInputElement>('[data-el="camera-add-input"]');
   const form = el<HTMLFormElement>(root, "form");
   const list = root.querySelector<HTMLOListElement>('[data-el="list"]');
   const total = root.querySelector<HTMLElement>('[data-el="total"]');
@@ -555,6 +557,20 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
     afterFiles("working");
   });
 
+  // A photo just taken joins the list like a chosen file, so pages can be scanned one after another.
+  cameraInput?.addEventListener("change", () => {
+    warm();
+    controller.addFiles(cameraInput.files ?? []);
+    cameraInput.value = "";
+    afterFiles("select");
+  });
+
+  cameraAddInput?.addEventListener("change", () => {
+    controller.addFiles(cameraAddInput.files ?? []);
+    cameraAddInput.value = "";
+    afterFiles("working");
+  });
+
   list?.addEventListener("click", (event) => {
     const target = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
     if (!target) return;
@@ -626,7 +642,9 @@ export function mountToolShell(root: HTMLElement, tool: ToolDefinition) {
 
   sheet?.addEventListener("close", () => {
     const more = list?.querySelector<HTMLElement>(`[data-id="${sheetFile}"][data-action="more"]`);
-    if (more && document.activeElement === document.body) focus(more);
+    // Safari doesn't focus a button when it's tapped, so it can't hand focus back on its own: the button that opened
+    // the sheet gets it, unless an action already moved focus within the list.
+    if (more && !list?.contains(document.activeElement)) focus(more);
   });
 
   // Alt with an up or down arrow moves the focused row, like the page editor.

@@ -33,7 +33,7 @@ limits:
   - icon: lock
     value: "Not yet"
     label: "Password-protected PDFs"
-    note: "Remove the password first. These files are flagged as soon as you add them."
+    note: "Remove the password first with Unlock PDF. These files are flagged as soon as you add them."
     tone: warn
   - icon: browser
     value: "Any"
@@ -64,7 +64,7 @@ faq:
   - question: "Why do I get a ZIP file?"
     answer: "When there's more than one picture, Download puts them in one ZIP so you don't have to save each one. You can also download any picture on its own from the list."
   - question: "Can I convert to PNG instead?"
-    answer: "Not yet. JPG works almost everywhere and keeps pictures small. If you need PNG, open the JPG in any photo app and save it as PNG."
+    answer: "Yes. Use PDF to PNG, which works the same way and saves lossless PNG pictures, with a white or see-through background."
   - question: "Does it work offline?"
     answer: "Yes, once your files are chosen. The page loads its PDF tool as soon as you start choosing files. After that, you can turn off your connection and still convert them."
 ---

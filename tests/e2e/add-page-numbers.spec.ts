@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { unzipSync } from "fflate";
+import { PDFDict, PDFDocument, PDFName } from "pdf-lib";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import { makePdf } from "../fixtures/pdf";
 
@@ -107,12 +108,25 @@ test("add page numbers - facing pages mirror the numbers, and a cover page shift
   await expect(marks(page).nth(1)).toHaveAttribute("data-spot", "bottom-left");
 });
 
-test("add page numbers - text the fonts can't draw is explained before running", async ({ page }) => {
-  await choose(page, [await pdf("report.pdf", 2)]);
+test("add page numbers - Bangla text and Bangla digits are printed, with a matching preview", async ({ page }) => {
+  await choose(page, [await pdf("report.pdf", 3)]);
   await panel(page).getByLabel("Text", { exact: true }).selectOption("custom");
-  await panel(page).getByLabel("Custom text").fill("পৃষ্ঠা {n}");
-  await expect(page.getByTestId("numbers-error")).toContainText("can only use Latin letters");
-  await expect(runButton(page)).toBeDisabled();
+  await panel(page).getByLabel("Custom text").fill("পৃষ্ঠা {n} / {p}");
+  await panel(page).getByLabel("Digits").selectOption("bangla");
+  await expect(marks(page).nth(2)).toHaveText("পৃষ্ঠা ৩ / ৩");
+  await expect(runButton(page)).toBeEnabled();
+  const { name, bytes } = await numberAndDownload(page);
+  expect(name).toBe("report_pagenumber.pdf");
+  // Bangla is drawn as pictures: the word, the slash and the digits, each placed once in the file.
+  const doc = await PDFDocument.load(bytes);
+  const refs = doc.getPages().map((one) => {
+    const images = one.node.Resources()?.lookup(PDFName.of("XObject"), PDFDict);
+    return images ? images.keys().map((key) => String(images.get(key))) : [];
+  });
+  expect(refs.map((list) => list.length)).toEqual([4, 4, 4]);
+  expect(new Set(refs.flat()).size).toBe(5);
+  await page.getByRole("heading", { name: "Preview", exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `${SCREENSHOT_DIR}/bangla-result.png` });
 });
 
 test("add page numbers - several PDFs come in one ZIP, each numbered from its own start", async ({ page }) => {

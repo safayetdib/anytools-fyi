@@ -1,6 +1,6 @@
 import { loadPdfjs } from "../../lib/pdf/preview";
 import type { OutputPreview, RenderedPage } from "../../lib/shell/types";
-import { MAX_SIDE, QUALITY, pixelsToRgba, renderWidth, type Choice } from "./convert";
+import { MAX_SIDE, QUALITY, pixelsToRgba, renderWidth, type Choice, type Format } from "./convert";
 
 // Runs in the page: drawing needs a canvas. pdf.js reads the PDF in its own worker.
 
@@ -11,8 +11,11 @@ type PdfPage = Awaited<ReturnType<PdfDocument["getPage"]>>;
 // Pictures smaller than this on a side are lines and dots, not photos.
 const MIN_IMAGE_SIDE = 8;
 
-const toJpeg = (canvas: HTMLCanvasElement, quality: number) =>
-  new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Encode failed"))), "image/jpeg", quality));
+const encode = (canvas: HTMLCanvasElement, type: string, quality?: number) =>
+  new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Encode failed"))), type, quality));
+const toJpeg = (canvas: HTMLCanvasElement, quality: number) => encode(canvas, "image/jpeg", quality);
+const toPicture = (canvas: HTMLCanvasElement, format: Format, quality: Choice["quality"]) =>
+  format === "png" ? encode(canvas, "image/png") : toJpeg(canvas, QUALITY[quality].jpeg);
 
 function release(canvas: HTMLCanvasElement) {
   canvas.width = 0;
@@ -32,8 +35,10 @@ export async function openPdf(file: File): Promise<{ doc: PdfDocument; close: ()
   }
 }
 
-// One page as a JPG on white, turned the way the PDF shows it.
-export async function pageToJpeg(page: PdfPage, quality: Choice["quality"]): Promise<Blob> {
+// One page as a picture, turned the way the PDF shows it. JPG is always on white; PNG may keep the background see-through.
+export async function pageToPicture(page: PdfPage, choice: Choice, format: Format): Promise<Blob> {
+  const { quality } = choice;
+  const clear = format === "png" && choice.background === "transparent";
   const base = page.getViewport({ scale: 1 });
   const width = renderWidth(base.width, base.height, quality);
   const viewport = page.getViewport({ scale: width / base.width });
@@ -41,8 +46,10 @@ export async function pageToJpeg(page: PdfPage, quality: Choice["quality"]): Pro
   canvas.width = Math.round(viewport.width);
   canvas.height = Math.round(viewport.height);
   try {
-    await page.render({ canvas, viewport, background: "#ffffff" }).promise;
-    return await toJpeg(canvas, QUALITY[quality].jpeg);
+    // pdf.js asks for an opaque canvas; one made with see-through pixels first stays that way.
+    if (clear) canvas.getContext("2d", { alpha: true });
+    await page.render({ canvas, viewport, background: clear ? "rgba(0,0,0,0)" : "#ffffff" }).promise;
+    return await toPicture(canvas, format, quality);
   } finally {
     release(canvas);
   }
@@ -75,7 +82,7 @@ async function fingerprint(blob: Blob): Promise<string> {
 }
 
 // Every picture placed on a page, once each, in the order they're drawn. `seen` carries across pages.
-export async function pageImages(lib: Pdfjs, page: PdfPage, seen: Set<string>, quality: Choice["quality"]): Promise<Blob[]> {
+export async function pageImages(lib: Pdfjs, page: PdfPage, seen: Set<string>, quality: Choice["quality"], format: Format): Promise<Blob[]> {
   const { fnArray, argsArray } = await page.getOperatorList();
   const blobs: Blob[] = [];
   const paints = new Set([lib.OPS.paintImageXObject, lib.OPS.paintImageXObjectRepeat]);
@@ -91,9 +98,11 @@ export async function pageImages(lib: Pdfjs, page: PdfPage, seen: Set<string>, q
     canvas.width = Math.round(image.width * scale);
     canvas.height = Math.round(image.height * scale);
     const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-    // JPG has no see-through parts, so they become white, like paper.
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    // JPG has no see-through parts, so they become white, like paper. PNG keeps them.
+    if (format === "jpg") {
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    }
     try {
       if (image.bitmap) context.drawImage(image.bitmap, 0, 0, canvas.width, canvas.height);
       else if (image.data) {
@@ -105,7 +114,7 @@ export async function pageImages(lib: Pdfjs, page: PdfPage, seen: Set<string>, q
         context.drawImage(raw, 0, 0, canvas.width, canvas.height);
         release(raw);
       } else continue;
-      const blob = await toJpeg(canvas, QUALITY[quality].jpeg);
+      const blob = await toPicture(canvas, format, quality);
       const print = await fingerprint(blob);
       if (seen.has(print)) continue;
       seen.add(print);
@@ -117,7 +126,7 @@ export async function pageImages(lib: Pdfjs, page: PdfPage, seen: Set<string>, q
   return blobs;
 }
 
-// Lets the result cards and the larger view show JPG results, the way they show PDF pages.
+// Lets the result cards and the larger view show picture results, the way they show PDF pages.
 export async function previewImage(blob: Blob): Promise<OutputPreview> {
   const bitmap = await createImageBitmap(blob);
   return {
@@ -129,7 +138,9 @@ export async function previewImage(blob: Blob): Promise<OutputPreview> {
       canvas.height = Math.max(1, Math.round(bitmap.height * scale));
       (canvas.getContext("2d") as CanvasRenderingContext2D).drawImage(bitmap, 0, 0, canvas.width, canvas.height);
       try {
-        return { blob: await toJpeg(canvas, 0.85), width: canvas.width, height: canvas.height, turn: 0 };
+        // A PNG preview keeps its see-through parts.
+        const shown = blob.type === "image/png" ? await encode(canvas, "image/png") : await toJpeg(canvas, 0.85);
+        return { blob: shown, width: canvas.width, height: canvas.height, turn: 0 };
       } finally {
         release(canvas);
       }

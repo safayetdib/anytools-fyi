@@ -46,7 +46,7 @@ describe("finds the closest tool", () => {
     ["photo to pdf", "image-to-pdf"],
     ["scan to pdf", "image-to-pdf"],
     ["pdf to jpg", "pdf-to-jpg"],
-    ["pdf to png", "pdf-to-jpg"],
+    ["pdf to png", "pdf-to-png"],
     ["pdf to image", "pdf-to-jpg"],
     ["save pdf as picture", "pdf-to-jpg"],
     ["organize", "organize-pdf"],
@@ -59,6 +59,16 @@ describe("finds the closest tool", () => {
     ["turn pdf pages", "rotate-pdf"],
     ["sideways pdf", "rotate-pdf"],
     ["rotat pdf", "rotate-pdf"],
+    ["crop pdf", "crop-pdf"],
+    ["password protect pdf", "protect-pdf"],
+    ["encrypt pdf", "protect-pdf"],
+    ["remove pdf password", "unlock-pdf"],
+    ["unlock pdf", "unlock-pdf"],
+    ["repair pdf", "repair-pdf"],
+    ["corrupt pdf", "repair-pdf"],
+    ["scan document", "scan-to-pdf"],
+    ["document scanner", "scan-to-pdf"],
+    ["trim pdf margins", "crop-pdf"],
     ["remove pages", "remove-pdf-pages"],
     ["delete pdf pages", "remove-pdf-pages"],
     ["delete page from pdf", "remove-pdf-pages"],
@@ -94,7 +104,7 @@ describe("finds the closest tool", () => {
 describe("result lists", () => {
   it("lists every PDF tool for the category word", () => {
     const all = search("pdf", 20).map((r) => r.slug);
-    expect(all).toHaveLength(12);
+    expect(all).toHaveLength(16);
     expect(all[0]).toBe("merge-pdf");
   });
 

@@ -177,11 +177,27 @@
       "metaDescription": "Convert WebP to PDF for free. Turn WebP images saved from websites into a PDF that opens on any device, merged or one per image. Nothing uploaded.",
       "size": "WebP"
     },
+    "scan-to-pdf": {
+      "name": "Scan to PDF",
+      "description": "Take photos of pages with your phone and turn them into one clean, scanned-looking PDF.",
+      "title": "Scan to PDF: Phone Camera Document Scanner | AnyTools.fyi",
+      "metaDescription": "Scan documents to PDF with your phone camera. Shadows and grey paper are cleaned away, in colour or black and white. Free, no app, nothing uploaded.",
+      "size": "Scan"
+    },
     "pdf-to-jpg": {
       "name": "PDF to JPG",
       "description": "Save each PDF page as a sharp JPG image.",
       "title": "PDF to JPG Converter Online Free, No Upload | AnyTools.fyi",
-      "metaDescription": "Convert PDF to JPG for free. Save every page as a sharp JPG image, or extract the photos inside a PDF, in normal or high quality. Nothing uploaded."
+      "metaDescription": "Convert PDF to JPG for free. Save every page as a sharp JPG image, or extract the photos inside a PDF, in normal or high quality. Nothing uploaded.",
+      "size": "JPG",
+      "variantsTitle": "Save as another image type"
+    },
+    "pdf-to-png": {
+      "name": "PDF to PNG",
+      "description": "Save each PDF page as a sharp PNG image, with a white or see-through background.",
+      "title": "PDF to PNG Converter Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Convert PDF to PNG for free. Save every page as a lossless PNG, with a white or transparent background, or extract the images inside. Nothing uploaded.",
+      "size": "PNG"
     },
     "sign-pdf": {
       "name": "Sign PDF",
@@ -200,6 +216,12 @@
       "description": "Turn sideways or upside-down pages the right way up.",
       "title": "Rotate PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Rotate PDF files for free. Turn one PDF or many at once, right or left, or only the portrait or landscape ones. No signup, no watermark, nothing uploaded."
+    },
+    "crop-pdf": {
+      "name": "Crop PDF",
+      "description": "Cut away margins or keep just part of a page, on every page or one at a time.",
+      "title": "Crop PDF Online Free, No Upload | AnyTools.fyi",
+      "metaDescription": "Crop PDF pages for free. Drag a box to trim margins, or keep just part of a page, on every page or one at a time. No signup, nothing uploaded."
     },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
@@ -224,6 +246,24 @@
       "description": "Stamp text like Draft or Confidential across your PDF pages.",
       "title": "Add Watermark to PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Add a watermark to a PDF for free: text like CONFIDENTIAL or DRAFT, or your logo. Set position, transparency, rotation and layer, with live preview."
+    },
+    "protect-pdf": {
+      "name": "Protect PDF",
+      "description": "Add a password to a PDF, so only people with it can open the file.",
+      "title": "Protect PDF with Password Online Free | AnyTools.fyi",
+      "metaDescription": "Password protect a PDF for free with AES-256 encryption. Lock one PDF or many at once with your password. No signup, and nothing is uploaded."
+    },
+    "unlock-pdf": {
+      "name": "Unlock PDF",
+      "description": "Remove a PDF's password and its limits on printing and copying.",
+      "title": "Unlock PDF: Remove PDF Password Online Free | AnyTools.fyi",
+      "metaDescription": "Unlock PDF files for free. Remove the open password, or limits on printing, copying and editing, from PDFs you own. No signup, nothing uploaded."
+    },
+    "repair-pdf": {
+      "name": "Repair PDF",
+      "description": "Fix damaged PDFs that won't open, so you can read and use them again.",
+      "title": "Repair PDF Online Free: Fix Damaged PDFs | AnyTools.fyi",
+      "metaDescription": "Repair damaged or corrupt PDF files for free. Fix PDFs that won't open or were cut short by a failed download. No signup, nothing uploaded."
     }
   },
   "shell": {
@@ -710,6 +750,27 @@
       "captionFit": "Fit: each page takes its photo's own shape, so nothing is added around it."
     }
   },
+  "scanToPdf": {
+    "selectLabel": "Select photos of pages",
+    "cameraLabel": "Take a photo",
+    "runLabel": "Create PDF",
+    "acceptLabel": "Photos",
+    "arrangeHint": "Add a photo for each page, in order. Drag to reorder, or take another photo.",
+    "panelTitle": "Scan to PDF options",
+    "filterLegend": "Look",
+    "filters": {
+      "color": "Colour",
+      "bw": "Black and white",
+      "original": "Original"
+    },
+    "filterNote": "Colour and Black and white whiten the paper and remove shadows, like a scanner.",
+    "diagram": {
+      "photo": "Phone photo",
+      "scanned": "Scanned page",
+      "clean": "Cleaned in your browser",
+      "caption": "Shadows, the yellow tint of the lamp and the grey paper are gone. The text stays sharp and dark."
+    }
+  },
   "compressPdf": {
     "selectLabel": "Select PDF files",
     "runLabel": "Compress PDF",
@@ -883,6 +944,169 @@
       "date": "Choose a date first."
     }
   },
+  "cropPdf": {
+    "selectLabel": "Select PDF file",
+    "runLabel": "Crop PDF",
+    "acceptLabel": "PDF file",
+    "arrangeHint": "Drag the box over the part of the page to keep.",
+    "stageTitle": "Page to crop",
+    "boxLabel": "Crop area",
+    "boxLabelValue": "Crop area. Cutting {top} mm from the top, {bottom} mm from the bottom, {left} mm from the left and {right} mm from the right.",
+    "size": "{width} × {height} mm",
+    "navLabel": "Pages",
+    "previous": "Previous page",
+    "next": "Next page",
+    "pageOf": "Page {page} of {count}",
+    "help": "Drag the box or its handles over the part to keep, or drag across the page to draw a new box.",
+    "helpKeys": "With the keyboard, select the box, then use the arrow keys to move it and Shift with the arrows to resize it.",
+    "panelTitle": "Crop PDF options",
+    "modeLegend": "Pages",
+    "modes": {
+      "all": "All pages",
+      "current": "Current page"
+    },
+    "modeNotes": {
+      "all": "The same area is cropped on every page.",
+      "current": "Crop each page on its own. Pages you don't change stay as they are."
+    },
+    "marginsLegend": "Cut from each side (mm)",
+    "sides": {
+      "top": "Top",
+      "bottom": "Bottom",
+      "left": "Left",
+      "right": "Right"
+    },
+    "fit": "Fit to content",
+    "reset": "Reset",
+    "blank": "This page looks blank, so there's nothing to fit to.",
+    "statusNone": "Nothing cropped yet. Drag the box's edges inwards.",
+    "statusAll": "Every page will be cropped to the box.",
+    "statusOne": "1 page will be cropped.",
+    "statusMany": "{count} pages will be cropped.",
+    "needCrop": "Drag the box's edges inwards to choose the part of the page to keep.",
+    "summaryAll": "Done. Every page is cropped. Saved as {output} ({size}).",
+    "summaryOne": "Done. 1 page is cropped. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} pages are cropped. Saved as {output} ({size}).",
+    "editedSummary": "Done. {name} now has {pages} pages ({size}).",
+    "encrypted": "{name} has a password. Remove the password and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Choose another file and try again.",
+    "diagram": {
+      "file": "poster.pdf",
+      "before": "Before",
+      "after": "After",
+      "crop": "Cropped in your browser",
+      "caption": "The white border around the poster is cut away. Only the part inside the box is kept, on every page."
+    }
+  },
+  "protectPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Protect PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Set a password. Every PDF in the list gets the same one.",
+    "panelTitle": "Set a password to protect your PDF",
+    "password": "Password",
+    "repeat": "Repeat password",
+    "show": "Show password",
+    "hide": "Hide password",
+    "match": "The passwords match.",
+    "mismatch": "The passwords don't match yet.",
+    "tooLong": "Use 127 characters or fewer.",
+    "empty": "Type a password, then type it again to check it.",
+    "note": "Keep it safe. Nobody, including us, can open the file without it, and it can't be recovered.",
+    "strength": "Strength",
+    "strengths": {
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong"
+    },
+    "strengthHint": "Longer is stronger: try three or four unrelated words.",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "cardsLabel": "Your PDFs",
+    "locked": "Has a password already",
+    "summaryOne": "Done. {name} is protected with your password. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs are protected with your password, in one ZIP ({size}).",
+    "zipName": "anytools_protected.zip",
+    "partLabel": "{name}, protected",
+    "needPassword": "Type the same password in both boxes first.",
+    "alreadyLocked": "{name} already has a password. Unlock it first, or remove it from the list.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "contract.pdf",
+      "open": "Opens for anyone",
+      "locked": "Asks for the password",
+      "protect": "Locked in your browser",
+      "caption": "The PDF is encrypted with AES-256. Any PDF reader asks for the password before showing a page."
+    }
+  },
+  "unlockPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Unlock PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Type the password for any PDF that asks for one.",
+    "panelTitle": "Unlock PDF options",
+    "intro": "Removes the password and any limits on printing, copying or editing.",
+    "needsPassword": "Needs its password",
+    "restrictedOnly": "No password needed: limits will be removed",
+    "notLocked": "Not protected",
+    "checking": "Checking…",
+    "passwordFor": "Password for {name}",
+    "show": "Show password",
+    "hide": "Hide password",
+    "ownNote": "Only unlock files you own or have permission to change.",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "cardsLabel": "Your PDFs",
+    "summaryOne": "Done. {name} is unlocked. Saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs are unlocked, in one ZIP ({size}).",
+    "zipName": "anytools_unlocked.zip",
+    "partLabel": "{name}, unlocked",
+    "missing": "Type the password for {name} first.",
+    "wrongPassword": "That password doesn't open {name}. Check it, including capital letters, and try again.",
+    "notProtected": "{name} isn't protected, so there's nothing to unlock. Remove it from the list.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "statement.pdf",
+      "locked": "Asks for a password",
+      "open": "Opens for anyone",
+      "unlock": "Unlocked in your browser",
+      "caption": "Type the password once. The new PDF opens, prints and copies without it."
+    }
+  },
+  "repairPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Repair PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Add damaged PDFs. Each one is repaired on its own.",
+    "panelTitle": "Repair PDF",
+    "intro": "Fixes PDFs that won't open, show blank pages or report errors, such as files cut short by a failed download.",
+    "note": "Parts of a file that are missing can't be brought back, but everything still inside it is kept.",
+    "opens": "Opens now; will be tidied",
+    "damaged": "Damaged; will be repaired",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "locked": "{name} needs its password. Unlock it first with Unlock PDF, then repair it.",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Can't be shown yet",
+    "summaryFixed": "Done. {name} is repaired. Saved as {output} ({size}).",
+    "summaryClean": "Done. {name} had no damage to repair. Saved a clean copy as {output} ({size}).",
+    "summaryMany": "Done. {fixed} of {count} PDFs needed repairs. All saved in one ZIP ({size}).",
+    "partFixed": "{name}, repaired",
+    "partClean": "{name}, no damage found",
+    "zipName": "anytools_repaired.zip",
+    "unreadable": "{name} is too damaged to repair, or isn't a PDF. Try the original source of the file again.",
+    "diagram": {
+      "file": "invoice.pdf",
+      "before": "Won't open",
+      "after": "Opens again",
+      "repair": "Repaired in your browser",
+      "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
   "pdfToJpg": {
     "selectLabel": "Select PDF files",
     "runLabel": "Convert to JPG",
@@ -933,6 +1157,62 @@
       "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
     }
   },
+  "pdfToPng": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to PNG",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Choose how to convert. Each PDF's pictures come out in the order of this list.",
+    "panelTitle": "PDF to PNG options",
+    "modeLegend": "Convert",
+    "modes": {
+      "pages": "Page to PNG",
+      "images": "Extract images"
+    },
+    "pagesInfoOne": "Every page of this PDF will be converted into a PNG file.",
+    "pagesInfoMany": "Every page of these PDFs will be converted into a PNG file.",
+    "created": "{count} PNG",
+    "createdTail": "will be created.",
+    "imagesInfo": "All embedded images inside the PDF will be extracted as PNG images, see-through parts and all.",
+    "quality": "Image quality",
+    "qualities": {
+      "normal": "Normal",
+      "high": "High"
+    },
+    "recommended": "Recommended",
+    "background": "Page background",
+    "backgrounds": {
+      "white": "White",
+      "transparent": "Transparent"
+    },
+    "backgroundHint": "Transparent leaves the paper out, so only the text and pictures are kept. Good for logos and stamps.",
+    "cardsLabel": "Your PDFs",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "zipPages": "anytools_pages-to-png.zip",
+    "zipImages": "anytools_images-from-pdf.zip",
+    "partPage": "Page {page} of {name}",
+    "partImage": "Picture {number} from {name}",
+    "summaryOne": "Done. Saved as {output} ({size}).",
+    "summaryPages": "Done. {count} pages saved as PNG images, in one ZIP ({size}).",
+    "summaryImages": "Done. {count} pictures saved as PNG images, in one ZIP ({size}).",
+    "noImages": "No pictures were found in {name}. Choose Page to PNG to save its pages as pictures instead.",
+    "noImagesMany": "No pictures were found in these PDFs. Choose Page to PNG to save their pages as pictures instead.",
+    "tooMany": "That makes more than {max} pictures. Convert fewer pages at a time, or split the PDF first.",
+    "encrypted": "{name} has a password. Remove the password, or remove the file, and try again.",
+    "unreadable": "{name} couldn't be read as a PDF. It may be damaged. Remove it and try again.",
+    "diagram": {
+      "file": "brochure.pdf",
+      "pages": "{count} pages",
+      "convert": "Converted in your browser",
+      "tryImages": "Show Extract images",
+      "tryPages": "Show Page to PNG",
+      "pageName": "brochure_page-{number}.png",
+      "imageName": "brochure_image-{number}.png",
+      "captionPages": "Page to PNG: each of the 3 pages becomes its own PNG picture, text and all.",
+      "captionImages": "Extract images: only the 2 photos placed in the PDF are saved, each at its own size."
+    }
+  },
   "addPageNumbers": {
     "selectLabel": "Select PDF files",
     "runLabel": "Add page numbers",
@@ -978,7 +1258,12 @@
       "custom": "Custom"
     },
     "customLabel": "Custom text",
-    "customHint": "Use {n} for the page number and {p} for the last number.",
+    "customHint": "Use {n} for the page number and {p} for the last number. Bangla works too, such as পৃষ্ঠা {n}.",
+    "digits": "Digits",
+    "digitStyles": {
+      "latin": "1, 2, 3",
+      "bangla": "১, ২, ৩ (Bangla)"
+    },
     "format": "Text format",
     "font": "Font",
     "fonts": {
@@ -991,7 +1276,7 @@
     "italic": "Italic",
     "underline": "Underline",
     "color": "Colour",
-    "textError": "Custom text can only use Latin letters, numbers and common symbols for now. Try Page {n}, or {n} / {p}.",
+    "textError": "This text couldn't be drawn. Try again, or choose another text.",
     "pagesLabel": "Pages of {name}, with their numbers",
     "zipName": "anytools_page-numbers.zip",
     "summaryOne": "Done. Page numbers added to {name}, saved as {output} ({size}).",
@@ -1078,7 +1363,7 @@
       "over": "Over the PDF content",
       "below": "Below the PDF content"
     },
-    "textError": "The watermark can only use Latin letters, numbers and common symbols for now. Try CONFIDENTIAL or DRAFT.",
+    "textError": "This text couldn't be drawn. Try again, or change the text.",
     "emptyText": "Type the watermark text first.",
     "needImage": "Choose an image first.",
     "pagesLabel": "Pages of {name}, with the watermark",

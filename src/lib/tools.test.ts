@@ -56,7 +56,7 @@ describe("liveHubs", () => {
 
 describe("launch registry", () => {
   // The site offers PDF tools only, launched one at a time. Other categories come back when they're built.
-  it("offers the twelve browser-based PDF tools, with Merge PDF live", () => {
+  it("offers the sixteen browser-based PDF tools, with Merge PDF live", () => {
     expect(listedTools().map((t) => t.slug)).toEqual([
       "merge-pdf",
       "split-pdf",
@@ -66,18 +66,22 @@ describe("launch registry", () => {
       "sign-pdf",
       "organize-pdf",
       "rotate-pdf",
+      "crop-pdf",
       "remove-pdf-pages",
       "extract-pdf-pages",
       "add-page-numbers",
       "add-watermark",
+      "protect-pdf",
+      "unlock-pdf",
+      "repair-pdf",
     ]);
     expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
-    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "jpg-to-pdf", "pdf-to-jpg", "sign-pdf", "organize-pdf", "rotate-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark"]);
+    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "jpg-to-pdf", "pdf-to-jpg", "sign-pdf", "organize-pdf", "rotate-pdf", "crop-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark", "protect-pdf", "unlock-pdf", "repair-pdf"]);
   });
 
   it("publishes only the PDF hub", () => {
     expect(liveHubs().map((h) => h.slug)).toEqual(["pdf-tools"]);
-    expect(toolsForHub("pdf")).toHaveLength(12);
+    expect(toolsForHub("pdf")).toHaveLength(16);
   });
 
   it("has strings and an icon for every tool", () => {
@@ -92,11 +96,12 @@ describe("launch registry", () => {
   // Each image type gets its own page, running the JPG to PDF tool, with its own guide so it isn't a copy.
   it("gives each image type its own page that runs JPG to PDF", () => {
     const formats = TOOLS.filter((t) => t.variantOf === "jpg-to-pdf");
-    expect(formats.map((t) => t.slug)).toEqual(["image-to-pdf", "png-to-pdf", "heic-to-pdf", "webp-to-pdf"]);
+    expect(formats.map((t) => t.slug)).toEqual(["image-to-pdf", "png-to-pdf", "heic-to-pdf", "webp-to-pdf", "scan-to-pdf"]);
     for (const format of formats) {
       expect(format.built, format.slug).toBe(true);
       expect(existsSync(`src/content/tools/${format.slug}.md`), format.slug).toBe(true);
-      expect(existsSync(`src/tools/${format.slug}`), format.slug).toBe(false);
+      // Only Scan to PDF has its own folder: it adds the camera and cleans each photo, on top of JPG to PDF.
+      expect(existsSync(`src/tools/${format.slug}`), format.slug).toBe(format.slug === "scan-to-pdf");
     }
     expect(listedTools().some((t) => t.variantOf)).toBe(false);
   });

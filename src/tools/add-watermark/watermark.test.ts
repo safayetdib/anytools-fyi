@@ -128,8 +128,21 @@ describe("watermarkPdf", () => {
     expect((await texts(bytes))[0]).toEqual([]);
   });
 
-  it("refuses text the built-in fonts can't draw", async () => {
+  it("refuses Bangla text without its picture", async () => {
     await expect(watermarkPdf(await makePdf([300], 400), settings({ text: "গোপনীয়" }))).rejects.toMatchObject({ code: "text" });
+  });
+
+  it("places Bangla text from its picture, once in the file however many copies are drawn", async () => {
+    const png = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="), (c) => c.charCodeAt(0));
+    const picture = { bytes: png, width: 80, ascent: 14, descent: 4, pad: 3 };
+    const bytes = await watermarkPdf(await makePdf([300, 300], 400), settings({ text: "গোপনীয়", mosaic: true }), undefined, picture);
+    const doc = await PDFDocument.load(bytes);
+    const refs = doc.getPages().flatMap((page) => {
+      const images = page.node.Resources()?.lookup(PDFName.of("XObject"), PDFDict);
+      return images ? images.keys().map((key) => String(images.get(key))) : [];
+    });
+    expect(new Set(refs).size).toBe(1);
+    expect((await texts(bytes))[0]).toEqual([]);
   });
 });
 

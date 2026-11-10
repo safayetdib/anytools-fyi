@@ -2,6 +2,7 @@ import en from "../../i18n/en.json";
 import { fill } from "../../i18n/format";
 import { formatSize } from "../../lib/files";
 import { loadPdfjs, previewPdfFile, previewPdfOutput } from "../../lib/pdf/preview";
+import { canDraw, type TextPicture } from "../../lib/pdf/stamp";
 import { ToolError, type ToolDefinition } from "../../lib/shell/types";
 import { WorkerJobFailed, createWorkerRunner } from "../../lib/worker/client";
 import { chosenImage } from "./chosen-image";
@@ -54,9 +55,19 @@ export const tool: ToolDefinition = {
     // The image is copied for the worker, so it can be used again after this run.
     const image = settings.kind === "image" && picked ? { bytes: picked.bytes.slice(), kind: picked.kind } : undefined;
     const inputs = await Promise.all(files.map(async (file) => ({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) })));
+    // Bangla, and other text the built-in PDF fonts can't draw, is drawn here, where the browser joins its letters.
+    let picture: TextPicture | undefined;
+    if (settings.kind === "text" && !canDraw(settings.text)) {
+      const { textPicture } = await import("../../lib/pdf/text-picture");
+      picture = await textPicture(settings.text, settings);
+    }
     let result: WatermarkResult;
     try {
-      result = await runner.run({ op: "stamp", files: inputs, settings, image }, inputs.map((input) => input.bytes.buffer), context);
+      result = await runner.run(
+        { op: "stamp", files: inputs, settings, image, picture },
+        [...inputs.map((input) => input.bytes.buffer), ...(picture ? [picture.bytes.buffer] : [])],
+        context,
+      );
     } catch (error) {
       if (!(error instanceof WorkerJobFailed)) throw error;
       if (error.code === "text") throw new ToolError(t.textError);

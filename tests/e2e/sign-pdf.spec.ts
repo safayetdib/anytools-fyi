@@ -59,7 +59,20 @@ async function signaturePhoto(page: Page, { blank = false } = {}) {
   return { name: "signature.jpg", mimeType: "image/jpeg", buffer: Buffer.from(base64, "base64") };
 }
 
+// Waits until the page stops scrolling, so the page counted as in view, and the Add button's page number, settle.
+async function settle(page: Page) {
+  await expect
+    .poll(async () => {
+      const before = await page.evaluate(() => scrollY);
+      await page.waitForTimeout(150);
+      return (await page.evaluate(() => scrollY)) === before;
+    })
+    .toBe(true);
+}
+
 async function open(page: Page, file = agreement()) {
+  // Instant scrolling, so tests never act while the page is still moving.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(PAGE);
   await picker(page).setInputFiles([await file]);
   await expect(page.getByTestId("sign-page")).toHaveCount((await PDFDocument.load((await file).buffer)).getPageCount());
@@ -71,6 +84,7 @@ async function start(page: Page, file = agreement()) {
   await panel(page).getByRole("radio", { name: "Upload" }).check();
   await panel(page).getByLabel("Upload signature").setInputFiles(await signaturePhoto(page));
   await expect(panel(page).getByRole("img", { name: "Your signature, as it will look" })).toBeVisible();
+  await settle(page);
 }
 
 // The colour of the most solid pixel in a picture, its width divided by its height, and its share of see-through pixels.

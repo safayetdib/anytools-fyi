@@ -1,4 +1,4 @@
-import { StandardFonts, rgb, type PDFPage } from "pdf-lib";
+import { StandardFonts, degrees, rgb, type PDFImage, type PDFPage } from "pdf-lib";
 
 // Placing text and pictures on pages as they're shown, shared by Add page numbers and Add watermark.
 
@@ -37,4 +37,33 @@ function toPage(page: PDFPage, x: number, y: number) {
 export function shownSize(page: PDFPage): [number, number] {
   const { width, height } = page.getCropBox();
   return page.getRotation().angle % 180 === 0 ? [width, height] : [height, width];
+}
+
+// Text the built-in fonts can't draw, such as Bangla, drawn in the page with the browser's own text shaping and placed
+// as a PNG. Sizes are in points: `width` is how far the text advances, and the picture has `pad` spare room on either
+// side for letters that reach past it. The baseline is `descent` above the picture's bottom edge.
+export interface TextPicture {
+  bytes: Uint8Array;
+  width: number;
+  ascent: number;
+  descent: number;
+  pad: number;
+}
+
+// Draws a text picture with its baseline starting at `start` (on the page as shown), turned anticlockwise by `rotation`.
+export function drawTextPicture(page: PDFPage, image: PDFImage, picture: TextPicture, start: { x: number; y: number }, rotation: number, opacity = 1) {
+  const angle = (rotation * Math.PI) / 180;
+  const corner = {
+    x: start.x - picture.pad * Math.cos(angle) + picture.descent * Math.sin(angle),
+    y: start.y - picture.pad * Math.sin(angle) - picture.descent * Math.cos(angle),
+  };
+  const at = toPage(page, corner.x, corner.y);
+  page.drawImage(image, {
+    x: at.x,
+    y: at.y,
+    width: picture.width + picture.pad * 2,
+    height: picture.ascent + picture.descent,
+    opacity,
+    rotate: degrees(at.angle + rotation),
+  });
 }

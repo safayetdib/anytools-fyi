@@ -4,7 +4,8 @@ import { formatSize } from "../../lib/files";
 import { loadPdfjs, previewPdfFile, previewPdfOutput } from "../../lib/pdf/preview";
 import { ToolError, type ToolDefinition } from "../../lib/shell/types";
 import { WorkerJobFailed, createWorkerRunner } from "../../lib/worker/client";
-import { readSettings } from "./numbers";
+import type { TextPicture } from "../../lib/pdf/stamp";
+import { needsPictures, picturePieces, readSettings } from "./numbers";
 import type { NumbersJob, NumbersResult } from "./worker";
 
 const t = en.addPageNumbers;
@@ -48,9 +49,20 @@ export const tool: ToolDefinition = {
   async run({ files }, options, context) {
     const settings = readSettings(options.numbers ?? "");
     const inputs = await Promise.all(files.map(async (file) => ({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) })));
+    // Bangla, and other text the built-in PDF fonts can't draw, is drawn here, where the browser joins its letters.
+    let pictures: Record<string, TextPicture> | undefined;
+    if (needsPictures(settings)) {
+      const { textPicture } = await import("../../lib/pdf/text-picture");
+      pictures = {};
+      for (const piece of picturePieces(settings)) pictures[piece] = await textPicture(piece, settings);
+    }
     let result: NumbersResult;
     try {
-      result = await runner.run({ op: "number", files: inputs, settings }, inputs.map((input) => input.bytes.buffer), context);
+      result = await runner.run(
+        { op: "number", files: inputs, settings, pictures },
+        [...inputs.map((input) => input.bytes.buffer), ...Object.values(pictures ?? {}).map((picture) => picture.bytes.buffer)],
+        context,
+      );
     } catch (error) {
       if (!(error instanceof WorkerJobFailed)) throw error;
       if (error.code === "text") throw new ToolError(t.textError);

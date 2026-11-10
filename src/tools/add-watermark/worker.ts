@@ -2,10 +2,11 @@ import { rearrangePdf } from "../../lib/pdf/rearrange";
 import type { PagePlan } from "../../lib/shell/types";
 import { JobError, serveJobs } from "../../lib/worker/host";
 import { zipParts } from "../../lib/zip";
+import type { TextPicture } from "../../lib/pdf/stamp";
 import { watermarkPdf, watermarkedName, type Settings, type WatermarkImage } from "./watermark";
 
 export type WatermarkJob =
-  | { op: "stamp"; files: { name: string; bytes: Uint8Array }[]; settings: Settings; image?: WatermarkImage }
+  | { op: "stamp"; files: { name: string; bytes: Uint8Array }[]; settings: Settings; image?: WatermarkImage; picture?: TextPicture }
   | { op: "rearrange"; bytes: Uint8Array; plan: PagePlan };
 
 export type WatermarkResult =
@@ -20,7 +21,7 @@ serveJobs<WatermarkJob, WatermarkResult>(async (job, progress) => {
   const parts: Uint8Array[] = [];
   for (const [index, file] of job.files.entries()) {
     try {
-      parts.push(await watermarkPdf(file.bytes, job.settings, job.image));
+      parts.push(await watermarkPdf(file.bytes, job.settings, job.image, job.picture));
     } catch (error) {
       // Say which file failed, so the page can name it.
       throw error instanceof JobError ? new JobError(error.code, String(index)) : error;

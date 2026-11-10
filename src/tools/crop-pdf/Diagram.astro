@@ -1,0 +1,139 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.cropPdf.diagram;
+---
+
+<figure class="crop-diagram" aria-labelledby="crop-diagram-caption">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.before}</span>
+      <span class="sheet is-before" aria-hidden="true">
+        <span class="art"></span>
+        <span class="frame"></span>
+      </span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 2v14a2 2 0 0 0 2 2h14" /><path d="M18 22V8a2 2 0 0 0-2-2H2" />
+      </svg>
+      <span>{d.crop}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.after}</span>
+      <span class="sheet is-after" aria-hidden="true"><span class="art"></span></span>
+    </div>
+  </div>
+  <figcaption id="crop-diagram-caption">{d.caption}</figcaption>
+</figure>
+
+<style>
+  .crop-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  /* A poster with a wide white border; the crop keeps only the picture. */
+  .sheet {
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin-top: var(--space-xs);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .is-before {
+    width: 4.4rem;
+    height: 5.8rem;
+  }
+
+  .is-after {
+    width: 3rem;
+    height: 3.9rem;
+    border-color: var(--color-accent);
+  }
+
+  .art {
+    width: 3rem;
+    height: 3.9rem;
+    border-radius: 2px;
+    background:
+      radial-gradient(circle at 70% 28%, #f6c445 0 0.45rem, transparent 0.5rem),
+      linear-gradient(160deg, transparent 55%, #2f7d4f 56%),
+      linear-gradient(#7cc3e8, #cfe9f6);
+  }
+
+  .is-after .art {
+    width: 100%;
+    height: 100%;
+  }
+
+  .frame {
+    position: absolute;
+    width: 3rem;
+    height: 3.9rem;
+    border: 2px dashed var(--color-accent);
+    box-shadow: 0 0 0 9rem rgb(0 0 0 / 0.2);
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

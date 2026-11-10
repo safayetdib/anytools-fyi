@@ -1,8 +1,8 @@
-import { PDFDocument, degrees } from "pdf-lib";
+import { PDFDict, PDFDocument, PDFName, degrees } from "pdf-lib";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import { describe, expect, it } from "vitest";
 import { makePdf } from "../../../tests/fixtures/pdf";
-import { DEFAULT_SETTINGS, labelFor, numberPdf, numberedName, numbering, onLeft, place, readSettings, type Settings } from "./numbers";
+import { DEFAULT_SETTINGS, labelFor, needsPictures, numberPdf, numberedName, numbering, onLeft, picturePieces, piecesOf, place, readSettings, type Settings } from "./numbers";
 
 const settings = (overrides: Partial<Settings> = {}): Settings => ({ ...DEFAULT_SETTINGS, ...overrides });
 
@@ -117,8 +117,53 @@ describe("numberPdf", () => {
     expect(pages[1][0].x).toBeGreaterThan(270);
   });
 
-  it("refuses text the built-in fonts can't draw, before changing anything", async () => {
+  it("refuses Bangla without its pictures, before changing anything", async () => {
     await expect(numberPdf(await makePdf([300], 400), settings({ text: "custom", custom: "পৃষ্ঠা {n}" }))).rejects.toMatchObject({ code: "text" });
+  });
+
+  it("builds Bangla labels from pictures, each picture placed in the file once", async () => {
+    // A 1 by 1 PNG stands in for each drawn piece.
+    const png = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="), (c) => c.charCodeAt(0));
+    const chosen = settings({ text: "custom", custom: "পৃষ্ঠা {n}", digits: "bangla" });
+    const pictures = Object.fromEntries(picturePieces(chosen).map((piece) => [piece, { bytes: png, width: 8 * piece.length, ascent: 10, descent: 3, pad: 2 }]));
+    const out = await numberPdf(await makePdf([300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300], 400), chosen, pictures);
+    const doc = await PDFDocument.load(out);
+    // Each page's pictures, by the object each one points to.
+    const refs = doc.getPages().map((page) => {
+      const xobjects = page.node.Resources()?.lookup(PDFName.of("XObject"), PDFDict);
+      return xobjects ? xobjects.keys().map((key) => String(xobjects.get(key))) : [];
+    });
+    // Page 12 reads "পৃষ্ঠা ১২": the word, then two digits.
+    expect(refs[11]).toHaveLength(3);
+    const names = new Set(refs.flat());
+    // One word and the digits ১ to ৯ and ০ used: "পৃষ্ঠা " plus ten digits at most.
+    expect(names.size).toBeLessThanOrEqual(11);
+    expect(names.size).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("Bangla labels", () => {
+  it("prints Bangla digits when chosen", () => {
+    expect(labelFor(settings({ text: "pageOf", digits: "bangla" }), 12, 340)).toBe("Page ১২ of ৩৪০");
+    expect(labelFor(settings({ text: "number" }), 12, 340)).toBe("12");
+  });
+
+  it("splits labels into words and single digits", () => {
+    expect(piecesOf("পৃষ্ঠা ১২ / ৩০")).toEqual(["পৃষ্ঠা ", "১", "২", " / ", "৩", "০"]);
+    expect(piecesOf("Page 7")).toEqual(["Page ", "7"]);
+  });
+
+  it("knows the pieces every label is made of", () => {
+    const chosen = settings({ text: "custom", custom: "পৃষ্ঠা {n} এর {p}", digits: "bangla" });
+    expect(picturePieces(chosen)).toEqual(["পৃষ্ঠা ", " এর ", "০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"]);
+    for (const n of [1, 10, 205]) for (const piece of piecesOf(labelFor(chosen, n, 205))) expect(picturePieces(chosen)).toContain(piece);
+  });
+
+  it("draws with the built-in font unless the text needs Bangla", () => {
+    expect(needsPictures(settings())).toBe(false);
+    expect(needsPictures(settings({ digits: "bangla" }))).toBe(true);
+    expect(needsPictures(settings({ text: "custom", custom: "পৃষ্ঠা {n}" }))).toBe(true);
+    expect(needsPictures(settings({ text: "custom", custom: "Seite {n}" }))).toBe(false);
   });
 });
 

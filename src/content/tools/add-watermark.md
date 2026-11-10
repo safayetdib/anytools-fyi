@@ -27,13 +27,13 @@ limits:
     label: "File size"
     note: "For each file. Very large files may fail on phones with little memory."
   - icon: page
-    value: "Latin text"
+    value: "Latin + Bangla"
     label: "Watermark text"
-    note: "Letters, numbers and common symbols. For other scripts, use an image of the text."
+    note: "Bangla is drawn as a sharp picture, so it can't be selected like other text."
   - icon: lock
     value: "Not yet"
     label: "Password-protected PDFs"
-    note: "Remove the password first. These files are flagged as soon as you add them."
+    note: "Remove the password first with Unlock PDF. These files are flagged as soon as you add them."
     tone: warn
   - icon: browser
     value: "Any"
@@ -64,7 +64,7 @@ faq:
   - question: "Can a watermark be removed later?"
     answer: "It's added into the page itself, so it can't be switched off like a comment. Mosaic, which covers the whole page, is the hardest to edit out."
   - question: "Can I write the watermark in Bangla?"
-    answer: "Not as text yet. The fonts every PDF reader has built in cover Latin letters, numbers and common symbols. Make an image of the Bangla text and use Place image instead."
+    answer: "Yes. Type it in the Text box, such as গোপনীয়. Bangla is drawn as a sharp picture so its letters join correctly in every PDF reader; it can't be selected or searched like Latin text."
   - question: "Will the rest of my PDF change?"
     answer: "No. Only the watermark is added. Text, images, links and page sizes stay exactly as they were."
 ---

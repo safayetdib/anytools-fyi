@@ -1,0 +1,18 @@
+---
+import ToolShell from "../../components/ToolShell.astro";
+import en from "../../i18n/en.json";
+import Options from "../jpg-to-pdf/Options.astro";
+import { tool } from "./tool";
+---
+
+<ToolShell config={tool.config} selectLabel={en.scanToPdf.selectLabel} runLabel={en.scanToPdf.runLabel} cameraLabel={en.scanToPdf.cameraLabel}>
+  <Options slot="options" scan />
+</ToolShell>
+
+<script>
+  import { mountToolShell } from "../../lib/shell/mount";
+  import { tool } from "./tool";
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  if (root) mountToolShell(root, tool);
+</script>

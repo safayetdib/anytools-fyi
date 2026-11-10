@@ -1,5 +1,5 @@
 import { PDFDocument, degrees, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
-import { FONTS, canDraw, colour, shownSize, toPage } from "../../lib/pdf/stamp";
+import { FONTS, canDraw, colour, drawTextPicture, shownSize, toPage, type TextPicture } from "../../lib/pdf/stamp";
 import { JobError } from "../../lib/worker/host";
 
 export interface Settings {
@@ -144,6 +144,19 @@ interface Mark {
   draw(page: PDFPage, start: { x: number; y: number }, rotation: number): void;
 }
 
+// The underline turns with the text: measured along its baseline, just below it.
+function underline(page: PDFPage, start: { x: number; y: number }, width: number, rotation: number, settings: Settings) {
+  const size = settings.size;
+  const angle = (rotation * Math.PI) / 180;
+  const under = Math.max(1, size * 0.12);
+  const lineStart = { x: start.x + under * Math.sin(angle), y: start.y - under * Math.cos(angle) };
+  const lineEnd = { x: lineStart.x + width * Math.cos(angle), y: lineStart.y + width * Math.sin(angle) };
+  const from = toPage(page, lineStart.x, lineStart.y);
+  const to = toPage(page, lineEnd.x, lineEnd.y);
+  const opacity = 1 - settings.transparency / 100;
+  page.drawLine({ start: { x: from.x, y: from.y }, end: { x: to.x, y: to.y }, thickness: Math.max(0.5, size * 0.06), color: colour(settings.color), opacity });
+}
+
 function textMark(font: PDFFont, settings: Settings): Mark {
   const size = settings.size;
   const width = font.widthOfTextAtSize(settings.text, size);
@@ -156,15 +169,20 @@ function textMark(font: PDFFont, settings: Settings): Mark {
     draw(page, start, rotation) {
       const at = toPage(page, start.x, start.y);
       page.drawText(settings.text, { x: at.x, y: at.y, size, font, color, opacity, rotate: degrees(at.angle + rotation) });
-      if (!settings.underline) return;
-      // The underline turns with the text: measured along its baseline, just below it.
-      const angle = (rotation * Math.PI) / 180;
-      const under = Math.max(1, size * 0.12);
-      const lineStart = { x: start.x + under * Math.sin(angle), y: start.y - under * Math.cos(angle) };
-      const lineEnd = { x: lineStart.x + width * Math.cos(angle), y: lineStart.y + width * Math.sin(angle) };
-      const from = toPage(page, lineStart.x, lineStart.y);
-      const to = toPage(page, lineEnd.x, lineEnd.y);
-      page.drawLine({ start: { x: from.x, y: from.y }, end: { x: to.x, y: to.y }, thickness: Math.max(0.5, size * 0.06), color, opacity });
+      if (settings.underline) underline(page, start, width, rotation, settings);
+    },
+  };
+}
+
+// Text drawn in the page as a picture, such as Bangla, placed exactly like text in a built-in font.
+function pictureTextMark(image: PDFImage, picture: TextPicture, settings: Settings): Mark {
+  const opacity = 1 - settings.transparency / 100;
+  return {
+    width: picture.width,
+    height: picture.ascent,
+    draw(page, start, rotation) {
+      drawTextPicture(page, image, picture, start, rotation, opacity);
+      if (settings.underline) underline(page, start, picture.width, rotation, settings);
     },
   };
 }
@@ -201,8 +219,10 @@ function stamp(page: PDFPage, mark: Mark, settings: Settings) {
   }
 }
 
-export async function watermarkPdf(bytes: Uint8Array, settings: Settings, image?: WatermarkImage): Promise<Uint8Array> {
-  if (settings.kind === "text" && !canDraw(settings.text)) throw new WatermarkError("text");
+// Text the built-in fonts can't draw, such as Bangla, comes as `picture`, drawn in the page.
+export async function watermarkPdf(bytes: Uint8Array, settings: Settings, image?: WatermarkImage, picture?: TextPicture): Promise<Uint8Array> {
+  const usePicture = settings.kind === "text" && !canDraw(settings.text);
+  if (usePicture && !picture) throw new WatermarkError("text");
   let document: PDFDocument;
   try {
     document = await PDFDocument.load(bytes, { updateMetadata: false });
@@ -211,9 +231,12 @@ export async function watermarkPdf(bytes: Uint8Array, settings: Settings, image?
   }
   let embedded: PDFImage | null = null;
   let font: PDFFont | null = null;
+  let textPicture: PDFImage | null = null;
   if (settings.kind === "image") {
     if (!image) throw new WatermarkError("image");
     embedded = image.kind === "png" ? await document.embedPng(image.bytes) : await document.embedJpg(image.bytes);
+  } else if (usePicture) {
+    textPicture = await document.embedPng((picture as TextPicture).bytes);
   } else {
     font = await document.embedFont(FONTS[settings.font][(settings.bold ? 1 : 0) + (settings.italic ? 2 : 0)]);
   }
@@ -222,7 +245,11 @@ export async function watermarkPdf(bytes: Uint8Array, settings: Settings, image?
   for (let number = Math.min(settings.from, count + 1); number <= to; number++) {
     const page = document.getPage(number - 1);
     const [pageWidth, pageHeight] = shownSize(page);
-    const mark = embedded ? imageMark(embedded, pageWidth, pageHeight, settings) : textMark(font as PDFFont, settings);
+    const mark = embedded
+      ? imageMark(embedded, pageWidth, pageHeight, settings)
+      : textPicture
+        ? pictureTextMark(textPicture, picture as TextPicture, settings)
+        : textMark(font as PDFFont, settings);
     stamp(page, mark, settings);
   }
   return document.save();

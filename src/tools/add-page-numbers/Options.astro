@@ -77,8 +77,15 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
     </div>
     <div class="numbers-field" data-custom-row hidden>
       <label for="num-custom">{t.customLabel}</label>
-      <input id="num-custom" type="text" maxlength="120" value="Page {n} of {p}" data-custom aria-describedby="num-custom-hint num-error" />
+      <input id="num-custom" type="text" maxlength="120" value="Page {n} of {p}" data-custom aria-describedby="num-custom-hint" />
       <p class="numbers-hint" id="num-custom-hint">{t.customHint}</p>
+    </div>
+    <div class="numbers-field">
+      <label for="num-digits">{t.digits}</label>
+      <select id="num-digits" data-digits>
+        <option value="latin" selected>{t.digitStyles.latin}</option>
+        <option value="bangla" lang="bn">{t.digitStyles.bangla}</option>
+      </select>
     </div>
 
     <fieldset class="numbers-group">
@@ -97,7 +104,6 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
       </div>
     </fieldset>
 
-    <p class="numbers-error" id="num-error" data-error data-testid="numbers-error" role="alert" hidden>{t.textError}</p>
     <input type="hidden" name="numbers" data-numbers />
   </aside>
 
@@ -111,13 +117,12 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
   import { fill } from "../../i18n/format";
   import { previewPdfOutput } from "../../lib/pdf/preview";
   import { createPageGrid } from "../../lib/shell/page-grid";
-  import { canDraw } from "../../lib/pdf/stamp";
+  import { FAMILIES } from "../../lib/pdf/text-picture";
   import { MARGINS, labelFor, numbering, onLeft, readSettings, type Settings } from "./numbers";
 
   const t = en.addPageNumbers;
   // Previews are drawn as if pages were A4 wide, so sizes and margins look in proportion.
   const PREVIEW_WIDTH_PT = 595;
-  const FAMILIES = { helvetica: "Helvetica, Arial, sans-serif", times: '"Times New Roman", Times, serif', courier: '"Courier New", Courier, monospace' };
 
   const root = document.querySelector<HTMLElement>("[data-tool-shell]");
   const found = root?.querySelector<HTMLElement>("[data-numbers-options]");
@@ -131,9 +136,7 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
     const to = $<HTMLInputElement>("[data-to]");
     const text = $<HTMLSelectElement>("[data-text]");
     const custom = $<HTMLInputElement>("[data-custom]");
-    const error = $<HTMLElement>("[data-error]");
     const output = $<HTMLInputElement>("[data-numbers]");
-    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
 
     let file: File | null = null;
     let pageCount = 0;
@@ -158,6 +161,7 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
           to: toChanged ? to.value : null,
           text: text.value,
           custom: custom.value,
+          digits: $<HTMLSelectElement>("[data-digits]").value,
           font: $<HTMLSelectElement>("[data-font]").value,
           size: $<HTMLSelectElement>("[data-size]").value,
           bold: checked("[data-bold]"),
@@ -208,13 +212,12 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
       const isCustom = current.text === "custom";
       $<HTMLElement>("[data-custom-row]").hidden = !isCustom;
       $<HTMLElement>("[data-cover-row]").hidden = current.mode !== "facing";
-      const drawable = !isCustom || canDraw(custom.value);
-      error.hidden = drawable;
-      custom.toggleAttribute("aria-invalid", !drawable);
-      if (runButton) runButton.disabled = !drawable;
       output.value = JSON.stringify(current);
       grid.decorate();
     }
+
+    // Bangla letters come from a font that loads when first used; previews are drawn again once it arrives.
+    document.fonts.addEventListener("loadingdone", () => grid.decorate());
 
     // Numbers are tidied when leaving a box: first from 0, pages within the file, and "to" never before "from".
     function tidy() {
@@ -389,8 +392,7 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
   }
 
   .numbers-check[hidden],
-  .numbers-field[hidden],
-  .numbers-error[hidden] {
+  .numbers-field[hidden] {
     display: none;
   }
 
@@ -559,12 +561,6 @@ const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
     border: 0;
     background: none;
     cursor: pointer;
-  }
-
-  .numbers-error {
-    margin: 0;
-    color: var(--color-danger);
-    font-weight: 600;
   }
 
   /* The preview mark sits on the page picture, sized and placed in proportion to the real page. */

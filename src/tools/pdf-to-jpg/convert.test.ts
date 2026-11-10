@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { QUALITY, jpgName, pixelsToRgba, readChoice, renderWidth } from "./convert";
+import { QUALITY, pictureName, pixelsToRgba, readChoice, renderWidth } from "./convert";
 
-describe("jpgName", () => {
+describe("pictureName", () => {
   it.each([
     ["report.pdf", "page", 1, "report_page-0001.jpg"],
     ["report.pdf", "page", 12, "report_page-0012.jpg"],
@@ -9,7 +9,14 @@ describe("jpgName", () => {
     ["ছবি.pdf", "page", 1, "ছবি_page-0001.jpg"],
     [".pdf", "page", 1, "document_page-0001.jpg"],
   ] as const)("names %j %s %i like other PDF tools do", (original, kind, index, name) => {
-    expect(jpgName(original, kind, index)).toBe(name);
+    expect(pictureName(original, kind, index)).toBe(name);
+  });
+});
+
+describe("pictureName for PNG", () => {
+  it("ends PNG pictures in .png", () => {
+    expect(pictureName("report.pdf", "page", 2, "png")).toBe("report_page-0002.png");
+    expect(pictureName("Scan.PDF", "image", 1, "png")).toBe("Scan_image-0001.png");
   });
 });
 
@@ -40,8 +47,8 @@ describe("pixelsToRgba", () => {
 
 describe("readChoice", () => {
   it("keeps known choices and starts like other tools", () => {
-    expect(readChoice('{"mode":"images","quality":"high"}')).toEqual({ mode: "images", quality: "high" });
-    expect(readChoice('{"mode":"x"}')).toEqual({ mode: "pages", quality: "normal" });
-    expect(readChoice("")).toEqual({ mode: "pages", quality: "normal" });
+    expect(readChoice('{"mode":"images","quality":"high","background":"transparent"}')).toEqual({ mode: "images", quality: "high", background: "transparent" });
+    expect(readChoice('{"mode":"x","background":"pink"}')).toEqual({ mode: "pages", quality: "normal", background: "white" });
+    expect(readChoice("")).toEqual({ mode: "pages", quality: "normal", background: "white" });
   });
 });

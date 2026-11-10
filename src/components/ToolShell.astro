@@ -10,9 +10,12 @@ interface Props {
   config: ToolConfig;
   selectLabel?: string;
   runLabel: string;
+  // Tools for photos can also open the camera, on phones and tablets.
+  cameraLabel?: string;
 }
 
-const { config, selectLabel = "", runLabel } = Astro.props;
+const { config, selectLabel = "", runLabel, cameraLabel } = Astro.props;
+const CAMERA_ICON = '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>';
 const t = en.shell;
 const r = en.rating;
 // Only live tools ask for a rating.
@@ -63,6 +66,15 @@ const limits = isFiles
             </svg>
             {selectLabel}
           </label>
+          {
+            cameraLabel && (
+              <label class="shell-secondary shell-camera shell-camera-start" data-testid="shell-camera">
+                <input class="sr-only" type="file" data-el="camera-input" accept="image/*" capture="environment" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={CAMERA_ICON} />
+                {cameraLabel}
+              </label>
+            )
+          }
           <p class="shell-hint">{t.orDrop}</p>
           <p class="shell-limits">{limits}</p>
         </div>
@@ -126,6 +138,15 @@ const limits = isFiles
                 <input class="sr-only" type="file" data-el="add-input" accept={config.accept} multiple />
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                 <span class="shell-add-text">{t.addMore}</span>
+              </label>
+            )
+          }
+          {
+            isFiles && cameraLabel && (
+              <label class="shell-secondary shell-add shell-camera">
+                <input class="sr-only" type="file" data-el="camera-add-input" accept="image/*" capture="environment" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={CAMERA_ICON} />
+                <span class="shell-add-text">{cameraLabel}</span>
               </label>
             )
           }
@@ -506,6 +527,28 @@ const limits = isFiles
 
   .shell-pick {
     width: 100%;
+  }
+
+  /* The camera buttons show only where there's a camera to point: phones and tablets. */
+  .shell-secondary.shell-camera {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .shell-secondary.shell-camera {
+      display: inline-flex;
+    }
+
+    .shell-camera-start {
+      justify-content: center;
+      width: 100%;
+      margin-top: var(--space-sm);
+    }
+  }
+
+  .shell-camera:focus-within {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   .shell-pick svg,

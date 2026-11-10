@@ -63,7 +63,7 @@ export function readClean(text: string): CleanSettings {
 }
 
 // How bright each pixel looks; see-through pixels count as white paper.
-function brightness({ data, width, height }: Pixels): Uint8Array {
+export function brightness({ data, width, height }: Pixels): Uint8Array {
   const out = new Uint8Array(width * height);
   for (let pixel = 0; pixel < out.length; pixel++) {
     const at = pixel * 4;
@@ -86,7 +86,7 @@ function percentile(levels: ArrayLike<number>, share: number): number {
 
 // How bright the paper is around each pixel. Light varies across a photo (shadows, a lamp on one side),
 // so each pixel is compared with the paper near it, not with one level for the whole picture.
-function paperLevels({ width, height }: Pixels, levels: Uint8Array): Uint8Array {
+export function paperLevels({ width, height }: Pixels, levels: Uint8Array): Uint8Array {
   const block = Math.max(8, Math.round(Math.max(width, height) / 24));
   const columns = Math.ceil(width / block);
   const rows = Math.ceil(height / block);
