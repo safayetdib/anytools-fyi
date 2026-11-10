@@ -246,6 +246,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "edit-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["sign-pdf", "add-watermark", "add-page-numbers", "ocr-pdf"],
+    aliases: ["pdf editor", "add text to pdf", "write on pdf", "annotate pdf", "highlight pdf", "draw on pdf", "white out pdf", "add image to pdf", "পিডিএফ এডিট", "পিডিএফে লেখা যোগ করুন"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "ocr-pdf",
     hub: "pdf",
     input: "files",
