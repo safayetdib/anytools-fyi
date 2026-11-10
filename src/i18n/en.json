@@ -271,6 +271,12 @@
       "title": "OCR PDF Free: Make Scanned PDFs Searchable | AnyTools.fyi",
       "metaDescription": "Free OCR for scanned PDFs, in English and Bangla. Make PDFs searchable and copy their text. Runs in your browser: no signup, nothing uploaded."
     },
+    "fill-pdf-forms": {
+      "name": "Fill PDF forms",
+      "description": "Type into a PDF form's own boxes, tick its choices, and save it filled in, ready to send.",
+      "title": "Fill PDF Forms Free: Type Into Any PDF Form | AnyTools.fyi",
+      "metaDescription": "Fill in PDF forms for free: type answers in English or Bangla, tick boxes and pick options, then lock them in if you like. No signup, nothing uploaded."
+    },
     "redact-pdf": {
       "name": "Redact PDF",
       "description": "Black out private details in a PDF for good: account numbers, names, addresses or any area.",
@@ -1123,6 +1129,41 @@
       "after": "Opens again",
       "repair": "Repaired in your browser",
       "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
+  "fillPdfForms": {
+    "selectLabel": "Select PDF file",
+    "runLabel": "Save filled form",
+    "acceptLabel": "PDF file",
+    "arrangeHint": "Type into the form's boxes on the pages below.",
+    "panelTitle": "Fill PDF form",
+    "reading": "Finding the form's boxes…",
+    "fieldsOne": "This form has 1 box to fill in.",
+    "fieldsMany": "This form has {count} boxes to fill in.",
+    "noFields": "This PDF has no form boxes to fill in. To type anywhere on its pages, use Edit PDF.",
+    "editLink": "Open Edit PDF",
+    "filledOne": "1 answer filled in.",
+    "filledMany": "{count} answers filled in.",
+    "filledNone": "Nothing filled in yet.",
+    "flatten": "Lock the answers in",
+    "flattenHint": "They become part of the page and can't be changed. Leave it off to keep the form editable.",
+    "clear": "Clear answers",
+    "choose": "Choose…",
+    "pagesLabel": "Pages",
+    "pageLabel": "Page {page}",
+    "readOnly": "{name} (can't be changed)",
+    "noFieldsError": "{name} has no form boxes to fill in. Use Edit PDF to type on its pages.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then fill it in.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "summary": "Done. {name} is filled in, and its boxes can still be changed. Saved as {output} ({size}).",
+    "summaryFlat": "Done. {name} is filled in, with the answers locked in. Saved as {output} ({size}).",
+    "diagram": {
+      "file": "application.pdf",
+      "before": "Empty boxes",
+      "after": "Filled in",
+      "action": "Filled in your browser",
+      "name": "Nusrat Jahan",
+      "caption": "You type straight into the form's own boxes, where they are on the page. Saved answers stay editable, or are locked in when you choose."
     }
   },
   "redactPdf": {

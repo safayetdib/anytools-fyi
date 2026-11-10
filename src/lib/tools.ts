@@ -246,6 +246,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "fill-pdf-forms",
+    hub: "pdf",
+    input: "files",
+    related: ["sign-pdf", "edit-pdf", "merge-pdf", "compress-pdf"],
+    aliases: ["fill pdf", "pdf form filler", "fill out pdf", "type on pdf form", "fillable pdf", "complete pdf form", "পিডিএফ ফর্ম পূরণ", "ফর্ম পূরণ করুন"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "redact-pdf",
     hub: "pdf",
     input: "files",
