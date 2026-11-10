@@ -246,6 +246,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "redact-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["edit-pdf", "protect-pdf", "compress-pdf", "remove-pdf-pages"],
+    aliases: ["redact", "black out pdf", "hide text in pdf", "remove sensitive information", "censor pdf", "pdf redaction", "গোপন তথ্য মুছুন", "পিডিএফ রিড্যাক্ট"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "edit-pdf",
     hub: "pdf",
     input: "files",

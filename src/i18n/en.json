@@ -271,6 +271,12 @@
       "title": "OCR PDF Free: Make Scanned PDFs Searchable | AnyTools.fyi",
       "metaDescription": "Free OCR for scanned PDFs, in English and Bangla. Make PDFs searchable and copy their text. Runs in your browser: no signup, nothing uploaded."
     },
+    "redact-pdf": {
+      "name": "Redact PDF",
+      "description": "Black out private details in a PDF for good: account numbers, names, addresses or any area.",
+      "title": "Redact PDF Free: Black Out Text for Good | AnyTools.fyi",
+      "metaDescription": "Redact PDF files for free. Black out names, numbers or any area, and the hidden text is removed, not just covered. No signup, nothing uploaded."
+    },
     "edit-pdf": {
       "name": "Edit PDF",
       "description": "Add text, pictures, shapes, highlights and drawings to a PDF, or white out what shouldn't show.",
@@ -1117,6 +1123,53 @@
       "after": "Opens again",
       "repair": "Repaired in your browser",
       "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
+  "redactPdf": {
+    "selectLabel": "Select PDF file",
+    "runLabel": "Redact PDF",
+    "acceptLabel": "PDF file",
+    "arrangeHint": "Mark what to black out, by searching or by dragging on the pages.",
+    "panelTitle": "Redact PDF",
+    "findLabel": "Find words to black out",
+    "findPlaceholder": "Name, number or phrase",
+    "findButton": "Mark all",
+    "found": "Marked {count} places.",
+    "foundOne": "Marked 1 place.",
+    "foundNone": "\"{query}\" wasn't found. Scanned pages have no text to search; drag over them instead.",
+    "modeLegend": "On the pages",
+    "modes": {
+      "mark": "Mark area",
+      "move": "Move"
+    },
+    "hints": {
+      "mark": "Drag on a page to cover an area. Drag a box to move it, or its corner to resize it.",
+      "move": "Drag a box to move it, or its corner to resize it. Pages scroll as usual."
+    },
+    "undo": "Undo",
+    "clear": "Clear all",
+    "boxesNone": "Nothing marked yet.",
+    "boxesOne": "1 area marked.",
+    "boxesMany": "{count} areas marked.",
+    "note": "Marked pages become pictures, so nothing under a box can be copied back out. Their other text can't be selected either. Pages with nothing marked stay as they are.",
+    "pagesLabel": "Pages",
+    "pageLabel": "Page {page}",
+    "boxLabel": "Blacked-out area on page {page}",
+    "removeBox": "Remove this area",
+    "needBox": "Mark something to black out first, by searching or by dragging on a page.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then redact it.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "areaOne": "1 area",
+    "areaMany": "{count} areas",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "summary": "Done. {areas} blacked out on {pages} of {name}. Saved as {output} ({size}).",
+    "diagram": {
+      "file": "statement.pdf",
+      "before": "Account 4821 7730",
+      "after": "Gone for good",
+      "action": "Redacted in your browser",
+      "caption": "A black box alone can be lifted off to read what's under it. Here the marked page is redrawn as a picture with the box painted in, so the hidden words aren't in the file at all."
     }
   },
   "editPdf": {

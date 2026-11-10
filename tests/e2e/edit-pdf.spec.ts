@@ -23,6 +23,8 @@ const sheet = (page: Page, number = 1) => page.getByTestId("edit-page").nth(numb
 const chooseTool = (page: Page, name: string) => panel(page).locator("label.edit-tool").filter({ hasText: name }).click();
 
 async function open(page: Page, file: Upload = { name: "", mimeType: "", buffer: Buffer.alloc(0) }) {
+  // Scrolling happens at once, so pages are measured where they end up.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(PAGE);
   await page.getByLabel("Select PDF file").setInputFiles(file.name ? file : await blankPdf());
   await expect(sheet(page)).not.toHaveClass(/is-loading/, { timeout: 15000 });

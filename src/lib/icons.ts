@@ -24,6 +24,7 @@ export const TOOL_ICONS: Record<string, string> = {
   "protect-pdf": '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/>',
   "unlock-pdf": '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/><path d="M12 15v2"/>',
   "repair-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M14.5 10.5a2.5 2.5 0 0 0-3.4 3.2l-2.6 2.6 1.2 1.2 2.6-2.6a2.5 2.5 0 0 0 3.2-3.4l-1.4 1.4-1.2-1.2z"/>',
+  "redact-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><rect x="8.5" y="10" width="8" height="3" fill="currentColor"/><path d="M8.5 16h5"/>',
   "edit-pdf": '<path d="M6 3h9l4 4v6"/><path d="M15 3v4h4"/><path d="M6 3v18h6"/><path d="m14.5 21 1-3.5 5-5 2.5 2.5-5 5z"/>',
   "ocr-pdf": '<path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 9h8"/><path d="M8 12h8"/><path d="M8 15h5"/>',
 };

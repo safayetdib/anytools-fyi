@@ -103,8 +103,8 @@ describe("finds the closest tool", () => {
 
 describe("result lists", () => {
   it("lists every PDF tool for the category word", () => {
-    const all = search("pdf", 20).map((r) => r.slug);
-    expect(all).toHaveLength(20);
+    const all = search("pdf", 30).map((r) => r.slug);
+    expect(all).toHaveLength(21);
     expect(all[0]).toBe("merge-pdf");
   });
 
