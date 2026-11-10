@@ -1,4 +1,4 @@
-import { IN, OUT, isProtected, type Qpdf } from "../../lib/pdf/qpdf";
+import { IN, OUT, PACKED, isProtected, type Qpdf } from "../../lib/pdf/qpdf";
 import { JobError } from "../../lib/worker/host";
 
 export class UnlockError extends JobError {
@@ -15,7 +15,7 @@ export async function unlockPdf(qpdf: Qpdf, bytes: Uint8Array, password = ""): P
     const check = await qpdf(["--check", IN], bytes);
     throw new UnlockError(check.code === 0 || check.code === 3 ? "notLocked" : "unreadable");
   }
-  const result = await qpdf([`--password=${password}`, "--decrypt", IN, OUT], bytes);
+  const result = await qpdf([`--password=${password}`, "--decrypt", PACKED, IN, OUT], bytes);
   if (result.output) return result.output;
   throw new UnlockError(password ? "password" : "needsPassword");
 }
