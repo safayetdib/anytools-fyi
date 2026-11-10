@@ -115,6 +115,15 @@ test("add watermark - an image watermark is placed on each page", async ({ page 
   }
 });
 
+test("add watermark - a JPG picture goes in as it is, not as a bigger PNG", async ({ page }) => {
+  await choose(page, [await pdf("report.pdf", 1)]);
+  await panel(page).getByRole("radio", { name: "Place image" }).check();
+  await panel(page).getByLabel("Choose an image").setInputFiles("tests/fixtures/images/tall.jpg");
+  await expect(marks(page).first().locator("img")).toBeVisible();
+  const { bytes } = await stampAndDownload(page);
+  expect(Buffer.from(bytes).includes(await readFile("tests/fixtures/images/tall.jpg"))).toBe(true);
+});
+
 test("add watermark - Bangla text is stamped as a sharp picture", async ({ page }) => {
   await choose(page, [await pdf("report.pdf", 2)]);
   await panel(page).getByLabel("Text", { exact: true }).fill("গোপনীয় নথি");

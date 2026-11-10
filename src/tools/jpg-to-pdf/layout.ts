@@ -66,6 +66,12 @@ export function jpegOrientation(bytes: Uint8Array): number {
   return 1;
 }
 
+// The clockwise turn that shows a JPG the right way up, for camera tags that only turn it. The mirrored ones (2, 4, 5
+// and 7) have none, so those photos are redrawn instead.
+export function exifTurn(orientation: number): 0 | 90 | 180 | 270 | null {
+  return ({ 1: 0, 3: 180, 6: 90, 8: 270 } as const)[orientation as 1 | 3 | 6 | 8] ?? null;
+}
+
 // HEIC and HEIF photos, as iPhones save them, start with an "ftyp" box naming one of these brands.
 const HEIC_BRANDS = new Set(["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"]);
 
