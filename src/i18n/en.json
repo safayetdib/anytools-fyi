@@ -271,6 +271,12 @@
       "title": "OCR PDF Free: Make Scanned PDFs Searchable | AnyTools.fyi",
       "metaDescription": "Free OCR for scanned PDFs, in English and Bangla. Make PDFs searchable and copy their text. Runs in your browser: no signup, nothing uploaded."
     },
+    "pdf-to-text": {
+      "name": "PDF to text",
+      "description": "Take all the text out of a PDF as a plain text file, ready to copy, edit or search.",
+      "title": "PDF to Text Free: Extract Text From PDF | AnyTools.fyi",
+      "metaDescription": "Convert PDF to text for free. Get every word out of a PDF as a plain .txt file, in English or Bangla, with lines kept. No signup, nothing uploaded."
+    },
     "compare-pdf": {
       "name": "Compare PDF",
       "description": "See what changed between two versions of a PDF, with removed and added words highlighted side by side.",
@@ -1135,6 +1141,41 @@
       "after": "Opens again",
       "repair": "Repaired in your browser",
       "caption": "The file's table of contents is rebuilt from the pages still inside it, so readers can open it again."
+    }
+  },
+  "pdfToText": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to text",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own text file.",
+    "panelTitle": "PDF to text",
+    "intro": "Takes every word out of each PDF, in reading order, as a plain text file. Lines and paragraphs are kept.",
+    "markers": "Mark where each page starts",
+    "markersHint": "A line such as \"--- Page 2 ---\" before each page's text.",
+    "marker": "--- Page {page} ---",
+    "note": "Scanned pages are pictures with no text to take out. Run OCR PDF on them first.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. The text of {name} is saved as {output} ({size}).",
+    "summaryMany": "Done. {count} text files, all saved in one ZIP ({size}).",
+    "summarySkipped": "Done. {count} text files in one ZIP ({size}). {skipped} PDFs had no text to take out; run OCR PDF on them first.",
+    "part": "Text of {name}",
+    "zipName": "anytools_pdf-to-text.zip",
+    "noText": "{name} has no text to take out: its pages are pictures, like a scan. Run OCR PDF on it first, then try again.",
+    "noTextMany": "None of these PDFs has text to take out: their pages are pictures, like scans. Run OCR PDF on them first.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "report.pdf",
+      "output": "report.txt",
+      "before": "Text inside a PDF",
+      "after": "Plain text, ready to copy",
+      "action": "Converted in your browser",
+      "caption": "The words come out in reading order, line by line, with a blank line between paragraphs. Bangla letters stay as they are."
     }
   },
   "comparePdf": {

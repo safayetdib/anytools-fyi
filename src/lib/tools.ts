@@ -246,6 +246,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "pdf-to-text",
+    hub: "pdf",
+    input: "files",
+    related: ["ocr-pdf", "pdf-to-jpg", "compare-pdf", "split-pdf"],
+    aliases: ["pdf to txt", "extract text from pdf", "copy text from pdf", "pdf text extractor", "convert pdf to text", "পিডিএফ থেকে লেখা", "পিডিএফ টু টেক্সট"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "compare-pdf",
     hub: "pdf",
     input: "files",
