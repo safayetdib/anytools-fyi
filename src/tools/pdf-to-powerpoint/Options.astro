@@ -1,0 +1,63 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/card-tools.css";
+
+const t = en.pdfToPowerpoint;
+---
+
+<div class="pw-layout" data-ppt-options data-testid="ppt-options">
+  <aside class="pw-panel" aria-labelledby="ppt-panel-title">
+    <h3 class="pw-panel-title" id="ppt-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+
+  const t = en.pdfToPowerpoint;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-ppt-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+
+    function metaOf(card: PdfCard): { text: string; problem: boolean } {
+      if (card.status === "loading") return { text: t.checking, problem: false };
+      if (card.status === "locked") return { text: t.lockedCard, problem: true };
+      if (card.status === "unreadable") return { text: t.unreadablePreview, problem: true };
+      return { text: card.pages === null ? "" : card.pages === 1 ? t.pageOne : fill(t.pageMany, { count: card.pages }), problem: false };
+    }
+
+    let first = true;
+    trackPdfCards(root, THUMBNAIL_WIDTH, (files, entries) => {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(card);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "ppt-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          return item;
+        }),
+      );
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+  }
+</script>

@@ -75,6 +75,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "pdf-to-powerpoint",
+    hub: "pdf",
+    input: "files",
+    related: ["pdf-to-word", "pdf-to-jpg", "ocr-pdf", "compress-pdf"],
+    aliases: ["pdf to ppt", "pdf to pptx", "convert pdf to powerpoint", "pdf to slides", "pdf to presentation", "পিডিএফ থেকে পাওয়ারপয়েন্ট", "পিডিএফ টু পাওয়ারপয়েন্ট"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "jpg-to-pdf",
     hub: "pdf",
     input: "files",

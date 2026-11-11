@@ -3,7 +3,7 @@ import { buildLines, cellsOf } from "./lines";
 import { fontStyle, type TextPiece } from "./page-content";
 
 const plain = { family: "Arial", bold: false, italic: false };
-const piece = (text: string, x: number, baseline: number, width = text.length * 6, size = 12): TextPiece => ({ text, x, baseline, width, size, font: plain, upright: true });
+const piece = (text: string, x: number, baseline: number, width = text.length * 6, size = 12): TextPiece => ({ text, x, baseline, width, size, font: plain, upright: true, angle: 0 });
 
 describe("buildLines", () => {
   it("joins pieces on a line, with spaces where the gaps are", () => {

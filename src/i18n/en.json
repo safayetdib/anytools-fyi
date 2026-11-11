@@ -147,6 +147,12 @@
       "title": "PDF to Word Free: Convert PDF to DOCX Online | AnyTools.fyi",
       "metaDescription": "Convert PDF to Word for free. Get an editable .docx with the PDF's paragraphs, fonts and pictures, in English or Bangla. No signup, nothing uploaded."
     },
+    "pdf-to-powerpoint": {
+      "name": "PDF to PowerPoint",
+      "description": "Turn each page of a PDF into a slide that looks the same, with its text in boxes you can edit.",
+      "title": "PDF to PowerPoint Free: Convert PDF to PPTX | AnyTools.fyi",
+      "metaDescription": "Convert PDF to PowerPoint for free. Each page becomes a slide that looks the same, with text you can edit. No signup, nothing uploaded."
+    },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
       "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
@@ -1248,6 +1254,38 @@
       "after": "A Word document you can",
       "action": "Converted in your browser",
       "caption": "Lines join back into paragraphs that flow, with the PDF's fonts, sizes and pictures. Bangla text stays Bangla."
+    }
+  },
+  "pdfToPowerpoint": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to PowerPoint",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own presentation.",
+    "panelTitle": "PDF to PowerPoint",
+    "intro": "Turns each page into a slide. The page's pictures, shapes and colours sit behind, and its text goes on top in boxes you can edit, in the same fonts, sizes and colours.",
+    "note": "Scanned pages are pictures with no text inside, so they come out as pictures. Run OCR PDF on them first to get text you can edit.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now the presentation {output} ({size}).",
+    "summaryMany": "Done. {count} presentations, all saved in one ZIP ({size}).",
+    "scanHintOne": "Its pages are pictures, like a scan, so the slides have no text to edit. Run OCR PDF on it first to get text you can edit.",
+    "scanHintMany": "{count} of them are scans, so their slides have no text to edit. Run OCR PDF on those first to get text you can edit.",
+    "part": "Presentation of {name}",
+    "zipName": "anytools_pdf-to-powerpoint.zip",
+    "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "pitch.pdf",
+      "output": "pitch.pptx",
+      "before": "Pages you can't edit",
+      "after": "Slides you can",
+      "action": "Converted in your browser",
+      "caption": "Each page becomes a slide. Its pictures and shapes stay behind, and its text sits on top, ready to edit."
     }
   },
   "comparePdf": {

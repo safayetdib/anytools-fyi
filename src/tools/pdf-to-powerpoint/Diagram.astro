@@ -1,0 +1,157 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.pdfToPowerpoint.diagram;
+---
+
+<figure class="ppt-diagram" aria-labelledby="ppt-diagram-caption">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.before}</span>
+      <span class="sheet is-page" aria-hidden="true"><span class="band"></span><span class="lines"></span></span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+      </svg>
+      <span>{d.action}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.output}</span>
+      <span class="doc-meta">{d.after}</span>
+      <span class="slide" aria-hidden="true"><span class="band"></span><span class="box is-title">Our plan</span><span class="box">Grow to 3 cities<br />আমাদের লক্ষ্য</span></span>
+    </div>
+  </div>
+  <figcaption id="ppt-diagram-caption">{d.caption}</figcaption>
+</figure>
+
+<style>
+  .ppt-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .result .doc-meta {
+    color: var(--color-accent);
+  }
+
+  .sheet {
+    position: relative;
+    display: block;
+    width: 6rem;
+    height: 8rem;
+    padding: 12px 10px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  .lines {
+    display: block;
+    height: 60%;
+    margin-top: 10px;
+    background: repeating-linear-gradient(#5f6b65 0 2px, transparent 2px 9px);
+  }
+
+  .band {
+    display: block;
+    height: 22%;
+    border-radius: 2px;
+    background: #2f6f5e;
+  }
+
+  /* The slide: wide, with the page's coloured band behind and text boxes on top, outlined to show they can be edited. */
+  .slide {
+    position: relative;
+    display: block;
+    width: 10rem;
+    height: 5.625rem;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  .slide .band {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 40%;
+  }
+
+  .box {
+    position: relative;
+    display: block;
+    width: fit-content;
+    padding: 1px 3px;
+    border: 1px dashed var(--color-accent);
+    color: #111111;
+    font-family: Arial, "Noto Sans Bengali", sans-serif;
+    font-size: 0.5625rem;
+    line-height: 1.35;
+  }
+
+  .box.is-title {
+    margin-bottom: 14px;
+    border-color: #ffffff;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

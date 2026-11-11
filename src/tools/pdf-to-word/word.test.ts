@@ -7,7 +7,7 @@ import { layoutPage, type Paragraph } from "./paragraphs";
 const plain: FontStyle = { family: "Times New Roman", bold: false, italic: false };
 const bold: FontStyle = { ...plain, bold: true };
 // About half a point per letter for each point of size, like most fonts.
-const piece = (text: string, x: number, baseline: number, size = 12, font = plain): TextPiece => ({ text, x, baseline, width: text.length * size * 0.5, size, font, upright: true });
+const piece = (text: string, x: number, baseline: number, size = 12, font = plain): TextPiece => ({ text, x, baseline, width: text.length * size * 0.5, size, font, upright: true, angle: 0 });
 const page = (pieces: TextPiece[], pictures: PicturePlace[] = [], hiddenText = false): PageContent => ({ width: 612, height: 792, pieces, pictures, hiddenText });
 const picture = (x: number, y: number, width: number, height: number, key = "img"): PicturePlace => ({ x, y, width, height, key, draw: async () => null });
 const texts = (blocks: ReturnType<typeof layoutPage>["blocks"]) => blocks.map((block) => (block.kind === "text" ? block.runs.map((run) => run.text).join("") : `[${block.place.key}]`));

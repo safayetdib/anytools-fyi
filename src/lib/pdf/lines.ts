@@ -22,7 +22,7 @@ export interface Line {
 }
 
 // A bullet, or a number or letter and a stop, with nothing after it.
-const LIST_MARK_ONLY = /^([•●▪◦‣∙·○■□➢➤►✓✔*–—-]|\(?(\d{1,3}|[a-zA-Z]|[ivxIVX]{1,4}|[০-৯]{1,3})[.)])$/;
+const LIST_MARK_ONLY = /^([•●▪◦‣∙·○■□➢➤►✓✔*–\u2014-]|\(?(\d{1,3}|[a-zA-Z]|[ivxIVX]{1,4}|[০-৯]{1,3})[.)])$/;
 // A gap wider than this many letter sizes splits a line into columns.
 const COLUMN_GAP = 1.5;
 // A gap narrower than this many letter sizes is the space inside a word, as when a PDF draws letters one by one.

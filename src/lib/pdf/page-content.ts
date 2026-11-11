@@ -24,6 +24,8 @@ export interface TextPiece {
   font: FontStyle;
   // False for text that runs up, down or at a slant.
   upright: boolean;
+  // Which way the text runs, in degrees clockwise from left to right.
+  angle: number;
 }
 
 // A picture as placed on the page as shown, in points from its top-left corner.
@@ -290,6 +292,7 @@ export async function readPageContent(page: PdfPage, options: { pictures: boolea
       size: item.height || Math.hypot(c, d) || 10,
       font,
       upright: shown[0] > 0 && Math.abs(shown[1]) / run < 0.05,
+      angle: (Math.atan2(shown[1], shown[0]) * 180) / Math.PI,
     });
   }
 

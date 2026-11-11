@@ -7,6 +7,7 @@ export const TOOL_ICONS: Record<string, string> = {
   "split-pdf": '<path d="M20 5h-5l-5 7 5 7h5"/><path d="M10 12H4"/><path d="m17 2 3 3-3 3"/><path d="m17 16 3 3-3 3"/>',
   "compress-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="m10 9 2.5 2.5L15 9"/><path d="m10 18 2.5-2.5L15 18"/>',
   "pdf-to-word": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="m8.5 11 1.25 6.5L12 13l2.25 4.5L15.5 11"/>',
+  "pdf-to-powerpoint": '<rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M12 17v3"/><path d="M8 20h8"/><path d="M9.5 14V8.5h2.25a1.75 1.75 0 0 1 0 3.5H9.5"/>',
   "jpg-to-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="m9 18 3-4 2 2 1-1 1 3z"/>',
   "pdf-to-jpg": '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5-9 10"/>',
   "pdf-to-png": '<rect x="3" y="4" width="18" height="16" rx="2" stroke-dasharray="3 2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5-9 10"/>',
