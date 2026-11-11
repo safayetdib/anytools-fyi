@@ -106,14 +106,20 @@ test("ocr pdf - a scanned page becomes searchable, looking and sized as before",
   await choose(page, [scan]);
   await expect(cards(page)).toContainText("1 page");
   await language(page, "বাংলা (Bangla)").uncheck();
-  // Nothing goes out but requests for this site's own reader files. Blob and data addresses never leave the browser.
+  // Nothing goes out but requests for this site's own reader files, each language once. Blob and data addresses never
+  // leave the browser.
+  const site = new URL(page.url()).origin;
   const requests: string[] = [];
+  const languages: string[] = [];
   page.on("request", (request) => {
-    const local = /^(blob|data):/.test(request.url());
-    if (!local && (request.method() !== "GET" || !request.url().startsWith("http://127.0.0.1:4329/"))) requests.push(`${request.method()} ${request.url()}`);
+    const url = request.url();
+    if (/^(blob|data):/.test(url)) return;
+    if (request.method() !== "GET" || new URL(url).origin !== site) requests.push(`${request.method()} ${url}`);
+    if (url.includes(".traineddata")) languages.push(url);
   });
   const { name, bytes } = await readAndDownload(page);
   expect(requests).toEqual([]);
+  expect(languages).toEqual([`${site}/ocr/4.0.0_best_int/eng.traineddata.gz`]);
   expect(name).toBe("receipt_ocr.pdf");
   await expect(page.getByTestId("shell-result-card")).toContainText("receipt.pdf can now be searched and copied.");
   const [text] = await textOf(bytes);
