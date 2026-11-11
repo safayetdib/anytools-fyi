@@ -1,4 +1,4 @@
-import { IN, OUT, isProtected, type Qpdf } from "../../lib/pdf/qpdf";
+import { IN, OUT, PACKED, isProtected, type Qpdf } from "../../lib/pdf/qpdf";
 import { JobError } from "../../lib/worker/host";
 import { MAX_PASSWORD } from "./password";
 
@@ -12,7 +12,7 @@ export class ProtectError extends JobError {
 // allows everything in it, like other tools.
 export async function protectPdf(qpdf: Qpdf, bytes: Uint8Array, password: string): Promise<Uint8Array> {
   if (!password || password.length > MAX_PASSWORD) throw new ProtectError("password");
-  const result = await qpdf(["--encrypt", `--user-password=${password}`, `--owner-password=${password}`, "--bits=256", "--", IN, OUT], bytes);
+  const result = await qpdf([PACKED, "--encrypt", `--user-password=${password}`, `--owner-password=${password}`, "--bits=256", "--", IN, OUT], bytes);
   if (result.output) return result.output;
   // Did it fail because the file already needs a password to open?
   throw new ProtectError((await isProtected(bytes)) ? "locked" : "unreadable");

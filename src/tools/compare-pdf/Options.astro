@@ -1,0 +1,112 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/card-tools.css";
+
+const t = en.comparePdf;
+---
+
+<div class="pw-layout" data-compare-options data-testid="compare-options">
+  <aside class="pw-panel" aria-labelledby="compare-panel-title">
+    <h3 class="pw-panel-title" id="compare-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+    <ul class="compare-key">
+      <li><span class="compare-swatch is-removed" aria-hidden="true"></span>{t.keyRemoved}</li>
+      <li><span class="compare-swatch is-added" aria-hidden="true"></span>{t.keyAdded}</li>
+    </ul>
+    <p class="pw-check is-bad" role="status" data-compare-status></p>
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+
+  const t = en.comparePdf;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-compare-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+    const status = box.querySelector("[data-compare-status]") as HTMLElement;
+    const runButton = root.querySelector<HTMLButtonElement>('[data-el="run"]');
+
+    // Each card says which version it is: the first file is the original, the second the changed one.
+    function metaOf(card: PdfCard, index: number): { text: string; problem: boolean } {
+      if (index > 1) return { text: t.extra, problem: true };
+      const role = index === 0 ? t.originalLabel : t.changedLabel;
+      if (card.status === "locked") return { text: `${role} · ${t.lockedCard}`, problem: true };
+      if (card.status === "unreadable") return { text: `${role} · ${t.unreadablePreview}`, problem: true };
+      const pages = card.pages === null ? "" : ` · ${card.pages === 1 ? t.pageOne : fill(t.pageMany, { count: card.pages })}`;
+      return { text: `${role}${pages}`, problem: false };
+    }
+
+    let first = true;
+    trackPdfCards(root, THUMBNAIL_WIDTH, (files, entries) => {
+      cards.replaceChildren(
+        ...files.map((file, index) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(card, index);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "compare-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          return item;
+        }),
+      );
+      status.textContent = files.length === 1 ? t.addSecond : files.length > 2 ? t.needTwo : "";
+      if (runButton && files.length) runButton.disabled = files.length !== 2;
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+  }
+</script>
+
+<style>
+  .compare-key {
+    display: grid;
+    gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .compare-key li {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+  }
+
+  .compare-swatch {
+    flex: none;
+    width: 2rem;
+    height: 0.875rem;
+    border-radius: 2px;
+  }
+
+  .compare-swatch.is-removed {
+    background: rgb(242 89 89 / 0.6);
+  }
+
+  .compare-swatch.is-added {
+    background: rgb(77 204 115 / 0.6);
+  }
+
+  .pw-check:empty {
+    display: none;
+  }
+</style>

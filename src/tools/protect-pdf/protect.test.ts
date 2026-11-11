@@ -25,6 +25,11 @@ describe("protectPdf", () => {
     expect((await PDFDocument.load(opened.output as Uint8Array)).getPageCount()).toBe(2);
   });
 
+  it("doesn't make the file bigger, though the lock adds a little", async () => {
+    const bytes = await makePdf(Array.from({ length: 40 }, (_, index) => 200 + index));
+    expect((await protectPdf(nodeQpdf, bytes, "secret")).length).toBeLessThan(bytes.length);
+  });
+
   it("refuses a file that already needs a password, and one that isn't a PDF", async () => {
     const locked = await protectPdf(nodeQpdf, await makePdf([200], 200), "first");
     await expect(protectPdf(nodeQpdf, locked, "second")).rejects.toMatchObject({ code: "locked" });

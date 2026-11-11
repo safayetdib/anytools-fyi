@@ -1,5 +1,5 @@
 import { PDFDocument } from "pdf-lib";
-import { IN, OUT, type Qpdf } from "../../lib/pdf/qpdf";
+import { IN, OUT, PACKED, type Qpdf } from "../../lib/pdf/qpdf";
 import { JobError } from "../../lib/worker/host";
 
 export class RepairError extends JobError {
@@ -15,7 +15,7 @@ const isEncrypted = (error: unknown) => /is encrypted/i.test(String((error as Er
 // finds each part of the file by reading it from start to end instead of trusting its broken table of contents.
 // `fixed` says whether anything needed repairing.
 export async function repairPdf(qpdf: Qpdf, bytes: Uint8Array): Promise<{ bytes: Uint8Array; fixed: boolean }> {
-  const clean = await qpdf([IN, OUT], bytes);
+  const clean = await qpdf([PACKED, IN, OUT], bytes);
   if (clean.output) return { bytes: clean.output, fixed: clean.code === 3 };
   let doc: PDFDocument;
   try {

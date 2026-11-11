@@ -1,0 +1,183 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/card-tools.css";
+import { LANGUAGES } from "./ocr";
+
+const t = en.ocrPdf;
+---
+
+<div class="pw-layout" data-ocr-options data-testid="ocr-options">
+  <aside class="pw-panel" aria-labelledby="ocr-panel-title">
+    <h3 class="pw-panel-title" id="ocr-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+
+    <fieldset class="ocr-languages" aria-describedby="ocr-languages-hint">
+      <legend>{t.languagesLegend}</legend>
+      <p class="pw-text" id="ocr-languages-hint">{t.languagesHint}</p>
+      <div class="ocr-language-options">
+        {
+          LANGUAGES.map((language) => (
+            <label class="ocr-language" lang={language === "ben" ? "bn" : "en"}>
+              <input type="checkbox" value={language} checked data-language />
+              <span>{t.languages[language]}</span>
+            </label>
+          ))
+        }
+      </div>
+      <p class="pw-check is-bad" role="status" data-language-status></p>
+    </fieldset>
+    <input type="hidden" name="languages" value={LANGUAGES.join("+")} data-languages />
+
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+
+  const t = en.ocrPdf;
+  const THUMBNAIL_WIDTH = 240;
+  // The languages chosen last time, so someone who reads Bangla scans doesn't choose it again every visit.
+  const REMEMBERED = "anytools:ocr-languages";
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-ocr-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+    const value = box.querySelector("[data-languages]") as HTMLInputElement;
+    const status = box.querySelector("[data-language-status]") as HTMLElement;
+    const boxes = [...box.querySelectorAll<HTMLInputElement>("[data-language]")];
+    const runButton = root.querySelector<HTMLButtonElement>('[data-el="run"]');
+    let files: File[] = [];
+
+    try {
+      const remembered = localStorage.getItem(REMEMBERED)?.split("+") ?? [];
+      if (remembered.some((code) => boxes.some((input) => input.value === code))) {
+        boxes.forEach((input) => (input.checked = remembered.includes(input.value)));
+      }
+    } catch {
+      // Storage can be blocked; the defaults stand.
+    }
+
+    function sync() {
+      const chosen = boxes.filter((input) => input.checked).map((input) => input.value);
+      value.value = chosen.join("+");
+      status.textContent = chosen.length ? "" : t.noLanguage;
+      if (runButton && files.length) runButton.disabled = !chosen.length;
+    }
+
+    box.addEventListener("change", (event) => {
+      if (!(event.target as HTMLElement).matches("[data-language]")) return;
+      sync();
+      try {
+        if (value.value) localStorage.setItem(REMEMBERED, value.value);
+      } catch {
+        // Not remembered, which is fine.
+      }
+    });
+
+    function metaOf(card: PdfCard): { text: string; problem: boolean } {
+      if (card.status === "loading") return { text: t.checking, problem: false };
+      if (card.status === "locked") return { text: t.lockedCard, problem: true };
+      if (card.status === "unreadable") return { text: t.unreadablePreview, problem: true };
+      return { text: card.pages === null ? "" : card.pages === 1 ? t.pageOne : fill(t.pageMany, { count: card.pages }), problem: false };
+    }
+
+    let first = true;
+    trackPdfCards(root, THUMBNAIL_WIDTH, (next, entries) => {
+      files = next;
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(card);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "ocr-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          return item;
+        }),
+      );
+      sync();
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+    sync();
+  }
+</script>
+
+<style>
+  .ocr-languages {
+    display: grid;
+    gap: var(--space-sm);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .ocr-languages legend {
+    margin: 0 0 var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .ocr-language-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  /* Like the choice tiles in other PDF tools, but more than one can be picked. */
+  .ocr-language {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+    min-height: 52px;
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .ocr-language input {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    accent-color: var(--color-accent);
+  }
+
+  .ocr-language span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .ocr-language:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
+  @media (hover: hover) {
+    .ocr-language:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+  }
+
+  .ocr-languages .pw-check:empty {
+    display: none;
+  }
+</style>

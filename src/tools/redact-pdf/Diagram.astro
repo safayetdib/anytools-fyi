@@ -1,0 +1,133 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.redactPdf.diagram;
+---
+
+<figure class="redact-diagram" aria-labelledby="redact-diagram-caption">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.before}</span>
+      <span class="sheet" aria-hidden="true"><span class="lines"></span><span class="mark-secret"></span></span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+      </svg>
+      <span>{d.action}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.after}</span>
+      <span class="sheet" aria-hidden="true">
+        <span class="lines"></span>
+        <span class="mark-black"></span>
+      </span>
+    </div>
+  </div>
+  <figcaption id="redact-diagram-caption">{d.caption}</figcaption>
+</figure>
+
+<style>
+  .redact-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .result .doc-meta {
+    color: var(--color-accent);
+  }
+
+  .sheet {
+    position: relative;
+    display: block;
+    width: 6rem;
+    height: 8rem;
+    padding: 12px 10px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+  }
+
+  .lines {
+    display: block;
+    height: 100%;
+    background: repeating-linear-gradient(#5f6b65 0 2px, transparent 2px 9px);
+  }
+
+  /* The private line, then the same line blacked out. */
+  .mark-secret,
+  .mark-black {
+    position: absolute;
+    top: 37px;
+    left: 9px;
+    width: 3.5rem;
+    height: 10px;
+  }
+
+  .mark-secret {
+    background: color-mix(in srgb, #c62828 35%, transparent);
+  }
+
+  .mark-black {
+    background: #000000;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>

@@ -1,0 +1,482 @@
+---
+import en from "../../i18n/en.json";
+
+const t = en.fillPdfForms;
+---
+
+<div class="form-layout" data-form-options data-testid="form-options">
+  <aside class="form-panel" aria-labelledby="form-panel-title">
+    <h3 class="form-panel-title" id="form-panel-title">{t.panelTitle}</h3>
+    <p class="form-text" role="status" data-fields>{t.reading}</p>
+    <a class="form-button" href="/edit-pdf/" data-edit-link hidden>{t.editLink}</a>
+    <p class="form-count" role="status" data-count>{t.filledNone}</p>
+
+    <label class="form-toggle">
+      <input type="checkbox" name="flatten" value="yes" aria-describedby="form-flatten-hint" />
+      <span>{t.flatten}</span>
+    </label>
+    <p class="form-text" id="form-flatten-hint">{t.flattenHint}</p>
+
+    <button type="button" class="form-button" data-clear disabled>{t.clear}</button>
+    <input type="hidden" name="answers" data-answers-value />
+  </aside>
+
+  <ol class="form-pages" data-pages aria-label={t.pagesLabel}></ol>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { openPdf, renderPage, type PdfDocument } from "../../lib/pdf/preview";
+  import type { Answers, FormField } from "./forms";
+  import { readFields } from "./tool";
+
+  const t = en.fillPdfForms;
+  const MAX_RENDER_WIDTH = 1400;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-form-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
+    const pagesList = $<HTMLOListElement>("[data-pages]");
+    const fieldsText = $<HTMLElement>("[data-fields]");
+    const editLink = $<HTMLAnchorElement>("[data-edit-link]");
+    const count = $<HTMLElement>("[data-count]");
+    const clearButton = $<HTMLButtonElement>("[data-clear]");
+    const answersValue = $<HTMLInputElement>("[data-answers-value]");
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+
+    let file: File | null = null;
+    let pdf: { doc: PdfDocument; close: () => void } | null = null;
+    let fields: FormField[] = [];
+    let answers: Answers = {};
+    // The answers the form came with, so only real changes count as filled in.
+    let original: Answers = {};
+    let renderObserver: IntersectionObserver | null = null;
+
+    const startingAnswer = (field: FormField) =>
+      field.kind === "checkbox" ? field.value === "true" : field.kind === "list" && field.multiple ? field.values : field.value;
+    const filled = () => Object.keys(answers).filter((name) => JSON.stringify(answers[name]) !== JSON.stringify(original[name]));
+
+    function sync() {
+      answersValue.value = JSON.stringify(answers);
+      const changed = filled().length;
+      count.hidden = !fields.length;
+      count.textContent = changed === 0 ? t.filledNone : changed === 1 ? t.filledOne : fill(t.filledMany, { count: changed });
+      clearButton.disabled = changed === 0;
+      if (runButton && file) runButton.disabled = !fields.length;
+    }
+
+    // Every box of a field shows the same answer, wherever it is.
+    function show(field: FormField) {
+      const answer = answers[field.name];
+      for (const input of pagesList.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(`[data-field="${CSS.escape(field.name)}"]`)) {
+        if (input instanceof HTMLInputElement && input.type === "checkbox") input.checked = answer === true;
+        else if (input instanceof HTMLInputElement && input.type === "radio") input.checked = input.value === answer;
+        else if (input instanceof HTMLSelectElement && input.multiple) {
+          for (const option of input.options) option.selected = Array.isArray(answer) && answer.includes(option.value);
+        } else if (input.value !== String(answer ?? "")) input.value = String(answer ?? "");
+      }
+    }
+
+    function inputFor(field: FormField, index: number, spot: FormField["spots"][number], page: number) {
+      const label = field.readOnly ? fill(t.readOnly, { name: field.name }) : field.name;
+      let input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      if (field.kind === "text") {
+        input = field.multiline ? document.createElement("textarea") : document.createElement("input");
+        if (field.maxLength) input.maxLength = field.maxLength;
+        if (input instanceof HTMLInputElement) {
+          input.type = "text";
+          // These boxes sit inside the tool's form, where Enter would start the run.
+          input.addEventListener("keydown", (event) => event.key === "Enter" && event.preventDefault());
+        }
+        input.addEventListener("input", () => {
+          answers[field.name] = input.value;
+          show(field);
+          sync();
+        });
+      } else if (field.kind === "checkbox" || field.kind === "radio") {
+        const choice = document.createElement("input");
+        choice.type = field.kind;
+        if (field.kind === "radio") {
+          choice.name = `form-field-${index}`;
+          choice.value = spot.option ?? "";
+        }
+        choice.addEventListener("change", () => {
+          answers[field.name] = field.kind === "checkbox" ? choice.checked : choice.value;
+          show(field);
+          sync();
+        });
+        input = choice;
+      } else {
+        const select = document.createElement("select");
+        select.multiple = field.kind === "list" && field.multiple;
+        if (field.kind === "list") select.size = Math.max(2, Math.min(field.options.length, 6));
+        if (!select.multiple) select.append(new Option(t.choose, ""));
+        for (const option of field.options) select.append(new Option(option, option));
+        select.addEventListener("change", () => {
+          answers[field.name] = select.multiple ? [...select.selectedOptions].map((option) => option.value) : select.value;
+          show(field);
+          sync();
+        });
+        input = select;
+      }
+      input.className = `form-input is-${field.kind}`;
+      input.dataset.field = field.name;
+      input.disabled = field.readOnly;
+      input.setAttribute("aria-label", field.kind === "radio" && spot.option ? `${label}: ${spot.option}` : label);
+      input.setAttribute("data-testid", "form-input");
+      input.style.left = `${spot.x * 100}%`;
+      input.style.top = `${spot.y * 100}%`;
+      input.style.width = `${spot.width * 100}%`;
+      input.style.height = `${spot.height * 100}%`;
+      input.dataset.page = String(page);
+      return input;
+    }
+
+    // Puts each box of the form over its page, at the size the page is drawn.
+    function placeInputs(page: number) {
+      const sheet = pagesList.querySelector<HTMLElement>(`.form-sheet[data-page="${page}"]`);
+      if (!sheet) return;
+      fields.forEach((field, index) => {
+        for (const spot of field.spots) if (spot.page === page) sheet.append(inputFor(field, index, spot, page));
+        show(field);
+      });
+      sizeText(sheet);
+    }
+
+    // Text fits its box: about two thirds of its height, like most form readers.
+    function sizeText(sheet: HTMLElement) {
+      for (const input of sheet.querySelectorAll<HTMLElement>(".form-input.is-text, .form-input.is-dropdown")) {
+        const height = input.getBoundingClientRect().height;
+        input.style.fontSize = `${Math.max(9, Math.min(18, height * 0.62))}px`;
+      }
+    }
+
+    function watchPages(pageCount: number) {
+      renderObserver?.disconnect();
+      renderObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            renderObserver?.unobserve(entry.target);
+            void drawPage(entry.target as HTMLElement);
+          }
+        },
+        { rootMargin: "600px 0px" },
+      );
+      const list = Array.from({ length: pageCount }, (_, index) => {
+        const page = index + 1;
+        const item = document.createElement("li");
+        item.className = "form-page";
+        item.setAttribute("data-testid", "form-page");
+        const sheet = document.createElement("div");
+        sheet.className = "form-sheet is-loading";
+        sheet.dataset.page = String(page);
+        const caption = document.createElement("span");
+        caption.className = "form-page-number";
+        caption.textContent = fill(t.pageLabel, { page });
+        item.append(sheet, caption);
+        return item;
+      });
+      pagesList.replaceChildren(...list);
+      for (const item of list) renderObserver.observe(item);
+    }
+
+    async function drawPage(item: HTMLElement) {
+      const opened = pdf;
+      const sheet = item.querySelector(".form-sheet") as HTMLElement;
+      const page = Number(sheet.dataset.page);
+      if (!opened) return;
+      const width = Math.min(MAX_RENDER_WIDTH, Math.round(sheet.clientWidth * (window.devicePixelRatio || 1)));
+      try {
+        const rendered = await renderPage(opened.doc, page, width);
+        if (opened !== pdf) return;
+        const img = document.createElement("img");
+        img.className = "form-page-image";
+        img.alt = "";
+        img.src = URL.createObjectURL(rendered.blob);
+        sheet.style.aspectRatio = `${rendered.width} / ${rendered.height}`;
+        sheet.prepend(img);
+      } catch {
+        // The boxes still show on a blank page.
+      }
+      sheet.classList.remove("is-loading");
+      placeInputs(page);
+    }
+
+    clearButton.addEventListener("click", () => {
+      answers = structuredClone(original);
+      fields.forEach(show);
+      sync();
+    });
+
+    function reset() {
+      for (const img of pagesList.querySelectorAll<HTMLImageElement>(".form-page-image")) URL.revokeObjectURL(img.src);
+      pagesList.replaceChildren();
+      pdf?.close();
+      pdf = null;
+      fields = [];
+      answers = {};
+      original = {};
+      editLink.hidden = true;
+      fieldsText.textContent = t.reading;
+    }
+
+    shell.addEventListener("anytools:files", async (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files[0] ?? null;
+      if (next === file) return;
+      file = next;
+      reset();
+      sync();
+      if (!next) return;
+      try {
+        const [opened, found] = await Promise.all([openPdf(new Uint8Array(await next.arrayBuffer())), readFields(next)]);
+        if (file !== next) {
+          opened.close();
+          return;
+        }
+        pdf = opened;
+        fields = found;
+        original = Object.fromEntries(fields.map((field) => [field.name, startingAnswer(field)]));
+        answers = structuredClone(original);
+        fieldsText.textContent = fields.length === 0 ? t.noFields : fields.length === 1 ? t.fieldsOne : fill(t.fieldsMany, { count: fields.length });
+        editLink.hidden = fields.length > 0;
+        watchPages(opened.doc.numPages);
+      } catch {
+        // The shell already tells people the file can't be read.
+      }
+      sync();
+      const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+    });
+
+    new ResizeObserver(() => pagesList.querySelectorAll<HTMLElement>(".form-sheet").forEach(sizeText)).observe(pagesList);
+    sync();
+  }
+</script>
+
+<style>
+  /* Like Sign PDF: the pages large on the left, the options in a panel on the right. Phones show the options first. */
+  .form-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .form-layout {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+      align-items: start;
+    }
+
+    .form-pages {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .form-panel {
+      position: sticky;
+      top: calc(var(--header-height, 4rem) + var(--space-md));
+      grid-column: 2;
+    }
+  }
+
+  .form-panel {
+    min-width: 0;
+    display: grid;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .form-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .form-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .form-text,
+  .form-count {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .form-text {
+    color: var(--color-text-muted);
+  }
+
+  .form-count {
+    font-weight: 600;
+  }
+
+  .form-count[hidden],
+  .form-button[hidden] {
+    display: none;
+  }
+
+  .form-toggle {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .form-toggle input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    accent-color: var(--color-accent);
+  }
+
+  .form-toggle:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  }
+
+  .form-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .form-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .form-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .form-button:not(:disabled):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  .form-pages {
+    display: grid;
+    gap: var(--space-xl);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :global(.form-page) {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+    min-width: 0;
+  }
+
+  :global(.form-sheet) {
+    position: relative;
+    width: 100%;
+    max-width: 48rem;
+    aspect-ratio: 1 / 1.414;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
+  }
+
+  :global(.form-sheet.is-loading) {
+    animation: form-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes form-pulse {
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  :global(.form-page-image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  :global(.form-page-number) {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* The form's own boxes, lightly tinted like PDF readers show fields, on white paper in either theme. */
+  :global(.form-input) {
+    position: absolute;
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0;
+    padding: 0 2px;
+    border: 1px solid rgb(31 79 191 / 0.45);
+    border-radius: 2px;
+    background: rgb(214 228 255 / 0.55);
+    color: #111111;
+    font-family: Helvetica, Arial, "Noto Sans Bengali", sans-serif;
+    line-height: 1.15;
+    color-scheme: light;
+  }
+
+  :global(textarea.form-input) {
+    resize: none;
+  }
+
+  :global(.form-input.is-checkbox),
+  :global(.form-input.is-radio) {
+    padding: 0;
+    accent-color: #1f4fbf;
+    cursor: pointer;
+  }
+
+  :global(.form-input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+    background: rgb(255 255 255 / 0.95);
+  }
+
+  :global(.form-input:disabled) {
+    background: rgb(0 0 0 / 0.06);
+    border-color: rgb(0 0 0 / 0.2);
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.form-sheet.is-loading) {
+      animation: none;
+    }
+  }
+</style>

@@ -36,6 +36,11 @@ describe("repairPdf", () => {
     expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
   });
 
+  it("doesn't make a healthy file bigger", async () => {
+    const bytes = await makePdf(Array.from({ length: 40 }, (_, index) => 200 + index));
+    expect((await repairPdf(nodeQpdf, bytes)).bytes.length).toBeLessThan(bytes.length);
+  });
+
   it("says when a file needs its password, or isn't a PDF at all", async () => {
     const locked = await nodeQpdf(["--encrypt", "--user-password=x", "--owner-password=x", "--bits=256", "--", IN, OUT], await makePdf([200], 300));
     await expect(repairPdf(nodeQpdf, locked.output as Uint8Array)).rejects.toMatchObject({ code: "locked" });

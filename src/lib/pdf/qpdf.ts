@@ -15,6 +15,9 @@ export type Qpdf = (args: string[], input: Uint8Array) => Promise<QpdfResult>;
 // Stand-ins for the input and output files in an argument list.
 export const IN = "{in}";
 export const OUT = "{out}";
+// Packs the file's small objects together when writing, as pdf-lib does, so a rewritten file isn't bigger than the one
+// it came from.
+export const PACKED = "--object-streams=generate";
 
 interface Instance {
   callMain(args: string[]): number;

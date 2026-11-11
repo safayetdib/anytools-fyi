@@ -1,6 +1,6 @@
 import { PDFDocument, degrees } from "pdf-lib";
 import { describe, expect, it } from "vitest";
-import { makeEncryptedPdf, makePdf, pageRotations, pageWidths } from "../../../tests/fixtures/pdf";
+import { makeEncryptedPdf, makePdf, makeSharedImagePdf, pageRotations, pageWidths } from "../../../tests/fixtures/pdf";
 import { organizePdf, readPlan } from "./organize";
 
 async function sizes(bytes: Uint8Array) {
@@ -9,6 +9,13 @@ async function sizes(bytes: Uint8Array) {
 }
 
 describe("organizePdf", () => {
+  it("stores what pages share once, so the file doesn't grow with every page", async () => {
+    const bytes = await makeSharedImagePdf(10);
+    const plan = Array.from({ length: 10 }, (_, index) => ({ file: 0, page: 10 - index, rotate: 0 as const }));
+    const result = await organizePdf([{ name: "a.pdf", bytes }], plan);
+    expect(result.bytes.length).toBeLessThan(bytes.length * 1.1);
+  });
+
   it("puts pages from several files in the planned order, leaving out the rest", async () => {
     const a = await makePdf([101, 102, 103]);
     const b = await makePdf([201, 202]);

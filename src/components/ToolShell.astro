@@ -217,7 +217,7 @@ const limits = isFiles
         </div>
       </div>
     </div>
-    <output class="shell-output" data-el="output" data-testid="shell-output" hidden></output>
+    <output class="shell-output" data-el="output" data-testid="shell-output" tabindex="0" hidden></output>
     {/* Right under the result card, beside the Start over and Undo buttons that ask through it. */}
     {isFiles && <ShellConfirm name="result-confirm" />}
     {
@@ -1696,6 +1696,9 @@ const limits = isFiles
     background: var(--color-surface);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    /* Long text, like a whole PDF's, scrolls inside the box rather than stretching the page. */
+    max-height: min(60vh, 32rem);
+    overflow: auto;
   }
 
 

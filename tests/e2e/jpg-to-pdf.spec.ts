@@ -126,6 +126,8 @@ test("jpg to pdf - a phone photo comes out the way it's shown, not sideways", as
   const { bytes } = await convertAndDownload(page);
   // Stored 800×600 with a "turn right" tag, so it shows as 600×800.
   expect(await sizes(bytes)).toEqual([[450, 600]]);
+  // The page turns it, so the photo itself goes in untouched rather than redrawn and made bigger.
+  expect(Buffer.from(bytes).includes(await readFile("tests/fixtures/images/phone.jpg"))).toBe(true);
 });
 
 for (const width of [320, 375, 768, 1366]) {

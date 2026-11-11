@@ -14,6 +14,12 @@ describe("unlockPdf", () => {
     expect((await PDFDocument.load(open)).getPageCount()).toBe(2);
   });
 
+  it("doesn't make the file bigger than it was before it was locked", async () => {
+    const bytes = await makePdf(Array.from({ length: 40 }, (_, index) => 200 + index));
+    const open = await unlockPdf(nodeQpdf, await protectPdf(nodeQpdf, bytes, "secret"), "secret");
+    expect(open.length).toBeLessThan(bytes.length);
+  });
+
   it("says when the password is wrong or missing", async () => {
     const locked = await protectPdf(nodeQpdf, await makePdf([200], 200), "right");
     await expect(unlockPdf(nodeQpdf, locked, "wrong")).rejects.toMatchObject({ code: "password" });

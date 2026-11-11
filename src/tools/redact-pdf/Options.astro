@@ -1,0 +1,786 @@
+---
+import en from "../../i18n/en.json";
+
+const t = en.redactPdf;
+const MODES = ["mark", "move"] as const;
+---
+
+<div class="redact-layout" data-redact-options data-testid="redact-options">
+  <aside class="redact-panel" aria-labelledby="redact-panel-title">
+    <h3 class="redact-panel-title" id="redact-panel-title">{t.panelTitle}</h3>
+
+    <div class="redact-find" role="search" data-find>
+      <label for="redact-query">{t.findLabel}</label>
+      <div class="redact-find-row">
+        <input id="redact-query" type="search" autocomplete="off" placeholder={t.findPlaceholder} data-query />
+        <button type="button" class="redact-button is-main" data-find-button>{t.findButton}</button>
+      </div>
+      <p class="redact-found" role="status" data-found></p>
+    </div>
+
+    <fieldset class="redact-modes">
+      <legend>{t.modeLegend}</legend>
+      <div class="redact-mode-options">
+        {
+          MODES.map((mode) => (
+            <label class="redact-mode">
+              <input type="radio" name="redact-mode" value={mode} checked={mode === "mark"} />
+              <span>{t.modes[mode]}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+    <p class="redact-hint" id="redact-hint" data-hint>{t.hints.mark}</p>
+
+    <div class="redact-actions">
+      <button type="button" class="redact-button" data-undo disabled>{t.undo}</button>
+      <button type="button" class="redact-button" data-clear disabled>{t.clear}</button>
+    </div>
+    <p class="redact-count" role="status" data-count>{t.boxesNone}</p>
+
+    <p class="redact-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+
+    <input type="hidden" name="boxes" data-boxes-value />
+  </aside>
+
+  <ol class="redact-pages" data-pages aria-label={t.pagesLabel}></ol>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { openPdf, renderPage, type PdfDocument } from "../../lib/pdf/preview";
+  import { findText } from "./paint";
+  import type { RedactBox } from "./redact";
+
+  const t = en.redactPdf;
+  const MAX_RENDER_WIDTH = 1400;
+  const STEP = 0.01;
+  const BIG_STEP = 0.05;
+  const MIN_SIDE = 0.005;
+  const HISTORY = 60;
+
+  interface Box extends RedactBox {
+    id: number;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-redact-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const shell: HTMLElement = root;
+    const $ = <T extends HTMLElement>(selector: string) => box.querySelector(selector) as T;
+    const pagesList = $<HTMLOListElement>("[data-pages]");
+    const query = $<HTMLInputElement>("[data-query]");
+    const findButton = $<HTMLButtonElement>("[data-find-button]");
+    const foundText = $<HTMLElement>("[data-found]");
+    const hint = $<HTMLElement>("[data-hint]");
+    const undoButton = $<HTMLButtonElement>("[data-undo]");
+    const clearButton = $<HTMLButtonElement>("[data-clear]");
+    const count = $<HTMLElement>("[data-count]");
+    const boxesValue = $<HTMLInputElement>("[data-boxes-value]");
+    const runButton = shell.querySelector<HTMLButtonElement>('[data-el="run"]');
+    // On touch screens a finger usually means scrolling, so marking goes back to Move after each box.
+    const touch = matchMedia("(pointer: coarse)").matches;
+
+    let file: File | null = null;
+    let pdf: { doc: PdfDocument; close: () => void } | null = null;
+    let boxes: Box[] = [];
+    let nextId = 1;
+    const history: string[] = [];
+    const drawn = new Set<number>();
+    let renderObserver: IntersectionObserver | null = null;
+
+    const mode = () => (box.querySelector<HTMLInputElement>('input[name="redact-mode"]:checked')?.value ?? "mark") as "mark" | "move";
+    const sheetOf = (page: number) => pagesList.querySelector<HTMLElement>(`.redact-sheet[data-page="${page}"]`);
+
+    function remember() {
+      history.push(JSON.stringify({ boxes, nextId }));
+      if (history.length > HISTORY) history.shift();
+    }
+
+    function sync() {
+      boxesValue.value = JSON.stringify(boxes.map(({ page, x, y, width, height }) => ({ page, x, y, width, height })));
+      count.textContent = boxes.length === 0 ? t.boxesNone : boxes.length === 1 ? t.boxesOne : fill(t.boxesMany, { count: boxes.length });
+      undoButton.disabled = history.length === 0;
+      clearButton.disabled = boxes.length === 0;
+      findButton.disabled = !pdf;
+      if (runButton && file) runButton.disabled = boxes.length === 0;
+    }
+
+    function setMode(next: "mark" | "move") {
+      const input = box.querySelector<HTMLInputElement>(`input[name="redact-mode"][value="${next}"]`);
+      if (input) input.checked = true;
+      for (const sheet of pagesList.querySelectorAll<HTMLElement>(".redact-sheet")) sheet.dataset.mode = next;
+      hint.textContent = t.hints[next];
+    }
+
+    function keepInside(item: Box) {
+      item.width = Math.min(1, Math.max(MIN_SIDE, item.width));
+      item.height = Math.min(1, Math.max(MIN_SIDE, item.height));
+      item.x = Math.min(1 - item.width, Math.max(0, item.x));
+      item.y = Math.min(1 - item.height, Math.max(0, item.y));
+    }
+
+    function draw(item: Box) {
+      const sheet = sheetOf(item.page);
+      if (!sheet) return;
+      let element = sheet.querySelector<HTMLElement>(`[data-box="${item.id}"]`);
+      if (!element) {
+        element = document.createElement("div");
+        element.className = "redact-box";
+        element.dataset.box = String(item.id);
+        element.tabIndex = 0;
+        element.setAttribute("role", "img");
+        element.setAttribute("aria-label", fill(t.boxLabel, { page: item.page }));
+        element.setAttribute("aria-describedby", "redact-hint");
+        element.setAttribute("data-testid", "redact-box");
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "redact-remove";
+        remove.setAttribute("aria-label", t.removeBox);
+        remove.textContent = "×";
+        remove.addEventListener("click", () => removeBox(item));
+        const handle = document.createElement("span");
+        handle.className = "redact-handle";
+        handle.dataset.resize = "";
+        handle.setAttribute("aria-hidden", "true");
+        element.append(remove, handle);
+        element.addEventListener("keydown", (event) => {
+          const step = event.shiftKey ? BIG_STEP : STEP;
+          const moves: Record<string, () => void> = {
+            ArrowLeft: () => (item.x -= step),
+            ArrowRight: () => (item.x += step),
+            ArrowUp: () => (item.y -= step),
+            ArrowDown: () => (item.y += step),
+          };
+          if (event.key === "Delete" || event.key === "Backspace") {
+            event.preventDefault();
+            removeBox(item);
+            return;
+          }
+          const action = moves[event.key];
+          if (!action) return;
+          event.preventDefault();
+          remember();
+          action();
+          keepInside(item);
+          draw(item);
+          sync();
+        });
+        sheet.append(element);
+      }
+      element.style.left = `${item.x * 100}%`;
+      element.style.top = `${item.y * 100}%`;
+      element.style.width = `${item.width * 100}%`;
+      element.style.height = `${item.height * 100}%`;
+    }
+
+    function removeBox(item: Box) {
+      remember();
+      boxes = boxes.filter((other) => other !== item);
+      pagesList.querySelector(`[data-box="${item.id}"]`)?.remove();
+      sync();
+    }
+
+    function redrawAll() {
+      for (const element of pagesList.querySelectorAll("[data-box]")) element.remove();
+      for (const item of boxes) draw(item);
+    }
+
+    function spot(sheet: HTMLElement, event: PointerEvent) {
+      const rect = sheet.getBoundingClientRect();
+      return { x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)), y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height)) };
+    }
+
+    // Drag on a page to mark; drag a box to move it, or its corner to resize. Pointer events cover mouse, pen and touch.
+    pagesList.addEventListener("pointerdown", (event) => {
+      const target = event.target as Element;
+      const sheet = target.closest<HTMLElement>(".redact-sheet");
+      if (!sheet || !drawn.has(Number(sheet.dataset.page)) || event.button > 0 || target.closest(".redact-remove")) return;
+      const page = Number(sheet.dataset.page);
+      const element = target.closest<HTMLElement>("[data-box]");
+      const start = spot(sheet, event);
+      const snapshot = JSON.stringify({ boxes, nextId });
+      let changed = false;
+
+      if (element) {
+        const item = boxes.find((one) => one.id === Number(element.dataset.box));
+        if (!item) return;
+        event.preventDefault();
+        element.focus({ preventScroll: true });
+        const resizing = Boolean(target.closest("[data-resize]"));
+        const from = { ...item };
+        sheet.setPointerCapture(event.pointerId);
+        const move = (next: PointerEvent) => {
+          const at = spot(sheet, next);
+          changed = true;
+          if (resizing) {
+            item.width = Math.min(1 - from.x, from.width + at.x - start.x);
+            item.height = Math.min(1 - from.y, from.height + at.y - start.y);
+          } else {
+            item.x = from.x + at.x - start.x;
+            item.y = from.y + at.y - start.y;
+          }
+          keepInside(item);
+          draw(item);
+        };
+        const end = () => {
+          sheet.removeEventListener("pointermove", move);
+          sheet.removeEventListener("pointerup", end);
+          sheet.removeEventListener("pointercancel", end);
+          if (changed) {
+            history.push(snapshot);
+            if (history.length > HISTORY) history.shift();
+          }
+          sync();
+        };
+        sheet.addEventListener("pointermove", move);
+        sheet.addEventListener("pointerup", end);
+        sheet.addEventListener("pointercancel", end);
+        return;
+      }
+
+      if (mode() !== "mark") return;
+      event.preventDefault();
+      sheet.setPointerCapture(event.pointerId);
+      let item: Box | null = null;
+      const move = (next: PointerEvent) => {
+        const at = spot(sheet, next);
+        if (!item && Math.hypot((at.x - start.x) * sheet.clientWidth, (at.y - start.y) * sheet.clientHeight) < 4) return;
+        if (!item) {
+          remember();
+          item = { id: nextId++, page, x: start.x, y: start.y, width: MIN_SIDE, height: MIN_SIDE };
+          boxes.push(item);
+        }
+        item.x = Math.min(start.x, at.x);
+        item.y = Math.min(start.y, at.y);
+        item.width = Math.max(MIN_SIDE, Math.abs(at.x - start.x));
+        item.height = Math.max(MIN_SIDE, Math.abs(at.y - start.y));
+        keepInside(item);
+        draw(item);
+      };
+      const end = () => {
+        sheet.removeEventListener("pointermove", move);
+        sheet.removeEventListener("pointerup", end);
+        sheet.removeEventListener("pointercancel", end);
+        if (item && touch) setMode("move");
+        sync();
+      };
+      sheet.addEventListener("pointermove", move);
+      sheet.addEventListener("pointerup", end);
+      sheet.addEventListener("pointercancel", end);
+    });
+
+    box.addEventListener("change", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.name === "redact-mode") setMode(target.value as "mark" | "move");
+    });
+
+    // Not a form of its own: it sits inside the tool's form, so Enter is caught here rather than submitting that.
+    query.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      void markAll();
+    });
+    findButton.addEventListener("click", () => void markAll());
+
+    async function markAll() {
+      const opened = pdf;
+      const words = query.value.trim();
+      if (!opened || !words) return;
+      findButton.disabled = true;
+      try {
+        const matches = await findText(opened.doc, words);
+        if (opened !== pdf) return;
+        // Places already marked aren't marked twice.
+        const fresh: Box[] = [];
+        const unmarked = matches.filter((match) => !boxes.some((one) => one.page === match.page && Math.abs(one.x - match.x) < 0.002 && Math.abs(one.y - match.y) < 0.002));
+        if (unmarked.length) remember();
+        for (const match of unmarked) {
+          const item = { ...match, id: nextId++ };
+          fresh.push(item);
+          boxes.push(item);
+          draw(item);
+        }
+        foundText.textContent = matches.length === 0 ? fill(t.foundNone, { query: words }) : matches.length === 1 ? t.foundOne : fill(t.found, { count: matches.length });
+        const first = fresh[0] && pagesList.querySelector<HTMLElement>(`[data-box="${fresh[0].id}"]`);
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        (first ?? null)?.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" });
+      } catch {
+        foundText.textContent = fill(t.foundNone, { query: words });
+      }
+      sync();
+    }
+
+    undoButton.addEventListener("click", () => {
+      const last = history.pop();
+      if (!last) return;
+      ({ boxes, nextId } = JSON.parse(last) as { boxes: Box[]; nextId: number });
+      redrawAll();
+      sync();
+    });
+
+    clearButton.addEventListener("click", () => {
+      remember();
+      boxes = [];
+      redrawAll();
+      sync();
+    });
+
+    // Draws pages as they come near the screen.
+    function watchPages(pageCount: number) {
+      renderObserver?.disconnect();
+      renderObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            renderObserver?.unobserve(entry.target);
+            void drawPage(entry.target as HTMLElement);
+          }
+        },
+        { rootMargin: "600px 0px" },
+      );
+      const list = Array.from({ length: pageCount }, (_, index) => {
+        const page = index + 1;
+        const item = document.createElement("li");
+        item.className = "redact-page";
+        item.dataset.page = String(page);
+        item.setAttribute("data-testid", "redact-page");
+        const sheet = document.createElement("div");
+        sheet.className = "redact-sheet is-loading";
+        sheet.dataset.page = String(page);
+        sheet.dataset.mode = mode();
+        const caption = document.createElement("span");
+        caption.className = "redact-page-number";
+        caption.textContent = fill(t.pageLabel, { page });
+        item.append(sheet, caption);
+        return item;
+      });
+      pagesList.replaceChildren(...list);
+      for (const item of list) renderObserver.observe(item);
+    }
+
+    async function drawPage(item: HTMLElement) {
+      const opened = pdf;
+      const page = Number(item.dataset.page);
+      const sheet = item.querySelector(".redact-sheet") as HTMLElement;
+      if (!opened) return;
+      const width = Math.min(MAX_RENDER_WIDTH, Math.round(sheet.clientWidth * (window.devicePixelRatio || 1)));
+      try {
+        const rendered = await renderPage(opened.doc, page, width);
+        if (opened !== pdf) return;
+        const img = document.createElement("img");
+        img.className = "redact-page-image";
+        img.alt = "";
+        img.draggable = false;
+        img.src = URL.createObjectURL(rendered.blob);
+        sheet.style.aspectRatio = `${rendered.width} / ${rendered.height}`;
+        sheet.classList.remove("is-loading");
+        sheet.prepend(img);
+        drawn.add(page);
+        for (const one of boxes) if (one.page === page) draw(one);
+      } catch {
+        sheet.classList.remove("is-loading");
+      }
+    }
+
+    function clear() {
+      for (const img of pagesList.querySelectorAll<HTMLImageElement>(".redact-page-image")) URL.revokeObjectURL(img.src);
+      pagesList.replaceChildren();
+      pdf?.close();
+      pdf = null;
+      boxes = [];
+      history.length = 0;
+      drawn.clear();
+      foundText.textContent = "";
+    }
+
+    shell.addEventListener("anytools:files", async (event) => {
+      const next = (event as CustomEvent<{ files: File[] }>).detail.files[0] ?? null;
+      if (next === file) return;
+      file = next;
+      clear();
+      sync();
+      if (!next) return;
+      try {
+        const opened = await openPdf(new Uint8Array(await next.arrayBuffer()));
+        if (file !== next) {
+          opened.close();
+          return;
+        }
+        pdf = opened;
+        watchPages(opened.doc.numPages);
+      } catch {
+        // The shell already tells people the file can't be read.
+      }
+      sync();
+      const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+    });
+
+    // A panel taller than the screen moves with the page and stops at either end, like Sign PDF's.
+    const panel = $<HTMLElement>(".redact-panel");
+    const GAP = 16;
+    let panelTop: number | null = null;
+    let lastScroll = window.scrollY;
+    function placePanel() {
+      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 64;
+      const bar = shell.querySelector<HTMLElement>('[data-testid="shell-action-bar"]')?.getBoundingClientRect().height ?? 0;
+      const highest = header + GAP;
+      const lowest = Math.min(highest, window.innerHeight - bar - GAP * 2 - panel.offsetHeight);
+      const scrolled = window.scrollY - lastScroll;
+      lastScroll = window.scrollY;
+      panelTop = Math.min(highest, Math.max(lowest, (panelTop ?? highest) - scrolled));
+      panel.style.setProperty("--redact-panel-top", `${Math.round(panelTop)}px`);
+    }
+    new ResizeObserver(placePanel).observe(panel);
+    window.addEventListener("resize", placePanel);
+    window.addEventListener("scroll", placePanel, { passive: true });
+
+    if (touch) setMode("move");
+    sync();
+  }
+</script>
+
+<style>
+  /* Like Sign PDF: the pages large on the left, the options in a panel on the right. Phones show the options first. */
+  .redact-layout {
+    scroll-margin-top: calc(var(--header-height, 4rem) + var(--space-md));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 900px) {
+    .redact-layout {
+      grid-template-columns: minmax(0, 1fr) 21rem;
+      align-items: start;
+    }
+
+    .redact-pages {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .redact-panel {
+      position: sticky;
+      top: var(--redact-panel-top, calc(var(--header-height, 4rem) + var(--space-md)));
+      grid-column: 2;
+    }
+  }
+
+  .redact-panel {
+    min-width: 0;
+    display: grid;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  @media (max-width: 399px) {
+    .redact-panel {
+      padding: var(--space-md);
+    }
+  }
+
+  .redact-panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .redact-find {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .redact-find label,
+  legend {
+    margin: 0;
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .redact-find-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-sm);
+  }
+
+  .redact-find input {
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  .redact-find input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  .redact-found,
+  .redact-hint,
+  .redact-count {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .redact-found:empty {
+    display: none;
+  }
+
+  .redact-hint {
+    color: var(--color-text-muted);
+  }
+
+  .redact-count {
+    font-weight: 600;
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin-bottom: var(--space-xs);
+  }
+
+  .redact-mode-options,
+  .redact-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .redact-mode {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .redact-mode input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .redact-mode:has(input:checked) {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .redact-mode:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .redact-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .redact-button.is-main {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .redact-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .redact-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .redact-button:not(.is-main):not(:disabled):hover,
+    .redact-mode:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+  }
+
+  .redact-note {
+    display: flex;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .redact-note svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--color-accent);
+  }
+
+  .redact-pages {
+    display: grid;
+    gap: var(--space-xl);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :global(.redact-page) {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+    min-width: 0;
+  }
+
+  :global(.redact-sheet) {
+    position: relative;
+    width: 100%;
+    max-width: 48rem;
+    aspect-ratio: 1 / 1.414;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* While marking, touching the page draws a box rather than scrolling. */
+  :global(.redact-sheet[data-mode="mark"]) {
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  :global(.redact-sheet.is-loading) {
+    animation: redact-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes redact-pulse {
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  :global(.redact-page-image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  :global(.redact-page-number) {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* A marked area, nearly black so it's clear what will go, with a red edge, a remove button and a corner to resize. */
+  :global(.redact-box) {
+    position: absolute;
+    background: rgb(0 0 0 / 0.82);
+    outline: 1px solid #c62828;
+    cursor: move;
+    touch-action: none;
+  }
+
+  :global(.redact-box:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  :global(.redact-remove) {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    display: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  :global(.redact-handle) {
+    position: absolute;
+    right: -9px;
+    bottom: -9px;
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ffffff;
+    border-radius: 4px;
+    background: var(--color-accent);
+    cursor: nwse-resize;
+  }
+
+  :global(.redact-remove::after),
+  :global(.redact-handle::after) {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
+
+  :global(.redact-box:hover .redact-remove),
+  :global(.redact-box:focus-within .redact-remove),
+  :global(.redact-box:hover .redact-handle),
+  :global(.redact-box:focus-within .redact-handle) {
+    display: grid;
+  }
+
+  @media (pointer: coarse) {
+    :global(.redact-remove),
+    :global(.redact-handle) {
+      display: grid;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.redact-sheet.is-loading) {
+      animation: none;
+    }
+  }
+</style>

@@ -36,9 +36,13 @@
     "wrangler": "^4.158.0"
   },
   "dependencies": {
+    "@tesseract.js-data/ben": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
     "fflate": "0.8.3",
     "heic-to": "1.6.7",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^6.5.438"
+    "pdfjs-dist": "^6.5.438",
+    "tesseract.js": "7.0.0",
+    "wasm-feature-detect": "1.8.0"
   }
 }

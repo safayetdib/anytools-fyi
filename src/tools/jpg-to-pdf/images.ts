@@ -1,5 +1,5 @@
 import { enhanceScan, type ScanFilter } from "../scan-to-pdf/enhance";
-import { isHeic, jpegOrientation, type PreparedImage } from "./layout";
+import { exifTurn, isHeic, jpegOrientation, type PreparedImage } from "./layout";
 
 // Runs in the page: decoding images needs the browser. JPG and PNG pass through untouched when they can.
 
@@ -53,12 +53,21 @@ export async function imageThumbnail(file: File, width: number): Promise<{ image
   }
 }
 
-// Ready to place in a PDF: JPG and PNG as they are, everything else (and turned photos) converted once.
+// Ready to place in a PDF the right way up: JPG and PNG as they are, everything else (and mirrored photos) converted
+// once. Converting would make most photos bigger, so a photo the camera only turned keeps its bytes and the turn.
 export async function prepareImage(file: File, rotate: number): Promise<PreparedImage> {
   const bytes = new Uint8Array(await file.arrayBuffer());
+  const turn = kindOf(bytes) === "jpg" ? exifTurn(jpegOrientation(bytes)) : null;
+  if (turn !== null) return { bytes, kind: "jpg", rotate: (rotate + turn) % 360 };
+  return { ...(await uprightImage(file)), rotate };
+}
+
+// The image as it's shown, as JPG or PNG bytes. Only what a PDF can't hold as it is gets converted.
+export async function uprightImage(file: Blob): Promise<{ bytes: Uint8Array; kind: "jpg" | "png" }> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
   const kind = kindOf(bytes);
-  if (kind === "png") return { bytes, kind, rotate };
-  if (kind === "jpg" && jpegOrientation(bytes) === 1) return { bytes, kind, rotate };
+  if (kind === "png") return { bytes, kind };
+  if (kind === "jpg" && jpegOrientation(bytes) === 1) return { bytes, kind };
   const bitmap = await decode(file);
   try {
     const { canvas, context } = canvasFor(bitmap);
@@ -66,7 +75,7 @@ export async function prepareImage(file: File, rotate: number): Promise<Prepared
     const png = kind === "other" && hasSeeThrough(context, canvas.width, canvas.height);
     const blob = await toBlob(canvas, png ? "image/png" : "image/jpeg", 0.92);
     canvas.width = canvas.height = 0;
-    return { bytes: new Uint8Array(await blob.arrayBuffer()), kind: png ? "png" : "jpg", rotate };
+    return { bytes: new Uint8Array(await blob.arrayBuffer()), kind: png ? "png" : "jpg" };
   } finally {
     bitmap.close();
   }

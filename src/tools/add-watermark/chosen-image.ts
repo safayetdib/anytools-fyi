@@ -1,3 +1,4 @@
+import { decode, uprightImage } from "../jpg-to-pdf/images";
 import type { WatermarkImage } from "./watermark";
 
 // The image chosen in the options panel, kept here so the run can use it. It's a file, so it can't travel in the form's text fields.
@@ -12,17 +13,14 @@ export function setChosenImage(next: typeof chosen) {
   chosen = next;
 }
 
-// Turns any picture the browser can open into PNG, keeping see-through parts, ready to place in a PDF.
+// Any picture the browser can open (and iPhone HEIC photos), upright and ready to place in a PDF. JPG and PNG go in as
+// they are, so a photo doesn't come out several times bigger as a PNG.
 export async function prepareWatermarkImage(file: File) {
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  const { bytes, kind } = await uprightImage(file);
+  const bitmap = await decode(file);
   try {
-    const canvas = document.createElement("canvas");
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    (canvas.getContext("2d") as CanvasRenderingContext2D).drawImage(bitmap, 0, 0);
-    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((png) => (png ? resolve(png) : reject(new Error("Encode failed"))), "image/png"));
-    canvas.width = canvas.height = 0;
-    return { bytes: new Uint8Array(await blob.arrayBuffer()), kind: "png" as const, width: bitmap.width, height: bitmap.height, url: URL.createObjectURL(blob) };
+    const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: kind === "png" ? "image/png" : "image/jpeg" }));
+    return { bytes, kind, width: bitmap.width, height: bitmap.height, url };
   } finally {
     bitmap.close();
   }

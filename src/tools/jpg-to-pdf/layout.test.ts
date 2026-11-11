@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
-import { buildPdf, isHeic, jpegOrientation, pageLayout, pdfName, readSettings, type Settings } from "./layout";
+import { buildPdf, exifTurn, isHeic, jpegOrientation, pageLayout, pdfName, readSettings, type Settings } from "./layout";
 
 const image = (name: string) => new Uint8Array(readFileSync(`tests/fixtures/images/${name}`));
 const settings = (overrides: Partial<Settings> = {}): Settings => ({ size: "a4", orientation: "portrait", margin: "none", merge: true, ...overrides });
@@ -12,6 +12,13 @@ describe("jpegOrientation", () => {
     expect(jpegOrientation(image("phone.jpg"))).toBe(6);
     expect(jpegOrientation(image("tall.jpg"))).toBe(1);
     expect(jpegOrientation(new Uint8Array([1, 2, 3]))).toBe(1);
+  });
+});
+
+describe("exifTurn", () => {
+  it("turns photos the camera only turned, and has no turn for mirrored ones", () => {
+    expect([1, 3, 6, 8].map(exifTurn)).toEqual([0, 180, 90, 270]);
+    expect([2, 4, 5, 7].map(exifTurn)).toEqual([null, null, null, null]);
   });
 });
 
