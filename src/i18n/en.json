@@ -141,6 +141,12 @@
       "title": "Compress PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Compress PDF files for free and reduce their size for email or upload forms. Choose Extreme, Recommended or Less compression. No signup, nothing uploaded."
     },
+    "pdf-to-word": {
+      "name": "PDF to Word",
+      "description": "Turn a PDF into a Word document you can edit, with its paragraphs, fonts and pictures kept.",
+      "title": "PDF to Word Free: Convert PDF to DOCX Online | AnyTools.fyi",
+      "metaDescription": "Convert PDF to Word for free. Get an editable .docx with the PDF's paragraphs, fonts and pictures, in English or Bangla. No signup, nothing uploaded."
+    },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
       "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
@@ -1210,6 +1216,38 @@
       "after": "Plain text, ready to copy",
       "action": "Converted in your browser",
       "caption": "The words come out in reading order, line by line, with a blank line between paragraphs. Bangla letters stay as they are."
+    }
+  },
+  "pdfToWord": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to Word",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own Word document.",
+    "panelTitle": "PDF to Word",
+    "intro": "Rebuilds each PDF as a Word document. Paragraphs flow again, so you can edit them, and fonts, sizes, bold, italic and pictures stay as they were. Each page keeps its own size.",
+    "note": "Scanned pages are pictures with no text inside. Run OCR PDF on them first to get text you can edit.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now the Word document {output} ({size}).",
+    "summaryMany": "Done. {count} Word documents, all saved in one ZIP ({size}).",
+    "scanHintOne": "Its pages are pictures, like a scan, so they came out as pictures. Run OCR PDF on it first to get text you can edit.",
+    "scanHintMany": "{count} of them are scans, so their pages came out as pictures. Run OCR PDF on those first to get text you can edit.",
+    "part": "Word document of {name}",
+    "zipName": "anytools_pdf-to-word.zip",
+    "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "report.pdf",
+      "output": "report.docx",
+      "before": "A PDF you can't edit",
+      "after": "A Word document you can",
+      "action": "Converted in your browser",
+      "caption": "Lines join back into paragraphs that flow, with the PDF's fonts, sizes and pictures. Bangla text stays Bangla."
     }
   },
   "comparePdf": {

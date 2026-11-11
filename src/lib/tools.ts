@@ -66,6 +66,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "pdf-to-word",
+    hub: "pdf",
+    input: "files",
+    related: ["pdf-to-text", "ocr-pdf", "edit-pdf", "compress-pdf"],
+    aliases: ["pdf to docx", "pdf to doc", "convert pdf to word", "pdf to editable word", "pdf word converter", "পিডিএফ থেকে ওয়ার্ড", "পিডিএফ টু ওয়ার্ড"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "jpg-to-pdf",
     hub: "pdf",
     input: "files",
