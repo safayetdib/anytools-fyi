@@ -264,6 +264,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "remove-pdf-metadata",
+    hub: "pdf",
+    input: "files",
+    related: ["redact-pdf", "protect-pdf", "flatten-pdf", "compress-pdf"],
+    aliases: ["pdf metadata remover", "delete pdf metadata", "remove author from pdf", "clean pdf properties", "strip pdf metadata", "anonymize pdf", "পিডিএফ মেটাডেটা মুছুন"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "repair-pdf",
     hub: "pdf",
     input: "files",

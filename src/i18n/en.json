@@ -277,6 +277,12 @@
       "title": "Unlock PDF: Remove PDF Password Online Free | AnyTools.fyi",
       "metaDescription": "Unlock PDF files for free. Remove the open password, or limits on printing, copying and editing, from PDFs you own. No signup, nothing uploaded."
     },
+    "remove-pdf-metadata": {
+      "name": "Remove PDF metadata",
+      "description": "Take the author, title, app names, dates and photo details out of a PDF before you share it.",
+      "title": "Remove PDF Metadata Free: Delete Author Info | AnyTools.fyi",
+      "metaDescription": "Remove PDF metadata for free. Delete the author, title, dates, app names and photo location details before sharing a PDF. Nothing uploaded."
+    },
     "repair-pdf": {
       "name": "Repair PDF",
       "description": "Fix damaged PDFs that won't open, so you can read and use them again.",
@@ -1379,6 +1385,67 @@
       "after": "Part of the page",
       "action": "Flattened in your browser",
       "caption": "The answers and notes look just the same, but they're now drawn on the page, so they can't be edited, moved or deleted."
+    }
+  },
+  "removePdfMetadata": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Remove metadata",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is cleaned on its own.",
+    "panelTitle": "Remove PDF metadata",
+    "intro": "A PDF carries details about itself that you don't see on its pages. This takes them all out, and leaves the pages exactly as they are:",
+    "removes": [
+      "Title, author, subject and keywords",
+      "The apps that made it, and when it was made and changed",
+      "The hidden XMP copy of those details, and apps' private notes",
+      "Camera, phone and place details inside its photos"
+    ],
+    "note": "What's written on the pages stays. To take out text people can see, use Redact PDF.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "unreadablePreview": "Couldn't preview this file",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "found": "Has: {list}",
+    "foundNone": "No document details found",
+    "short": {
+      "title": "title",
+      "author": "author",
+      "subject": "subject",
+      "keywords": "keywords",
+      "app": "app names",
+      "dates": "dates",
+      "custom": "app notes",
+      "xmp": "XMP details",
+      "photos": "photo details"
+    },
+    "details": {
+      "title": "the title",
+      "author": "the author",
+      "subject": "the subject",
+      "keywords": "the keywords",
+      "app": "the names of the apps that made it",
+      "dates": "the dates it was made and changed",
+      "custom": "apps' private notes",
+      "xmp": "the hidden XMP copy of its details",
+      "photos": "camera and place details in its photos"
+    },
+    "and": " and ",
+    "summaryOne": "Done. Removed {list} from {name}, saved as {output} ({size}).",
+    "summaryNone": "{name} had no document details to remove. Its copy is saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs cleaned of their details, all saved in one ZIP ({size}).",
+    "part": "Clean copy of {name}",
+    "zipName": "anytools_remove-pdf-metadata.zip",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "report.pdf",
+      "output": "report_clean.pdf",
+      "before": "Details you can't see",
+      "after": "Nothing but the pages",
+      "action": "Cleaned in your browser",
+      "caption": "The author, title, dates, app names and photo details are taken out. The pages look exactly the same."
     }
   },
   "comparePdf": {

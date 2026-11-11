@@ -1,0 +1,120 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/card-tools.css";
+
+const t = en.removePdfMetadata;
+---
+
+<div class="pw-layout" data-meta-options data-testid="meta-options">
+  <aside class="pw-panel" aria-labelledby="meta-panel-title">
+    <h3 class="pw-panel-title" id="meta-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+    <ul class="meta-list">
+      {t.removes.map((item) => <li>{item}</li>)}
+    </ul>
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<style>
+  .meta-list {
+    display: grid;
+    gap: var(--space-xs);
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+</style>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { openPdf } from "../../lib/pdf/preview";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+  import type { Detail } from "./metadata";
+
+  const t = en.removePdfMetadata;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-meta-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+
+    // What each PDF says about itself, read once a file is chosen, so people can see what will go.
+    const held = new Map<File, Detail[] | null>();
+    const KEYS: Record<string, Detail> = { Title: "title", Author: "author", Subject: "subject", Keywords: "keywords", Creator: "app", Producer: "app", CreationDate: "dates", ModDate: "dates" };
+    const ORDER: Detail[] = ["title", "author", "subject", "keywords", "app", "dates", "custom", "xmp"];
+    let latest: { files: File[]; entries: Map<File, PdfCard> } | null = null;
+
+    async function look(file: File) {
+      held.set(file, null);
+      let details: Detail[] = [];
+      try {
+        const { doc, close } = await openPdf(new Uint8Array(await file.arrayBuffer()));
+        try {
+          const { info, metadata } = (await doc.getMetadata()) as { info: Record<string, unknown>; metadata: unknown };
+          const seen = new Set<Detail>();
+          for (const [key, value] of Object.entries(info ?? {})) {
+            if (key === "Custom" && value && typeof value === "object" && Object.keys(value).length) seen.add("custom");
+            else if (KEYS[key] && typeof value === "string" && value.trim()) seen.add(KEYS[key]);
+          }
+          if (metadata) seen.add("xmp");
+          details = ORDER.filter((detail) => seen.has(detail));
+        } finally {
+          close();
+        }
+      } catch {
+        // A locked or damaged file says so on its card instead.
+      }
+      if (!held.has(file)) return;
+      held.set(file, details);
+      if (latest) draw(latest.files, latest.entries);
+    }
+
+    function metaOf(file: File, card: PdfCard): { text: string; problem: boolean } {
+      if (card.status === "loading") return { text: t.checking, problem: false };
+      if (card.status === "locked") return { text: t.lockedCard, problem: true };
+      if (card.status === "unreadable") return { text: t.unreadablePreview, problem: true };
+      const details = held.get(file);
+      if (!details) return { text: t.checking, problem: false };
+      return { text: details.length ? fill(t.found, { list: details.map((detail) => t.short[detail]).join(", ") }) : t.foundNone, problem: false };
+    }
+
+    function draw(files: File[], entries: Map<File, PdfCard>) {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(file, card);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "meta-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          return item;
+        }),
+      );
+    }
+
+    let first = true;
+    trackPdfCards(root, THUMBNAIL_WIDTH, (files, entries) => {
+      latest = { files, entries };
+      for (const file of held.keys()) if (!files.includes(file)) held.delete(file);
+      for (const file of files) if (!held.has(file)) void look(file);
+      draw(files, entries);
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+  }
+</script>
