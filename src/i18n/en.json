@@ -141,6 +141,24 @@
       "title": "Compress PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Compress PDF files for free and reduce their size for email or upload forms. Choose Extreme, Recommended or Less compression. No signup, nothing uploaded."
     },
+    "pdf-to-word": {
+      "name": "PDF to Word",
+      "description": "Turn a PDF into a Word document you can edit, with its paragraphs, fonts and pictures kept.",
+      "title": "PDF to Word Free: Convert PDF to DOCX Online | AnyTools.fyi",
+      "metaDescription": "Convert PDF to Word for free. Get an editable .docx with the PDF's paragraphs, fonts and pictures, in English or Bangla. No signup, nothing uploaded."
+    },
+    "pdf-to-powerpoint": {
+      "name": "PDF to PowerPoint",
+      "description": "Turn each page of a PDF into a slide that looks the same, with its text in boxes you can edit.",
+      "title": "PDF to PowerPoint Free: Convert PDF to PPTX | AnyTools.fyi",
+      "metaDescription": "Convert PDF to PowerPoint for free. Each page becomes a slide that looks the same, with text you can edit. No signup, nothing uploaded."
+    },
+    "pdf-to-excel": {
+      "name": "PDF to Excel",
+      "description": "Take the tables out of a PDF into an Excel sheet, with each figure in its own cell, ready to add up.",
+      "title": "PDF to Excel Free: Convert PDF Tables to XLSX | AnyTools.fyi",
+      "metaDescription": "Convert PDF to Excel for free. Tables come out in rows and columns, with figures as real numbers, for statements and invoices. Nothing uploaded."
+    },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
       "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
@@ -223,6 +241,12 @@
       "title": "Crop PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Crop PDF pages for free. Drag a box to trim margins, or keep just part of a page, on every page or one at a time. No signup, nothing uploaded."
     },
+    "resize-pdf": {
+      "name": "Resize PDF",
+      "description": "Fit every page of a PDF onto A4, Letter or another paper size, or print several pages on one sheet.",
+      "title": "Resize PDF Free: Change Page Size to A4 | AnyTools.fyi",
+      "metaDescription": "Resize PDF pages for free. Fit every page to A4, Letter, Legal, A3 or A5, add margins, or put 2 to 9 pages on a sheet. Nothing uploaded."
+    },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
       "description": "Delete the pages you don't need and keep the rest.",
@@ -259,6 +283,12 @@
       "title": "Unlock PDF: Remove PDF Password Online Free | AnyTools.fyi",
       "metaDescription": "Unlock PDF files for free. Remove the open password, or limits on printing, copying and editing, from PDFs you own. No signup, nothing uploaded."
     },
+    "remove-pdf-metadata": {
+      "name": "Remove PDF metadata",
+      "description": "Take the author, title, app names, dates and photo details out of a PDF before you share it.",
+      "title": "Remove PDF Metadata Free: Delete Author Info | AnyTools.fyi",
+      "metaDescription": "Remove PDF metadata for free. Delete the author, title, dates, app names and photo location details before sharing a PDF. Nothing uploaded."
+    },
     "repair-pdf": {
       "name": "Repair PDF",
       "description": "Fix damaged PDFs that won't open, so you can read and use them again.",
@@ -294,6 +324,12 @@
       "description": "Type into a PDF form's own boxes, tick its choices, and save it filled in, ready to send.",
       "title": "Fill PDF Forms Free: Type Into Any PDF Form | AnyTools.fyi",
       "metaDescription": "Fill in PDF forms for free: type answers in English or Bangla, tick boxes and pick options, then lock them in if you like. No signup, nothing uploaded."
+    },
+    "flatten-pdf": {
+      "name": "Flatten PDF",
+      "description": "Make a PDF's filled-in form and comments part of the page, so nobody can change them.",
+      "title": "Flatten PDF Free: Lock Forms and Comments | AnyTools.fyi",
+      "metaDescription": "Flatten PDF forms and comments for free. Filled-in answers, ticks, notes and stamps become part of the page and can't be changed. Nothing uploaded."
     },
     "redact-pdf": {
       "name": "Redact PDF",
@@ -1210,6 +1246,273 @@
       "after": "Plain text, ready to copy",
       "action": "Converted in your browser",
       "caption": "The words come out in reading order, line by line, with a blank line between paragraphs. Bangla letters stay as they are."
+    }
+  },
+  "pdfToWord": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to Word",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own Word document.",
+    "panelTitle": "PDF to Word",
+    "intro": "Rebuilds each PDF as a Word document. Paragraphs flow again, so you can edit them, and fonts, sizes, bold, italic and pictures stay as they were. Each page keeps its own size.",
+    "note": "Scanned pages are pictures with no text inside. Run OCR PDF on them first to get text you can edit.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now the Word document {output} ({size}).",
+    "summaryMany": "Done. {count} Word documents, all saved in one ZIP ({size}).",
+    "scanHintOne": "Its pages are pictures, like a scan, so they came out as pictures. Run OCR PDF on it first to get text you can edit.",
+    "scanHintMany": "{count} of them are scans, so their pages came out as pictures. Run OCR PDF on those first to get text you can edit.",
+    "part": "Word document of {name}",
+    "zipName": "anytools_pdf-to-word.zip",
+    "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "report.pdf",
+      "output": "report.docx",
+      "before": "A PDF you can't edit",
+      "after": "A Word document you can",
+      "action": "Converted in your browser",
+      "caption": "Lines join back into paragraphs that flow, with the PDF's fonts, sizes and pictures. Bangla text stays Bangla."
+    }
+  },
+  "pdfToPowerpoint": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to PowerPoint",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own presentation.",
+    "panelTitle": "PDF to PowerPoint",
+    "intro": "Turns each page into a slide. The page's pictures, shapes and colours sit behind, and its text goes on top in boxes you can edit, in the same fonts, sizes and colours.",
+    "note": "Scanned pages are pictures with no text inside, so they come out as pictures. Run OCR PDF on them first to get text you can edit.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now the presentation {output} ({size}).",
+    "summaryMany": "Done. {count} presentations, all saved in one ZIP ({size}).",
+    "scanHintOne": "Its pages are pictures, like a scan, so the slides have no text to edit. Run OCR PDF on it first to get text you can edit.",
+    "scanHintMany": "{count} of them are scans, so their slides have no text to edit. Run OCR PDF on those first to get text you can edit.",
+    "part": "Presentation of {name}",
+    "zipName": "anytools_pdf-to-powerpoint.zip",
+    "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "pitch.pdf",
+      "output": "pitch.pptx",
+      "before": "Pages you can't edit",
+      "after": "Slides you can",
+      "action": "Converted in your browser",
+      "caption": "Each page becomes a slide. Its pictures and shapes stay behind, and its text sits on top, ready to edit."
+    }
+  },
+  "pdfToExcel": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to Excel",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own Excel workbook.",
+    "panelTitle": "PDF to Excel",
+    "intro": "Puts each line of the PDF in a row, and text that lines up down the page in the same column, the way a table's figures do. Numbers come out as numbers you can add up.",
+    "sheetsLegend": "Sheets",
+    "sheetsPage": "One sheet for each page",
+    "sheetsOne": "All pages on one sheet",
+    "sheetName": "Page {page}",
+    "sheetAll": "All pages",
+    "note": "Scanned pages are pictures with no text inside. Run OCR PDF on them first, then convert.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now the workbook {output} ({size}).",
+    "summaryMany": "Done. {count} workbooks, all saved in one ZIP ({size}).",
+    "summarySkipped": "Done. {count} workbooks in one ZIP ({size}). {skipped} PDFs had no text to take out; run OCR PDF on them first.",
+    "part": "Workbook of {name}",
+    "zipName": "anytools_pdf-to-excel.zip",
+    "noText": "{name} has no text to take out: its pages are pictures, like a scan. Run OCR PDF on it first, then try again.",
+    "noTextMany": "None of these PDFs has text to take out: their pages are pictures, like scans. Run OCR PDF on them first.",
+    "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "statement.pdf",
+      "output": "statement.xlsx",
+      "before": "A table you can't use",
+      "after": "Rows and columns to add up",
+      "action": "Converted in your browser",
+      "caption": "Text that lines up down the page shares a column, and figures become real numbers, so totals work straight away."
+    }
+  },
+  "flattenPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Flatten PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is flattened on its own.",
+    "panelTitle": "Flatten PDF",
+    "intro": "Draws what's on top of each page into the page itself, then takes the boxes and notes away. The PDF looks the same, but nothing in it can be filled in or changed.",
+    "whatLegend": "What to flatten",
+    "forms": "Form fields",
+    "formsHint": "Typed answers, ticks, choices and signatures.",
+    "marks": "Comments and markup",
+    "marksHint": "Highlights, notes, stamps, shapes and drawings.",
+    "chooseOne": "Choose at least one thing to flatten.",
+    "note": "Links stay links. Attached files, and redaction marks not yet applied, are left as they are.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "fieldOne": "1 form field",
+    "fieldMany": "{count} form fields",
+    "markOne": "1 comment",
+    "markMany": "{count} comments",
+    "and": " and ",
+    "summaryOne": "Done. {what} in {name} are now part of its pages, saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs flattened, with {what} made part of their pages, all saved in one ZIP ({size}).",
+    "summarySkipped": "Done. {count} PDFs flattened, with {what} made part of their pages ({size}). {skipped} had nothing to flatten and were left out.",
+    "part": "Flattened {name}",
+    "zipName": "anytools_flatten-pdf.zip",
+    "nothing": "{name} has no form fields or comments to flatten. It's already as flat as it gets.",
+    "nothingMany": "None of these PDFs has form fields or comments to flatten.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "form.pdf",
+      "output": "form_flattened.pdf",
+      "before": "Fields you can still change",
+      "after": "Part of the page",
+      "action": "Flattened in your browser",
+      "caption": "The answers and notes look just the same, but they're now drawn on the page, so they can't be edited, moved or deleted."
+    }
+  },
+  "removePdfMetadata": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Remove metadata",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is cleaned on its own.",
+    "panelTitle": "Remove PDF metadata",
+    "intro": "A PDF carries details about itself that you don't see on its pages. This takes them all out, and leaves the pages exactly as they are:",
+    "removes": [
+      "Title, author, subject and keywords",
+      "The apps that made it, and when it was made and changed",
+      "The hidden XMP copy of those details, and apps' private notes",
+      "Camera, phone and place details inside its photos"
+    ],
+    "note": "What's written on the pages stays. To take out text people can see, use Redact PDF.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "unreadablePreview": "Couldn't preview this file",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "found": "Has: {list}",
+    "foundNone": "No document details found",
+    "short": {
+      "title": "title",
+      "author": "author",
+      "subject": "subject",
+      "keywords": "keywords",
+      "app": "app names",
+      "dates": "dates",
+      "custom": "app notes",
+      "xmp": "XMP details",
+      "photos": "photo details"
+    },
+    "details": {
+      "title": "the title",
+      "author": "the author",
+      "subject": "the subject",
+      "keywords": "the keywords",
+      "app": "the names of the apps that made it",
+      "dates": "the dates it was made and changed",
+      "custom": "apps' private notes",
+      "xmp": "the hidden XMP copy of its details",
+      "photos": "camera and place details in its photos"
+    },
+    "and": " and ",
+    "summaryOne": "Done. Removed {list} from {name}, saved as {output} ({size}).",
+    "summaryNone": "{name} had no document details to remove. Its copy is saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs cleaned of their details, all saved in one ZIP ({size}).",
+    "part": "Clean copy of {name}",
+    "zipName": "anytools_remove-pdf-metadata.zip",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "report.pdf",
+      "output": "report_clean.pdf",
+      "before": "Details you can't see",
+      "after": "Nothing but the pages",
+      "action": "Cleaned in your browser",
+      "caption": "The author, title, dates, app names and photo details are taken out. The pages look exactly the same."
+    }
+  },
+  "resizePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Resize PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is resized on its own.",
+    "panelTitle": "Resize PDF",
+    "intro": "Every page is scaled to fit the paper, keeping its shape, and centred. Nothing is cut off.",
+    "legends": {
+      "size": "Paper size",
+      "orientation": "Orientation",
+      "margin": "Margin",
+      "perSheet": "Pages per sheet"
+    },
+    "choices": {
+      "size": {
+        "a4": "A4",
+        "letter": "Letter",
+        "legal": "Legal",
+        "a3": "A3",
+        "a5": "A5"
+      },
+      "orientation": {
+        "auto": "Auto",
+        "portrait": "Portrait",
+        "landscape": "Landscape"
+      },
+      "margin": {
+        "none": "None",
+        "small": "Small",
+        "big": "Big"
+      },
+      "perSheet": {
+        "1": "1",
+        "2": "2",
+        "4": "4",
+        "6": "6",
+        "9": "9"
+      }
+    },
+    "note": "With one page to a sheet, links, form fields and comments stay. With several, pages are drawn small side by side, so flatten forms first.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is resized, saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs resized, all saved in one ZIP ({size}).",
+    "part": "Resized {name}",
+    "zipName": "anytools_resize-pdf.zip",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "notes.pdf",
+      "output": "notes_resized.pdf",
+      "before": "Pages of every size",
+      "after": "All on A4",
+      "action": "Resized in your browser",
+      "caption": "Each page is scaled to fit the paper, keeping its shape, and centred, so nothing is cut off or stretched."
     }
   },
   "comparePdf": {

@@ -1,0 +1,164 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/card-tools.css";
+
+const t = en.resizePdf;
+const groups = [
+  { name: "size", values: ["a4", "letter", "legal", "a3", "a5"], start: "a4" },
+  { name: "orientation", values: ["auto", "portrait", "landscape"], start: "auto" },
+  { name: "margin", values: ["none", "small", "big"], start: "none" },
+  { name: "perSheet", values: ["1", "2", "4", "6", "9"], start: "1" },
+];
+---
+
+<div class="pw-layout" data-resize-options data-testid="resize-options">
+  <aside class="pw-panel" aria-labelledby="resize-panel-title">
+    <h3 class="pw-panel-title" id="resize-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+    {
+      groups.map((group) => (
+        <fieldset class="resize-group">
+          <legend>{(t.legends as Record<string, string>)[group.name]}</legend>
+          <div class="resize-options" data-columns={group.values.length > 3 ? "many" : "few"}>
+            {group.values.map((value) => (
+              <label class="resize-choice">
+                <input type="radio" name={group.name} value={value} checked={value === group.start} />
+                <span>{(t.choices as Record<string, Record<string, string>>)[group.name][value]}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))
+    }
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+
+  const t = en.resizePdf;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-resize-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+
+    function metaOf(card: PdfCard): { text: string; problem: boolean } {
+      if (card.status === "loading") return { text: t.checking, problem: false };
+      if (card.status === "locked") return { text: t.lockedCard, problem: true };
+      if (card.status === "unreadable") return { text: t.unreadablePreview, problem: true };
+      return { text: card.pages === null ? "" : card.pages === 1 ? t.pageOne : fill(t.pageMany, { count: card.pages }), problem: false };
+    }
+
+    let first = true;
+    trackPdfCards(root, THUMBNAIL_WIDTH, (files, entries) => {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(card);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "resize-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          return item;
+        }),
+      );
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+  }
+</script>
+
+<style>
+  .resize-group {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .resize-group legend {
+    margin-bottom: var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .resize-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  .resize-options[data-columns="many"] {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  /* Tiles that read as one choice from a row; the radio itself is hidden but still takes focus and clicks. */
+  .resize-choice {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .resize-choice input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .resize-choice span {
+    min-width: 0;
+  }
+
+  @media (max-width: 399px) {
+    .resize-choice {
+      font-size: 0.8125rem;
+    }
+  }
+
+  .resize-choice:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    box-shadow: 0 0 0 1px var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .resize-choice:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) {
+    .resize-choice:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+  }
+</style>
