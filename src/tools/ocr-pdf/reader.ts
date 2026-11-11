@@ -2,7 +2,6 @@ import plainCore from "tesseract.js-core/tesseract-core-lstm.wasm.js?url";
 import simdCore from "tesseract.js-core/tesseract-core-simd-lstm.wasm.js?url";
 import workerScript from "tesseract.js/dist/worker.min.js?url";
 import { simd } from "wasm-feature-detect";
-import { downloadSiteFile } from "../../lib/site-file";
 import type { Language } from "./ocr";
 
 // Runs in the page. The reader (Tesseract) works in its own worker; it and each language are served from this site, so
@@ -10,7 +9,6 @@ import type { Language } from "./ocr";
 
 // Served at a fixed address by the build (see astro.config.mjs), since the reader asks for each language by name.
 const LANGUAGE_PATH = "/ocr/4.0.0_best_int";
-const languageFile = (language: Language) => `${LANGUAGE_PATH}/${language}.traineddata.gz`;
 
 // Pages are read as pictures at 300 dpi, what Tesseract reads best, with no side over this many pixels so phones cope.
 const DPI = 300;
@@ -24,21 +22,18 @@ export interface Reader {
 
 const absolute = (path: string) => new URL(path, location.href).href;
 
-// Starts the reader with the chosen languages. Setting up is the first part of `onProgress`: each language is fetched
-// here first, to show how much has arrived on a slow connection; the reader then takes it from the browser's cache.
+// How far setting up has got, from the reader's own messages: its engine first, then the languages, which are the
+// big download the first time.
+const SETUP_STEPS: Record<string, [number, number]> = {
+  "loading tesseract core": [0, 0.25],
+  "loading language traineddata": [0.25, 0.95],
+  "initializing api": [0.95, 1],
+};
+
+// Starts the reader with the chosen languages. Setting up is the first part of `onProgress`. The reader fetches each
+// language itself, once; the browser keeps it for next time.
 export async function openReader(languages: Language[], onProgress: (fraction: number) => void): Promise<Reader> {
-  const shares = languages.map(() => 0);
-  const report = () => onProgress(shares.reduce((sum, share) => sum + share, 0) / languages.length);
-  const [{ createWorker, OEM }, fast] = await Promise.all([
-    import("tesseract.js"),
-    simd(),
-    ...languages.map((language, index) =>
-      downloadSiteFile(languageFile(language), (fraction) => {
-        shares[index] = fraction;
-        report();
-      }),
-    ),
-  ]);
+  const [{ createWorker, OEM }, fast] = await Promise.all([import("tesseract.js"), simd()]);
   // Where the page being read reports its progress.
   let current: ((fraction: number) => void) | null = null;
   const worker = await createWorker(languages.join("+"), OEM.LSTM_ONLY, {
@@ -47,10 +42,12 @@ export async function openReader(languages: Language[], onProgress: (fraction: n
     corePath: absolute(fast ? simdCore : plainCore),
     langPath: absolute(LANGUAGE_PATH),
     workerBlobURL: false,
-    // The browser already keeps the languages, so the reader doesn't store a second copy.
+    // The browser keeps the languages, so the reader doesn't store a second copy.
     cacheMethod: "none",
     logger: (message) => {
       if (message.status === "recognizing text") current?.(message.progress);
+      const step = SETUP_STEPS[message.status];
+      if (step) onProgress(step[0] + (step[1] - step[0]) * message.progress);
     },
   });
   await worker.setParameters({ user_defined_dpi: String(DPI) });
