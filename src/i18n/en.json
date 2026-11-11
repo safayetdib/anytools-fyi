@@ -241,6 +241,12 @@
       "title": "Crop PDF Online Free, No Upload | AnyTools.fyi",
       "metaDescription": "Crop PDF pages for free. Drag a box to trim margins, or keep just part of a page, on every page or one at a time. No signup, nothing uploaded."
     },
+    "resize-pdf": {
+      "name": "Resize PDF",
+      "description": "Fit every page of a PDF onto A4, Letter or another paper size, or print several pages on one sheet.",
+      "title": "Resize PDF Free: Change Page Size to A4 | AnyTools.fyi",
+      "metaDescription": "Resize PDF pages for free. Fit every page to A4, Letter, Legal, A3 or A5, add margins, or put 2 to 9 pages on a sheet. Nothing uploaded."
+    },
     "remove-pdf-pages": {
       "name": "Remove PDF pages",
       "description": "Delete the pages you don't need and keep the rest.",
@@ -1446,6 +1452,67 @@
       "after": "Nothing but the pages",
       "action": "Cleaned in your browser",
       "caption": "The author, title, dates, app names and photo details are taken out. The pages look exactly the same."
+    }
+  },
+  "resizePdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Resize PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is resized on its own.",
+    "panelTitle": "Resize PDF",
+    "intro": "Every page is scaled to fit the paper, keeping its shape, and centred. Nothing is cut off.",
+    "legends": {
+      "size": "Paper size",
+      "orientation": "Orientation",
+      "margin": "Margin",
+      "perSheet": "Pages per sheet"
+    },
+    "choices": {
+      "size": {
+        "a4": "A4",
+        "letter": "Letter",
+        "legal": "Legal",
+        "a3": "A3",
+        "a5": "A5"
+      },
+      "orientation": {
+        "auto": "Auto",
+        "portrait": "Portrait",
+        "landscape": "Landscape"
+      },
+      "margin": {
+        "none": "None",
+        "small": "Small",
+        "big": "Big"
+      },
+      "perSheet": {
+        "1": "1",
+        "2": "2",
+        "4": "4",
+        "6": "6",
+        "9": "9"
+      }
+    },
+    "note": "With one page to a sheet, links, form fields and comments stay. With several, pages are drawn small side by side, so flatten forms first.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is resized, saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs resized, all saved in one ZIP ({size}).",
+    "part": "Resized {name}",
+    "zipName": "anytools_resize-pdf.zip",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "notes.pdf",
+      "output": "notes_resized.pdf",
+      "before": "Pages of every size",
+      "after": "All on A4",
+      "action": "Resized in your browser",
+      "caption": "Each page is scaled to fit the paper, keeping its shape, and centred, so nothing is cut off or stretched."
     }
   },
   "comparePdf": {

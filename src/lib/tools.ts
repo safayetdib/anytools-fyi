@@ -210,6 +210,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "resize-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["crop-pdf", "rotate-pdf", "organize-pdf", "compress-pdf"],
+    aliases: ["change pdf page size", "pdf to a4", "pdf to letter size", "scale pdf", "n-up pdf", "multiple pages per sheet", "পিডিএফ সাইজ পরিবর্তন"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "remove-pdf-pages",
     hub: "pdf",
     input: "files",
