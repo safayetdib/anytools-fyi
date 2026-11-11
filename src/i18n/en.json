@@ -153,6 +153,12 @@
       "title": "PDF to PowerPoint Free: Convert PDF to PPTX | AnyTools.fyi",
       "metaDescription": "Convert PDF to PowerPoint for free. Each page becomes a slide that looks the same, with text you can edit. No signup, nothing uploaded."
     },
+    "pdf-to-excel": {
+      "name": "PDF to Excel",
+      "description": "Take the tables out of a PDF into an Excel sheet, with each figure in its own cell, ready to add up.",
+      "title": "PDF to Excel Free: Convert PDF Tables to XLSX | AnyTools.fyi",
+      "metaDescription": "Convert PDF to Excel for free. Tables come out in rows and columns, with figures as real numbers, for statements and invoices. Nothing uploaded."
+    },
     "jpg-to-pdf": {
       "name": "JPG to PDF",
       "description": "Convert JPG, PNG and other images to PDF, in the order you choose.",
@@ -1286,6 +1292,44 @@
       "after": "Slides you can",
       "action": "Converted in your browser",
       "caption": "Each page becomes a slide. Its pictures and shapes stay behind, and its text sits on top, ready to edit."
+    }
+  },
+  "pdfToExcel": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to Excel",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own Excel workbook.",
+    "panelTitle": "PDF to Excel",
+    "intro": "Puts each line of the PDF in a row, and text that lines up down the page in the same column, the way a table's figures do. Numbers come out as numbers you can add up.",
+    "sheetsLegend": "Sheets",
+    "sheetsPage": "One sheet for each page",
+    "sheetsOne": "All pages on one sheet",
+    "sheetName": "Page {page}",
+    "sheetAll": "All pages",
+    "note": "Scanned pages are pictures with no text inside. Run OCR PDF on them first, then convert.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "summaryOne": "Done. {name} is now the workbook {output} ({size}).",
+    "summaryMany": "Done. {count} workbooks, all saved in one ZIP ({size}).",
+    "summarySkipped": "Done. {count} workbooks in one ZIP ({size}). {skipped} PDFs had no text to take out; run OCR PDF on them first.",
+    "part": "Workbook of {name}",
+    "zipName": "anytools_pdf-to-excel.zip",
+    "noText": "{name} has no text to take out: its pages are pictures, like a scan. Run OCR PDF on it first, then try again.",
+    "noTextMany": "None of these PDFs has text to take out: their pages are pictures, like scans. Run OCR PDF on them first.",
+    "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "statement.pdf",
+      "output": "statement.xlsx",
+      "before": "A table you can't use",
+      "after": "Rows and columns to add up",
+      "action": "Converted in your browser",
+      "caption": "Text that lines up down the page shares a column, and figures become real numbers, so totals work straight away."
     }
   },
   "comparePdf": {

@@ -84,6 +84,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "pdf-to-excel",
+    hub: "pdf",
+    input: "files",
+    related: ["pdf-to-word", "pdf-to-text", "ocr-pdf", "split-pdf"],
+    aliases: ["pdf to xlsx", "pdf to xls", "convert pdf to excel", "pdf table to excel", "bank statement to excel", "pdf to spreadsheet", "পিডিএফ থেকে এক্সেল", "পিডিএফ টু এক্সেল"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "jpg-to-pdf",
     hub: "pdf",
     input: "files",
