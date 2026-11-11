@@ -313,6 +313,12 @@
       "title": "Fill PDF Forms Free: Type Into Any PDF Form | AnyTools.fyi",
       "metaDescription": "Fill in PDF forms for free: type answers in English or Bangla, tick boxes and pick options, then lock them in if you like. No signup, nothing uploaded."
     },
+    "flatten-pdf": {
+      "name": "Flatten PDF",
+      "description": "Make a PDF's filled-in form and comments part of the page, so nobody can change them.",
+      "title": "Flatten PDF Free: Lock Forms and Comments | AnyTools.fyi",
+      "metaDescription": "Flatten PDF forms and comments for free. Filled-in answers, ticks, notes and stamps become part of the page and can't be changed. Nothing uploaded."
+    },
     "redact-pdf": {
       "name": "Redact PDF",
       "description": "Black out private details in a PDF for good: account numbers, names, addresses or any area.",
@@ -1330,6 +1336,49 @@
       "after": "Rows and columns to add up",
       "action": "Converted in your browser",
       "caption": "Text that lines up down the page shares a column, and figures become real numbers, so totals work straight away."
+    }
+  },
+  "flattenPdf": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Flatten PDF",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF is flattened on its own.",
+    "panelTitle": "Flatten PDF",
+    "intro": "Draws what's on top of each page into the page itself, then takes the boxes and notes away. The PDF looks the same, but nothing in it can be filled in or changed.",
+    "whatLegend": "What to flatten",
+    "forms": "Form fields",
+    "formsHint": "Typed answers, ticks, choices and signatures.",
+    "marks": "Comments and markup",
+    "marksHint": "Highlights, notes, stamps, shapes and drawings.",
+    "chooseOne": "Choose at least one thing to flatten.",
+    "note": "Links stay links. Attached files, and redaction marks not yet applied, are left as they are.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "fieldOne": "1 form field",
+    "fieldMany": "{count} form fields",
+    "markOne": "1 comment",
+    "markMany": "{count} comments",
+    "and": " and ",
+    "summaryOne": "Done. {what} in {name} are now part of its pages, saved as {output} ({size}).",
+    "summaryMany": "Done. {count} PDFs flattened, with {what} made part of their pages, all saved in one ZIP ({size}).",
+    "summarySkipped": "Done. {count} PDFs flattened, with {what} made part of their pages ({size}). {skipped} had nothing to flatten and were left out.",
+    "part": "Flattened {name}",
+    "zipName": "anytools_flatten-pdf.zip",
+    "nothing": "{name} has no form fields or comments to flatten. It's already as flat as it gets.",
+    "nothingMany": "None of these PDFs has form fields or comments to flatten.",
+    "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+    "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first.",
+    "diagram": {
+      "file": "form.pdf",
+      "output": "form_flattened.pdf",
+      "before": "Fields you can still change",
+      "after": "Part of the page",
+      "action": "Flattened in your browser",
+      "caption": "The answers and notes look just the same, but they're now drawn on the page, so they can't be edited, moved or deleted."
     }
   },
   "comparePdf": {

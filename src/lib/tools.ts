@@ -309,6 +309,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "flatten-pdf",
+    hub: "pdf",
+    input: "files",
+    related: ["fill-pdf-forms", "sign-pdf", "protect-pdf", "compress-pdf"],
+    aliases: ["flatten pdf form", "flatten pdf annotations", "lock pdf form", "make pdf form uneditable", "flatten pdf comments", "পিডিএফ ফ্ল্যাটেন"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "redact-pdf",
     hub: "pdf",
     input: "files",

@@ -56,7 +56,7 @@ describe("liveHubs", () => {
 
 describe("launch registry", () => {
   // The site offers PDF tools only, launched one at a time. Other categories come back when they're built.
-  it("offers the twenty-eight browser-based PDF tools, with Merge PDF live", () => {
+  it("offers the twenty-nine browser-based PDF tools, with Merge PDF live", () => {
     expect(listedTools().map((t) => t.slug)).toEqual([
       "merge-pdf",
       "split-pdf",
@@ -83,17 +83,18 @@ describe("launch registry", () => {
       "pdf-to-text",
       "compare-pdf",
       "fill-pdf-forms",
+      "flatten-pdf",
       "redact-pdf",
       "edit-pdf",
       "ocr-pdf",
     ]);
     expect(TOOLS.every((t) => t.hub === "pdf" && t.runsIn === "browser")).toBe(true);
-    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "pdf-to-word", "pdf-to-powerpoint", "pdf-to-excel", "jpg-to-pdf", "scan-to-pdf", "pdf-to-jpg", "pdf-to-png", "sign-pdf", "organize-pdf", "rotate-pdf", "crop-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark", "protect-pdf", "unlock-pdf", "repair-pdf", "grayscale-pdf", "pdf-to-text", "compare-pdf", "fill-pdf-forms", "redact-pdf", "edit-pdf", "ocr-pdf"]);
+    expect(listedTools().filter((t) => t.built).map((t) => t.slug)).toEqual(["merge-pdf", "split-pdf", "compress-pdf", "pdf-to-word", "pdf-to-powerpoint", "pdf-to-excel", "jpg-to-pdf", "scan-to-pdf", "pdf-to-jpg", "pdf-to-png", "sign-pdf", "organize-pdf", "rotate-pdf", "crop-pdf", "remove-pdf-pages", "extract-pdf-pages", "add-page-numbers", "add-watermark", "protect-pdf", "unlock-pdf", "repair-pdf", "grayscale-pdf", "pdf-to-text", "compare-pdf", "fill-pdf-forms", "flatten-pdf", "redact-pdf", "edit-pdf", "ocr-pdf"]);
   });
 
   it("publishes only the PDF hub", () => {
     expect(liveHubs().map((h) => h.slug)).toEqual(["pdf-tools"]);
-    expect(toolsForHub("pdf")).toHaveLength(28);
+    expect(toolsForHub("pdf")).toHaveLength(29);
   });
 
   it("has strings and an icon for every tool", () => {

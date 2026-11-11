@@ -31,6 +31,7 @@ export const TOOL_ICONS: Record<string, string> = {
   "pdf-to-text": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 11h6"/><path d="M12 11v7"/>',
   "compare-pdf": '<rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/><path d="M5.5 9h3"/><path d="M15.5 9h3"/><path d="M5.5 13h3"/><path d="M15.5 13h3"/>',
   "fill-pdf-forms": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><rect x="8.5" y="10" width="8" height="3" rx="0.5"/><path d="m9 16.5 1.5 1.5 3-3"/>',
+  "flatten-pdf": '<path d="m12 4 9 5-9 5-9-5z"/><path d="M3 18h18"/><path d="M12 14v4"/>',
   "redact-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><rect x="8.5" y="10" width="8" height="3" fill="currentColor"/><path d="M8.5 16h5"/>',
   "edit-pdf": '<path d="M6 3h9l4 4v6"/><path d="M15 3v4h4"/><path d="M6 3v18h6"/><path d="m14.5 21 1-3.5 5-5 2.5 2.5-5 5z"/>',
   "ocr-pdf": '<path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 9h8"/><path d="M8 12h8"/><path d="M8 15h5"/>',
