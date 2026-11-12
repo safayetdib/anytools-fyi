@@ -309,6 +309,15 @@ export const TOOLS: Tool[] = [
     runsIn: "browser",
   },
   {
+    slug: "bangla-pdf-to-unicode",
+    hub: "pdf",
+    input: "files",
+    related: ["pdf-to-text", "pdf-to-word", "ocr-pdf", "edit-pdf"],
+    aliases: ["bijoy to unicode", "sutonnymj to unicode", "bijoy pdf to unicode", "bangla pdf copy problem", "ansi to unicode bangla", "বিজয় থেকে ইউনিকোড", "বিজয় টু ইউনিকোড", "সুতন্নী থেকে ইউনিকোড"],
+    built: true,
+    runsIn: "browser",
+  },
+  {
     slug: "compare-pdf",
     hub: "pdf",
     input: "files",

@@ -1,0 +1,116 @@
+---
+import en from "../../i18n/en.json";
+
+const d = en.banglaPdfToUnicode.diagram;
+---
+
+<figure class="unicode-diagram" aria-labelledby="unicode-diagram-caption">
+  <div class="stage">
+    <div class="doc">
+      <span class="doc-name">{d.file}</span>
+      <span class="doc-meta">{d.before}</span>
+      <span class="sheet" aria-hidden="true" lang="en">Avgvi †mvbvi<br />evsjv, Avwg<br />‡Zvgvq<br />fv‡jvevwm</span>
+    </div>
+    <div class="cut">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+      </svg>
+      <span>{d.action}</span>
+    </div>
+    <div class="doc result">
+      <span class="doc-name">{d.output}</span>
+      <span class="doc-meta">{d.after}</span>
+      <span class="sheet is-bangla" aria-hidden="true" lang="bn">আমার সোনার<br />বাংলা, আমি<br />তোমায়<br />ভালোবাসি</span>
+    </div>
+  </div>
+  <figcaption id="unicode-diagram-caption">{d.caption}</figcaption>
+</figure>
+
+<style>
+  .unicode-diagram {
+    margin: 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .stage {
+    display: grid;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .doc {
+    display: grid;
+    gap: var(--space-sm);
+    justify-items: start;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    background: var(--color-bg);
+  }
+
+  .doc.result {
+    border: 2px solid var(--color-accent);
+  }
+
+  .doc-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-meta {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .result .doc-meta {
+    color: var(--color-accent);
+  }
+
+  /* A page of text as it copies out: the Bijoy letters on one side, the Unicode Bangla on the other. */
+  .sheet {
+    display: block;
+    width: 7rem;
+    height: 8rem;
+    padding: 12px 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+    color: #111111;
+    font-family: ui-monospace, "Courier New", monospace;
+    font-size: 0.625rem;
+    line-height: 1.6;
+  }
+
+  .sheet.is-bangla {
+    font-family: "Noto Sans Bengali", "Nirmala UI", "Vrinda", sans-serif;
+    font-size: 0.6875rem;
+  }
+
+  .cut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  figcaption {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 768px) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+</style>
