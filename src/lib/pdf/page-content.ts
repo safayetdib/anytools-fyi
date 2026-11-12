@@ -1,3 +1,5 @@
+import { bijoyToUnicode, isBijoyFont } from "../bangla/bijoy";
+import { BANGLA_FONT } from "../office/ooxml";
 import { loadPdfjs, type PdfDocument } from "./preview";
 
 // Reads what a page holds, for the tools that rebuild PDFs as Office files: each piece of text with its font and place,
@@ -53,6 +55,8 @@ export interface PageContent {
   pictures: PicturePlace[];
   // Text that is there to search but isn't drawn, like the text OCR adds behind a scan.
   hiddenText: boolean;
+  // True when some of the text was set in a Bijoy font and has been turned into Unicode Bangla.
+  bijoy?: boolean;
 }
 
 interface PdfImage {
@@ -63,8 +67,9 @@ interface PdfImage {
   kind?: number;
 }
 
-interface TextItem {
+export interface TextItem {
   str?: string;
+  hasEOL?: boolean;
   transform: number[];
   width: number;
   height: number;
@@ -257,28 +262,51 @@ export async function openWithFonts(file: File): Promise<{ doc: PdfDocument; clo
   }
 }
 
+/**
+ * The page's text as pdf.js reads it, with text set in a Bijoy font, such as SutonnyMJ, turned into Unicode Bangla.
+ * The page's fonts must have reached it first, by reading its drawing steps.
+ */
+export async function readText(page: PdfPage): Promise<{ items: TextItem[]; styles: Record<string, { fontFamily?: string }>; bijoyFonts: Set<string> }> {
+  const content = await page.getTextContent();
+  const items = (content.items as TextItem[]).filter((item) => typeof item.str === "string");
+  const bijoyFonts = new Set(items.map((item) => item.fontName).filter((name) => isBijoyFont(fontInfo(page, name).name)));
+  if (bijoyFonts.size) {
+    // pdf.js tidies some characters as it reads, such as "\u00A8" and "\u00AA", and Bijoy uses those for parts of
+    // letters, so the page is read again as it is.
+    const raw = ((await page.getTextContent({ disableNormalization: true })).items as TextItem[]).filter((item) => typeof item.str === "string");
+    if (raw.length === items.length) {
+      for (const [index, item] of items.entries()) {
+        if (bijoyFonts.has(item.fontName)) item.str = bijoyToUnicode(raw[index].str ?? "");
+      }
+    } else bijoyFonts.clear();
+  }
+  return { items, styles: content.styles as Record<string, { fontFamily?: string }>, bijoyFonts };
+}
+
 // Everything on one page, turned the way the PDF shows it.
 export async function readPageContent(page: PdfPage, options: { pictures: boolean } = { pictures: true }): Promise<PageContent> {
   const viewport = page.getViewport({ scale: 1 });
   const view = viewport.transform as Matrix;
   // The fonts reach the page while the drawing steps are read, so these come first.
   const { fnArray, argsArray } = await page.getOperatorList();
-  const { items, styles } = await page.getTextContent();
+  const { items, styles, bijoyFonts } = await readText(page);
 
   const pieces: TextPiece[] = [];
   const fonts = new Map<string, FontStyle>();
-  for (const item of items as TextItem[]) {
-    if (typeof item.str !== "string" || !item.str) continue;
+  for (const item of items) {
+    if (!item.str) continue;
     let font = fonts.get(item.fontName);
     if (!font) {
       const info = fontInfo(page, item.fontName);
-      const family = (styles as Record<string, { fontFamily?: string }>)[item.fontName]?.fontFamily;
+      const family = styles[item.fontName]?.fontFamily;
       font = fontStyle(info.name, {
         bold: info.bold || info.black,
         italic: info.italic,
         serif: info.isSerifFont || family === "serif",
         mono: info.isMonospace || family === "monospace",
       });
+      // Converted Bijoy text needs a font with Unicode Bangla letters.
+      if (bijoyFonts.has(item.fontName)) font = { ...font, family: BANGLA_FONT };
       fonts.set(item.fontName, font);
     }
     const [a, b, c, d, e, f] = item.transform;
@@ -346,5 +374,5 @@ export async function readPageContent(page: PdfPage, options: { pictures: boolea
       });
     }
   }
-  return { width: viewport.width, height: viewport.height, pieces, pictures, hiddenText: hiddenText > shownText };
+  return { width: viewport.width, height: viewport.height, pieces, pictures, hiddenText: hiddenText > shownText, bijoy: bijoyFonts.size > 0 };
 }

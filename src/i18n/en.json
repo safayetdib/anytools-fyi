@@ -313,6 +313,12 @@
       "title": "PDF to Text Free: Extract Text From PDF | AnyTools.fyi",
       "metaDescription": "Convert PDF to text for free. Get every word out of a PDF as a plain .txt file, in English or Bangla, with lines kept. No signup, nothing uploaded."
     },
+    "bangla-pdf-to-unicode": {
+      "name": "Bangla PDF to Unicode",
+      "description": "Turn Bangla typed in Bijoy fonts like SutonnyMJ into Unicode text you can copy, search and edit.",
+      "title": "Bijoy PDF to Unicode: Fix Bangla PDF Text | AnyTools.fyi",
+      "metaDescription": "Copy Bangla from a PDF and get Avgvi instead of আমার? Turn SutonnyMJ and other Bijoy text into Unicode Bangla, as text or Word. Free, nothing uploaded."
+    },
     "compare-pdf": {
       "name": "Compare PDF",
       "description": "See what changed between two versions of a PDF, with removed and added words highlighted side by side.",
@@ -1233,6 +1239,8 @@
     "summaryOne": "Done. The text of {name} is saved as {output} ({size}).",
     "summaryMany": "Done. {count} text files, all saved in one ZIP ({size}).",
     "summarySkipped": "Done. {count} text files in one ZIP ({size}). {skipped} PDFs had no text to take out; run OCR PDF on them first.",
+    "bijoyOne": "Its Bijoy text, typed in fonts like SutonnyMJ, is turned into Unicode Bangla.",
+    "bijoyMany": "Bijoy text in {count} of them, typed in fonts like SutonnyMJ, is turned into Unicode Bangla.",
     "part": "Text of {name}",
     "zipName": "anytools_pdf-to-text.zip",
     "noText": "{name} has no text to take out: its pages are pictures, like a scan. Run OCR PDF on it first, then try again.",
@@ -1246,6 +1254,69 @@
       "after": "Plain text, ready to copy",
       "action": "Converted in your browser",
       "caption": "The words come out in reading order, line by line, with a blank line between paragraphs. Bangla letters stay as they are."
+    }
+  },
+  "banglaPdfToUnicode": {
+    "selectLabel": "Select PDF files",
+    "runLabel": "Convert to Unicode",
+    "acceptLabel": "PDF files",
+    "arrangeHint": "Each PDF becomes its own file.",
+    "panelTitle": "Bangla PDF to Unicode",
+    "intro": "Bangla typed with Bijoy, in fonts like SutonnyMJ, comes out of a PDF as Latin letters. This turns it into Unicode Bangla. English and Bangla already in Unicode stay as they are.",
+    "legend": "Save as",
+    "choices": {
+      "text": "Text",
+      "word": "Word"
+    },
+    "hints": {
+      "text": "A plain .txt file, and the text right under the result to copy.",
+      "word": "A Word document with the PDF's paragraphs, sizes and pictures."
+    },
+    "note": "Scanned pages are pictures with no text inside. Run OCR PDF on them first.",
+    "cardsLabel": "Your PDFs",
+    "checking": "Checking…",
+    "lockedCard": "Needs its password",
+    "pageOne": "1 page",
+    "pageMany": "{count} pages",
+    "unreadablePreview": "Couldn't preview this file",
+    "text": {
+      "summaryOne": "Done. The text of {name} is saved as {output} ({size}).",
+      "summaryMany": "Done. {count} text files, all saved in one ZIP ({size}).",
+      "summarySkipped": "Done. {count} text files in one ZIP ({size}). {skipped} PDFs had no text to take out; run OCR PDF on them first.",
+      "bijoyOne": "Its Bijoy text is now Unicode Bangla, ready to paste anywhere.",
+      "bijoyMany": "Bijoy text in {count} of them is now Unicode Bangla.",
+      "plainOne": "It had no Bijoy text, so its text is kept as it was.",
+      "plainMany": "{count} had no Bijoy text, so their text is kept as it was.",
+      "marker": "--- Page {page} ---",
+      "part": "Text of {name}",
+      "zipName": "anytools_bangla-pdf-to-unicode.zip",
+      "noText": "{name} has no text to take out: its pages are pictures, like a scan. Run OCR PDF on it first, then try again.",
+      "noTextMany": "None of these PDFs has text to take out: their pages are pictures, like scans. Run OCR PDF on them first.",
+      "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+      "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first."
+    },
+    "word": {
+      "summaryOne": "Done. {name} is now the Word document {output} ({size}).",
+      "summaryMany": "Done. {count} Word documents, all saved in one ZIP ({size}).",
+      "scanHintOne": "Its pages are pictures, like a scan, so they came out as pictures. Run OCR PDF on it first.",
+      "scanHintMany": "{count} of them are scans, so their pages came out as pictures. Run OCR PDF on those first.",
+      "bijoyOne": "Its Bijoy text is now Unicode Bangla, set in Nirmala UI.",
+      "bijoyMany": "Bijoy text in {count} of them is now Unicode Bangla, set in Nirmala UI.",
+      "plainOne": "It had no Bijoy text, so its text is kept as it was.",
+      "plainMany": "{count} had no Bijoy text, so their text is kept as it was.",
+      "part": "Word document of {name}",
+      "zipName": "anytools_bangla-pdf-to-unicode.zip",
+      "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",
+      "encrypted": "{name} needs its password. Unlock it first with Unlock PDF, then try again.",
+      "unreadable": "{name} couldn't be opened. It may be damaged; try Repair PDF first."
+    },
+    "diagram": {
+      "file": "notice.pdf",
+      "output": "notice.txt",
+      "before": "Copies out as Latin letters",
+      "after": "Unicode Bangla",
+      "action": "Converted in your browser",
+      "caption": "Each Bijoy letter is matched to its Unicode letter, and vowel signs and র্ are put back where Unicode expects them, so the text reads, searches and pastes properly."
     }
   },
   "pdfToWord": {
@@ -1266,6 +1337,8 @@
     "summaryMany": "Done. {count} Word documents, all saved in one ZIP ({size}).",
     "scanHintOne": "Its pages are pictures, like a scan, so they came out as pictures. Run OCR PDF on it first to get text you can edit.",
     "scanHintMany": "{count} of them are scans, so their pages came out as pictures. Run OCR PDF on those first to get text you can edit.",
+    "bijoyOne": "Its Bijoy text, typed in fonts like SutonnyMJ, is turned into Unicode Bangla.",
+    "bijoyMany": "Bijoy text in {count} of them, typed in fonts like SutonnyMJ, is turned into Unicode Bangla.",
     "part": "Word document of {name}",
     "zipName": "anytools_pdf-to-word.zip",
     "tooManyPages": "{name} has more than {max} pages, too many to convert in a browser. Split it with Split PDF, then convert the parts.",

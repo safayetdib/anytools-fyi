@@ -15,7 +15,7 @@ test("navbar - desktop shows quick links and an All tools menu", async ({ page }
   await expect(menuButton(page)).toHaveText(/All tools/);
   await menuButton(page).click();
   await expect(panel(page)).toBeVisible();
-  await expect(panel(page).locator(".tool-link")).toHaveCount(31);
+  await expect(panel(page).locator(".tool-link")).toHaveCount(32);
   await expect(panel(page).getByRole("link", { name: "PDF tools" })).toHaveAttribute("href", "/pdf-tools/");
   await expect(panel(page).getByRole("link", { name: "See all tools" })).toBeVisible();
   await page.waitForTimeout(400);
@@ -57,7 +57,7 @@ test("navbar - menu works with JavaScript turned off", async ({ browser }) => {
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4329/");
   await menuButton(page).click();
-  await expect(panel(page).locator(".tool-link")).toHaveCount(31);
+  await expect(panel(page).locator(".tool-link")).toHaveCount(32);
   await context.close();
 });
 

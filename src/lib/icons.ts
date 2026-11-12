@@ -31,6 +31,7 @@ export const TOOL_ICONS: Record<string, string> = {
   "repair-pdf": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M14.5 10.5a2.5 2.5 0 0 0-3.4 3.2l-2.6 2.6 1.2 1.2 2.6-2.6a2.5 2.5 0 0 0 3.2-3.4l-1.4 1.4-1.2-1.2z"/>',
   "grayscale-pdf": '<circle cx="12" cy="12" r="8"/><path d="M12 4v16"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
   "pdf-to-text": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 11h6"/><path d="M12 11v7"/>',
+  "bangla-pdf-to-unicode": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 11h3"/><path d="M9 15h6"/><path d="m14 9 2 2-2 2"/>',
   "compare-pdf": '<rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/><path d="M5.5 9h3"/><path d="M15.5 9h3"/><path d="M5.5 13h3"/><path d="M15.5 13h3"/>',
   "fill-pdf-forms": '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><rect x="8.5" y="10" width="8" height="3" rx="0.5"/><path d="m9 16.5 1.5 1.5 3-3"/>',
   "flatten-pdf": '<path d="m12 4 9 5-9 5-9-5z"/><path d="M3 18h18"/><path d="M12 14v4"/>',

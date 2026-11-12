@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDict, PDFDocument, PDFName, StandardFonts, rgb } from "pdf-lib";
 
 // A PDF whose pages have the given widths, so tests can check page order.
 export async function makePdf(widths: number[], height = 300): Promise<Uint8Array> {
@@ -113,4 +113,20 @@ export async function pageCropBoxes(bytes: Uint8Array | Buffer): Promise<number[
 export async function pageSizes(bytes: Uint8Array | Buffer): Promise<[number, number][]> {
   const doc = await PDFDocument.load(bytes);
   return doc.getPages().map((page) => [Math.round(page.getWidth()), Math.round(page.getHeight())]);
+}
+
+// A letter typed in SutonnyMJ, as offices in Bangladesh still make them, with an English line in another font. The
+// Bijoy text is drawn with a standard font renamed, so it reads back as the Latin letters Bijoy stores.
+export async function makeBijoyPdf(lines = ["MYcÖRvZš¿x evsjv‡`k miKvi", "Avwg evsjvq †`wL ¯^cœ!"], english = "Ref: 12/2024"): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  const bijoy = await doc.embedFont(StandardFonts.Helvetica);
+  const latin = await doc.embedFont(StandardFonts.TimesRoman);
+  const page = doc.addPage([400, 300]);
+  lines.forEach((line, index) => page.drawText(line, { x: 40, y: 250 - index * 30, size: 14, font: bijoy }));
+  page.drawText(english, { x: 40, y: 250 - lines.length * 30, size: 12, font: latin });
+  // Fonts are only written out on saving.
+  await doc.flush();
+  const fontDict = doc.context.lookup(bijoy.ref) as PDFDict;
+  fontDict.set(PDFName.of("BaseFont"), PDFName.of("SutonnyMJ"));
+  return doc.save();
 }

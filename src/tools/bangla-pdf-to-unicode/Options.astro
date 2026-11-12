@@ -1,0 +1,152 @@
+---
+import en from "../../i18n/en.json";
+import "../../styles/card-tools.css";
+
+const t = en.banglaPdfToUnicode;
+const formats = ["text", "word"] as const;
+---
+
+<div class="pw-layout" data-unicode-options data-testid="unicode-options">
+  <aside class="pw-panel" aria-labelledby="unicode-panel-title">
+    <h3 class="pw-panel-title" id="unicode-panel-title">{t.panelTitle}</h3>
+    <p class="pw-text">{t.intro}</p>
+    <fieldset class="unicode-group" aria-describedby="unicode-format-hint">
+      <legend>{t.legend}</legend>
+      <div class="unicode-options">
+        {
+          formats.map((format) => (
+            <label class="unicode-choice">
+              <input type="radio" name="format" value={format} checked={format === "text"} />
+              <span>{t.choices[format]}</span>
+            </label>
+          ))
+        }
+      </div>
+      <p class="pw-text" id="unicode-format-hint">
+        {formats.map((format) => <span data-hint={format}>{t.hints[format]}</span>)}
+      </p>
+    </fieldset>
+    <p class="pw-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>{t.note}</span>
+    </p>
+  </aside>
+
+  <ul class="pw-cards" data-cards aria-label={t.cardsLabel}></ul>
+</div>
+
+<script>
+  import en from "../../i18n/en.json";
+  import { fill } from "../../i18n/format";
+  import { cardElement, trackPdfCards, type PdfCard } from "../../lib/shell/pdf-cards";
+
+  const t = en.banglaPdfToUnicode;
+  const THUMBNAIL_WIDTH = 240;
+
+  const root = document.querySelector<HTMLElement>("[data-tool-shell]");
+  const found = root?.querySelector<HTMLElement>("[data-unicode-options]");
+
+  if (root && found) {
+    const box: HTMLElement = found;
+    const cards = box.querySelector("[data-cards]") as HTMLUListElement;
+
+    function metaOf(card: PdfCard): { text: string; problem: boolean } {
+      if (card.status === "loading") return { text: t.checking, problem: false };
+      if (card.status === "locked") return { text: t.lockedCard, problem: true };
+      if (card.status === "unreadable") return { text: t.unreadablePreview, problem: true };
+      return { text: card.pages === null ? "" : card.pages === 1 ? t.pageOne : fill(t.pageMany, { count: card.pages }), problem: false };
+    }
+
+    let first = true;
+    trackPdfCards(root, THUMBNAIL_WIDTH, (files, entries) => {
+      cards.replaceChildren(
+        ...files.map((file) => {
+          const card = entries.get(file) as PdfCard;
+          const meta = metaOf(card);
+          const item = cardElement(file, card, { meta: meta.text, unreadable: t.unreadablePreview });
+          item.setAttribute("data-testid", "unicode-card");
+          item.querySelector(".pdf-card-meta")?.classList.toggle("is-problem", meta.problem);
+          return item;
+        }),
+      );
+      if (first && files.length) {
+        first = false;
+        const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        box.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+      }
+      if (!files.length) first = true;
+    });
+  }
+</script>
+
+<style>
+  .unicode-group {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .unicode-group legend {
+    margin-bottom: var(--space-xs);
+    padding: 0;
+    font-weight: 700;
+  }
+
+  .unicode-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  /* Tiles that read as one choice from a row; the radio itself is hidden but still takes focus and clicks. */
+  .unicode-choice {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-button);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .unicode-choice input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .unicode-choice:has(input:checked) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+    box-shadow: 0 0 0 1px var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .unicode-choice:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) {
+    .unicode-choice:not(:has(input:checked)):hover {
+      border-color: var(--color-accent);
+    }
+  }
+
+  /* Only the chosen format's hint shows. */
+  .unicode-group:has(input[value="text"]:checked) [data-hint="word"],
+  .unicode-group:has(input[value="word"]:checked) [data-hint="text"] {
+    display: none;
+  }
+</style>
