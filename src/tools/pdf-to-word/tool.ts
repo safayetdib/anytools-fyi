@@ -8,7 +8,6 @@ import { zipParts } from "../../lib/zip";
 import { buildDocx, wordName } from "./docx";
 import { layoutPage, type PageLayout } from "./paragraphs";
 
-const t = en.pdfToWord;
 const MB = 1024 * 1024;
 // Twice the shown width, so thumbnails stay sharp on high-density screens.
 const THUMBNAIL_WIDTH = 128;
@@ -18,18 +17,26 @@ const PICTURE_DENSITY = 3;
 export const MAX_PAGES = 500;
 const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-export const tool: ToolDefinition = {
-  config: {
-    mode: "files",
-    accept: ".pdf,application/pdf",
-    acceptLabel: t.acceptLabel,
-    arrangeHint: t.arrangeHint,
-    multiple: true,
-    orderMatters: false,
-    minFiles: 1,
-    maxFileSize: 100 * MB,
-    warnFileSize: 30 * MB,
-  },
+// The words the run shows. PDF to Word has its own; Bangla PDF to Unicode brings others.
+export type WordStrings = Pick<
+  typeof en.pdfToWord,
+  "encrypted" | "unreadable" | "tooManyPages" | "scanHintOne" | "scanHintMany" | "summaryOne" | "summaryMany" | "part" | "zipName" | "bijoyOne" | "bijoyMany"
+> & { plainOne?: string; plainMany?: string };
+
+export const WORD_CONFIG: ToolDefinition["config"] = {
+  mode: "files",
+  accept: ".pdf,application/pdf",
+  acceptLabel: en.pdfToWord.acceptLabel,
+  arrangeHint: en.pdfToWord.arrangeHint,
+  multiple: true,
+  orderMatters: false,
+  minFiles: 1,
+  maxFileSize: 100 * MB,
+  warnFileSize: 30 * MB,
+};
+
+export const wordTool = (t: WordStrings, config: ToolDefinition["config"] = WORD_CONFIG): ToolDefinition => ({
+  config,
   warm() {
     void loadPdfjs();
   },
@@ -38,7 +45,7 @@ export const tool: ToolDefinition = {
     const opened = [];
     let total = 0;
     let done = 0;
-    const outputs: { name: string; bytes: Uint8Array; source: string; hasText: boolean }[] = [];
+    const outputs: { name: string; bytes: Uint8Array; source: string; hasText: boolean; bijoy: boolean }[] = [];
     try {
       for (const file of files) {
         try {
@@ -54,12 +61,14 @@ export const tool: ToolDefinition = {
         const pages: PageLayout[] = [];
         const pictures = new Map<string, PictureFile>();
         let hasText = false;
+        let bijoy = false;
         for (let number = 1; number <= doc.doc.numPages; number++) {
           if (signal.aborted) throw signal.reason;
           const page = await doc.doc.getPage(number);
           try {
             const content = await readPageContent(page);
             hasText ||= content.pieces.some((piece) => piece.text.trim());
+            bijoy ||= !!content.bijoy;
             const layout = layoutPage(content);
             const places = [...layout.behind, ...layout.blocks.flatMap((block) => (block.kind === "picture" ? [block.place] : []))];
             for (const place of places) {
@@ -74,13 +83,23 @@ export const tool: ToolDefinition = {
           onProgress(++done / (total + 1));
         }
         const title = file.name.replace(/\.pdf$/i, "");
-        outputs.push({ name: wordName(file.name), bytes: buildDocx(pages, pictures, title), source: file.name, hasText });
+        outputs.push({ name: wordName(file.name), bytes: buildDocx(pages, pictures, title), source: file.name, hasText, bijoy });
       }
     } finally {
       opened.forEach(({ doc }) => doc.close());
     }
     const scans = outputs.filter((output) => !output.hasText).length;
-    const hint = scans ? ` ${outputs.length === 1 ? t.scanHintOne : fill(t.scanHintMany, { count: scans })}` : "";
+    const converted = outputs.filter((output) => output.bijoy).length;
+    const plain = outputs.length - converted;
+    const one = outputs.length === 1;
+    const hint = [
+      scans && (one ? t.scanHintOne : fill(t.scanHintMany, { count: scans })),
+      converted && (one ? t.bijoyOne : fill(t.bijoyMany, { count: converted })),
+      plain && t.plainMany && (one ? t.plainOne : fill(t.plainMany, { count: plain })),
+    ]
+      .filter(Boolean)
+      .map((text) => ` ${text}`)
+      .join("");
     const blobs = outputs.map((output) => new Blob([output.bytes as BlobPart], { type: DOCX }));
     onProgress(1);
     if (outputs.length === 1) {
@@ -96,4 +115,6 @@ export const tool: ToolDefinition = {
       summary: fill(t.summaryMany, { count: outputs.length, size: formatSize(zip.size) }) + hint,
     };
   },
-};
+});
+
+export const tool = wordTool(en.pdfToWord);
